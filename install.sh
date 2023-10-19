@@ -1,7 +1,12 @@
 #!/bin/bash
 
+brew install git
+brew install node
+brew install go
+brew install java
+brew install python
 # List of files to create symlinks for
-files=(".vimrc" ".vimrccomplete" ".zprofile" ".zshrc")
+files=(".vimrc" ".vimrccomplete" ".zprofile" ".zshrc", ".skhdrc")
 
 # Loop through the list of files and create symlinks in the home directory
 for file in "${files[@]}"; do
@@ -18,3 +23,26 @@ for file in "${files[@]}"; do
   fi
 done
 
+# Define the list of casks to install
+casks=(
+  "google-chrome",
+  "firefox",
+  "cron",
+  "zoom",
+  "slack",
+  "1password",
+  "authy",
+  "raycast",
+  "spectacle",
+  "visual-studio-code"
+)
+
+# Install the specified casks
+for cask in "${casks[@]}"; do
+  brew install --cask "$cask"
+done
+
+brew install koekeishiya/formulae/skhd
+brew services start skhd
+
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false

@@ -1,8 +1,6 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-# Path to your oh-my-zsh installation.
-export ZSH="/Users/build/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -17,7 +15,7 @@ ZSH_THEME="dracula"
 # ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
 
 # Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
+# CASE_SENSITIVE="truem
 
 # Uncomment the following line to use hyphen-insensitive completion.
 # Case-sensitive completion must be off. _ and - will be interchangeable.
@@ -72,8 +70,6 @@ ZSH_THEME="dracula"
 
 ZSH_DISABLE_COMPFIX=true
 
-source $ZSH/oh-my-zsh.sh
-
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -99,18 +95,12 @@ export LANG=en_US.UTF-8
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias python='python3'
 alias keybindings="code ~/Library/Application\ Support/VSCodium/User/keybindings.json"
 alias settings="code ~/Library/Application\ Support/VSCodium/User/settings.json"
 alias zshrc="code ~/.zshrc"
-alias runCrunchyRoll='source ~/codebase/crunchyroll/python_app/env/bin/activate; export FLASK_ENV=development; flask run'
+alias bindings="code ~/.skhdrc"
 alias ibrew="arch -x86_64 /usr/local/bin/brew"
-export JAVA_8_HOME=$(/usr/libexec/java_home -v1.8)
-export JAVA_11_HOME=$(/usr/libexec/java_home -v11)
 
-alias java8='export JAVA_HOME=$JAVA_8_HOME'
-alias java11='export JAVA_HOME=$JAVA_11_HOME'
 alias vim='nvim'
-# default to Java 11
-java11
+
 export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Users/build/.cargo/bin

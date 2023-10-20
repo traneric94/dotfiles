@@ -5,6 +5,7 @@ brew install node
 brew install go
 brew install java
 brew install python
+brew install awscli
 # List of files to create symlinks for
 files=(".vimrc" ".vimrccomplete" ".zprofile" ".zshrc", ".skhdrc")
 
@@ -34,7 +35,9 @@ casks=(
   "authy",
   "raycast",
   "spectacle",
-  "visual-studio-code"
+  "visual-studio-code",
+  "postman",
+  "spotify"
 )
 
 # Install the specified casks

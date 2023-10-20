@@ -5,9 +5,8 @@ rshift - f : if pgrep "Firefox" > /dev/null; then osascript -e 'tell application
 rshift - v : if pgrep "Visual Studio Code" > /dev/null; then osascript -e 'tell application "Visual Studio Code" to activate'; else open -na "/Applications/Visual Studio Code.app"; fi
 rshift - q : if pgrep "iTerm" > /dev/null; then osascript -e 'tell application "iTerm" to activate'; else open -na "/Applications/iTerm.app"; fi
 rshift - w : if pgrep "Safari" > /dev/null; then osascript -e 'tell application "Safari" to activate'; else open -na "/Applications/Safari.app"; fi
-rshift - e : if pgrep "Slack" > /dev/null; then osascript -e 'tell application "Slack" to activate'; else open -na "/Applications/Slack.app"; fi
+rshift - s : if pgrep "Slack" > /dev/null; then osascript -e 'tell application "Slack" to activate'; else open -na "/Applications/Slack.app"; fi
 rshift - c : if pgrep "Cron" > /dev/null; then osascript -e 'tell application "Cron" to activate'; else open -na "/Applications/Cron.app"; fi
 rshift - g : if pgrep "Google Chrome" > /dev/null; then osascript -e 'tell application "Google Chrome" to activate'; else open -na "/Applications/Google Chrome.app"; fi
 rshift - a : if pgrep "Authy Desktop" > /dev/null; then osascript -e 'tell application "Authy Desktop" to activate'; else open -na "/Applications/Authy Desktop.app"; fi
 rshift - z : if pgrep "zoom.us" > /dev/null; then osascript -e 'tell application "zoom.us" to activate'; else open -na "/Applications/zoom.us.app"; fi
-

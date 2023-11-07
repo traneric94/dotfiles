@@ -10,3 +10,5 @@ rshift - c : if pgrep "Cron" > /dev/null; then osascript -e 'tell application "C
 rshift - g : if pgrep "Google Chrome" > /dev/null; then osascript -e 'tell application "Google Chrome" to activate'; else open -na "/Applications/Google Chrome.app"; fi
 rshift - a : if pgrep "Authy Desktop" > /dev/null; then osascript -e 'tell application "Authy Desktop" to activate'; else open -na "/Applications/Authy Desktop.app"; fi
 rshift - z : if pgrep "zoom.us" > /dev/null; then osascript -e 'tell application "zoom.us" to activate'; else open -na "/Applications/zoom.us.app"; fi
+rshift - m : if pgrep "Messages" > /dev/null; then osascript -e 'tell application "Messages" to activate'; else open -na "/Applications/Messages.app"; fi
+rshift - j : if pgrep "Spotify" > /dev/null; then osascript -e 'tell application "Spotify" to activate'; else open -na "/Applications/Spotify.app"; fi

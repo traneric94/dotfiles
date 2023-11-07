@@ -1,14 +1,14 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
-PATH=/usr/bin:/bin:/usr/sbin:/sbin
-export PATH
+#PATH=/usr/bin:/bin:/usr/sbin:/sbin
+#export PATH
 
 # add custom, local installations to PATH
-PATH=/usr/local/bin:/usr/local/sbin:"$PATH"
+#PATH=/usr/local/bin:/usr/local/sbin:"$PATH"
 
 # add MacPorts to PATH
-PATH=/opt/local/bin:/opt/local/sbin:"$PATH"
-export GOPATH=/Users/erictran/codebase/golang
+#PATH=/opt/local/bin:/opt/local/sbin:"$PATH"
+#export GOPATH=/Users/erictran/codebase/golang
 # export PATH=~/Library/Python/2.7/bin:$PATH
 
 # Path to your oh-my-zsh installation.
@@ -152,3 +152,5 @@ export PATH="${PATH}:${HOME}/.pyenv/versions/2.7.18/bin"
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
+export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
+export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"

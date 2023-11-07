@@ -1,11 +1,5 @@
 #!/bin/bash
 
-brew install git
-brew install node
-brew install go
-brew install java
-brew install python
-brew install awscli
 # List of files to create symlinks for
 files=(".vimrc" ".vimrccomplete" ".zprofile" ".zshrc", ".skhdrc")
 
@@ -24,6 +18,16 @@ for file in "${files[@]}"; do
   fi
 done
 
+formulae=(
+  "git",
+  "node",
+  "java",
+  "python",
+  "awscli",
+  "go",
+  "koekeishiya/formulae/skhd"
+)
+
 # Define the list of casks to install
 casks=(
   "google-chrome",
@@ -32,6 +36,7 @@ casks=(
   "zoom",
   "slack",
   "1password",
+  "1password-cli",
   "authy",
   "raycast",
   "spectacle",
@@ -40,12 +45,15 @@ casks=(
   "spotify"
 )
 
+for formula in "${formulae[@]}"; do
+  brew install "$formula"
+done
+
 # Install the specified casks
 for cask in "${casks[@]}"; do
   brew install --cask "$cask"
 done
 
-brew install koekeishiya/formulae/skhd
 brew services start skhd
 
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false

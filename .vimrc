@@ -17,7 +17,7 @@ set backspace=indent,eol,start  " Makes backspace key more powerful.
 set showcmd                     " Show me what I'm typing
 set showmode                    " Show current mode.
 set noswapfile                  " Don't use swapfile
-set nobackup            	    " Don't create annoying backup files
+set nobackup                    " Don't create annoying backup files
 set encoding=utf-8              " Set default encoding to UTF-8
 set autowrite                   " Automatically save before :next, :make etc.
 set autoread                    " Automatically reread changed files without asking me anything
@@ -32,8 +32,17 @@ set autoindent
 set tabstop=2 shiftwidth=2 expandtab
 set gdefault                    " Use 'g' flag by default with :s/foo/bar/.
 set magic                       " Use 'magic' patterns (extended regular expressions).
-set number                      " Set line numbers
-set colorcolumn=100              " Set max line length
+set colorcolumn=100             " Set max line length
+set clipboard=unnamed
+
+set rnu!
+set nu!
+
+augroup numbertoggle
+  autocmd!
+  autocmd BufEnter,FocusGained,InsertLeave,WinEnter * if &nu && mode() != "i" | set rnu   | endif
+  autocmd BufLeave,FocusLost,InsertEnter,WinLeave   * if &nu                  | set nornu | endif
+augroup END
 
 " Search and Replace
 nmap <Leader>s :%s//g<Left><Left>
@@ -81,10 +90,9 @@ let g:multi_cursor_quit_key='<Esc>'
 
 " Other
 set mouse=
-set list
 
 " Buffer handling
-nmap L :let &number=1-&number<CR>
+nmap <leader>L :let &number=1-&number<CR>
 nmap <leader>l :bnext<CR>
 nmap <c-h> :bprevious<CR>
 nmap <leader>bq :bp <BAR> bd #<CR>
@@ -93,7 +101,7 @@ nmap <leader>0 :set invnumber<CR>
 
 " Use <C-L> to clear the highlighting of :set hlsearch.
 if maparg('<C-L>', 'n') ==# ''
-  nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
+nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 endif
 
 
@@ -114,6 +122,18 @@ if executable('pylsp')
         \ })
 endif
 
+" Find files using Telescope command-line sugar.
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+" Using Lua functions
+nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
+nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
+nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
+nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
+
 function! s:on_lsp_buffer_enabled() abort
     setlocal omnifunc=lsp#complete
     setlocal signcolumn=yes
@@ -129,7 +149,8 @@ function! s:on_lsp_buffer_enabled() abort
     nmap <buffer> ]g <plug>(lsp-next-diagnostic)
     nmap <buffer> K <plug>(lsp-hover)
     nnoremap <buffer> <expr><c-f> lsp#scroll(+4)
-    nnoremap <buffer> <expr><c-d> lsp#scroll(-4)
+    " ugh i want to use <c-d> for scroll down 
+    " nnoremap <buffer> <expr><c-d> lsp#scroll(-4)
 
     let g:lsp_format_sync_timeout = 1000
     autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
@@ -156,6 +177,13 @@ if empty(glob(data_dir . '/autoload/plug.vim'))
   silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
+
+" coc config
+" " Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
 " Plugins here
 call plug#begin()
 Plug 'vim-airline/vim-airline'
@@ -165,11 +193,13 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'Chiel92/vim-autoformat'
 Plug 'scrooloose/nerdtree'
 Plug 'terryma/vim-multiple-cursors'
-Plug 'dracula/vim'
 Plug 'sheerun/vim-polyglot'
-" Intellisense engine
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'github/copilot.vim'
+" Plug 'nvim-lua/plenary.nvim'
+" Plug 'ThePrimeagen/harpoon'
+" Plug 'nvim-telescope/telescope.nvim'
+
 call plug#end()
 
-color dracula
-
+" require("telescope").load_extension('harpoon')

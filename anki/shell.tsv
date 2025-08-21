@@ -1,0 +1,38 @@
+How to find files by name?	find . -name "*.js"	shell find
+How to find files ignoring case?	find . -iname "readme*"	shell find
+How to run a command on each file found?	find . -type f -print0 | xargs -0 -I{} cmd {}	shell find
+How to search text recursively?	rg -n "pattern" (ripgrep)	shell rg
+How to find files by extension with fd?	fd -e js <pattern>	shell fd
+How to replace text in many files?	rg -l "old" | xargs sed -i '' -e 's/old/new/g'	shell sed
+How to use sed inline edit on macOS?	sed -i '' -e 's/old/new/' file	shell sed
+How to extract columns 1 and 3 from CSV?	cut -d, -f1,3 file.csv	shell cut
+How to reformat columns (awk)?	awk -F, '{printf "%s %s\n", $1, $3}' file.csv	shell awk
+How to sum a column (awk)?	awk '{sum+=$1} END {print sum}' file	shell awk
+How to sort by numeric value?	sort -n file	shell sort
+How to get top 10 lines?	head -n 10 file	shell core
+How to tail last 100 lines and follow?	tail -n 100 -f file	shell core
+How to count lines/words/bytes?	wc -l/-w/-c file	shell core
+How to unique and count occurrences?	sort | uniq -c | sort -nr	shell core
+How to check open ports (macOS)?	lsof -iTCP -sTCP:LISTEN -n -P	shell lsof
+How to show processes using a port?	lsof -i :3000	shell lsof
+How to kill by name?	killall -9 <name>	shell core
+How to monitor system stats?	top or htop	shell core
+How to measure command time?	time <command>	shell core
+How to capture stdout and stderr to file?	cmd >out.log 2>&1	shell core
+How to run a command even if terminal closes?	nohup cmd & disown	shell core
+How to schedule a one-off command (macOS)?	launchctl start/stop or use at (if available)	shell core
+How to create a tar.gz archive?	tar -czf out.tgz folder/	shell tar
+How to extract a tar.gz archive?	tar -xzf archive.tgz	shell tar
+How to zip/unzip?	zip -r out.zip folder/; unzip out.zip	shell zip
+How to JSON filter with jq?	cat file.json | jq '.items[] | {id, name}'	shell jq
+How to pretty print JSON?	jq '.' file.json	shell jq
+How to select multiple JSON keys?	jq '{id: .id, t: .title}'	shell jq
+How to create directories recursively?	mkdir -p a/b/c	shell core
+How to copy directory?	rsync -a src/ dst/	shell rsync
+How to show disk usage by dir?	du -sh * | sort -h	shell du
+How to show free disk space?	df -h	shell df
+How to curl with headers?	curl -H 'Authorization: Bearer TOKEN' https://api	curl
+How to POST JSON with curl?	curl -X POST -H 'Content-Type: application/json' -d '{"x":1}' https://api	curl
+How to follow redirects with curl?	curl -L https://example.com	curl
+How to test TLS certificate info?	openssl s_client -connect host:443 -servername host	ssl
+How to base64 encode/decode?	base64 <<< 'text'; base64 -d <<< 'dGV4dA=='	shell core 

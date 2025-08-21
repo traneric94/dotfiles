@@ -63,6 +63,14 @@ for src in "${!LINK_MAP[@]}"; do
   link_item "$SCRIPT_DIR/$src" "${LINK_MAP[$src]}"
 done
 
+# Also link any other top-level entries under config/ into ~/.config/
+if [ -d "$SCRIPT_DIR/config" ]; then
+  while IFS= read -r -d '' entry; do
+    base_name="$(basename "$entry")"
+    link_item "$entry" "$HOME/.config/$base_name"
+  done < <(find "$SCRIPT_DIR/config" -mindepth 1 -maxdepth 1 -print0)
+fi
+
 # Brew setup
 ensure_brew() {
   if ! command -v brew >/dev/null 2>&1; then

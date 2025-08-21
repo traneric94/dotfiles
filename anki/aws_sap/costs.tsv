@@ -1,0 +1,62 @@
+NAT Gateway (us-east-1): What are the main cost components?	~$0.045/hour per NAT GW + ~$0.045/GB data processed. Also cross-AZ data and NAT AZ design impact. Prices vary by region/date.	aws cost
+VPC data transfer: What are common charges?	Intra-AZ same ENI: $0; cross-AZ in same region: ~$0.01/GB each direction; inter-Region: ~$0.02–0.09/GB; Internet egress: from ~$0.09/GB first 10 TB/mo. Varies by region/tier.	aws cost
+ALB pricing: How are LCUs billed?	ALB ~$0.0225/hour + ~$0.008 per LCU-hour (LCU = max of new conns, active conns, processed bytes, rule evals). Regional variance applies.	aws cost
+NLB pricing: What are LCUs and fixed costs?	NLB ~$0.0225/hour + ~$0.006 per LCU-hour (flows, active connections, processed bytes, TLS). TLS termination adds cert handling costs.	aws cost
+API Gateway REST vs HTTP: Key price deltas?	REST: ~$3.50/million req; HTTP: ~$1.00/million req; WebSocket ~$1.00/million messages. Data transfer out and integration calls extra.	aws cost
+Lambda: How are requests and compute billed?	$0.20/million requests + duration: ~$0.0000166667 per GB-second (rounded to ms), plus provisioned concurrency if used. Free tier applies.	aws cost
+Step Functions Standard vs Express: Cost model?	Standard: ~$0.025 per 1,000 state transitions. Express: billed per requests + duration + memory (cheaper at high TPS). Choose based on pattern.	aws cost
+S3 storage: What are class prices?	Standard: ~$0.023/GB-mo; IA: ~$0.0125/GB-mo + retrieval; One Zone-IA: ~$0.01/GB-mo; Glacier Instant: ~$0.004/GB-mo; Deep Archive: ~$0.00099/GB-mo. Requests extra.	aws cost
+S3 requests: What are common request costs?	PUT/COPY/POST/LIST: ~$0.005/1k; GET/SELECT: ~$0.0004/1k for Standard; different for classes. Data transfer out follows egress pricing.	aws cost
+CloudFront: What drives cost?	Data transfer out to Internet by edge region tier (~$0.02–0.09/GB), HTTP/HTTPS requests (~$0.01–$0.0075 per 10k–100k), functions@edge/Lambda@Edge extra.	aws cost
+EBS gp3: How billed?	Storage ~$0.08/GB-mo; provisioned IOPS ~$0.005/prov-IOPS-mo; provisioned throughput ~$0.04/MBps-mo. Snapshots billed per GB-mo in EBS Snap.	aws cost
+EBS io2: Relative cost?	Higher price for consistent performance: storage ~$0.125/GB-mo; IOPS ~$0.065/prov-IOPS-mo (example). Use when high durability and IOPS needed.	aws cost
+EBS snapshots: Pricing?	~$0.05/GB-mo of stored snapshot data (after compression/dedup). Cross-Region copy incurs transfer + storage in target.	aws cost
+EFS: Standard vs IA costs?	Standard: ~$0.30/GB-mo; IA: ~$0.025/GB-mo + retrieval ~$0.01/GB. Lifecycle mgmt can move files to IA.	aws cost
+FSx for ONTAP: Typical components?	Per-GB storage ~$0.13/GB-mo SSD (example), throughput capacity $/MBps-mo, backups per GB-mo. Pricing varies by deployment.	aws cost
+RDS On-Demand: What factors matter?	Instance hours based on class/region, storage (GB-mo), IOPS (PIOPS), backup storage, Multi-AZ premium. Engine licensing (Oracle/SQL Server) adds cost.	aws cost
+Aurora: Key cost levers?	ACU (serverless) or instance hours (provisioned), storage ~$0.10/GB-mo, I/O ~$0.20 per 1M requests, backup ~$0.021/GB-mo. Global DB x-Region replication adds.	aws cost
+DynamoDB On-Demand: Costs?	Reads ~$1.25/million RCU; writes ~$1.25/million WCU; storage ~$0.25/GB-mo; Streams ~$0.02/million read req. Global Tables replicate costs per region.	aws cost
+DynamoDB Provisioned: What adds cost?	WCU/RCU hours (with auto scaling), storage, DAX (cache nodes hourly), backups/restore, global tables multi-region replication.	aws cost
+Kinesis Data Streams: Cost drivers?	Shard hours ~$0.015/hr, PUT payload units ~$0.014/MB, enhanced fan-out consumers ~$0.015/hr/consumer-shard plus data out. Egress follows transfer pricing.	aws cost
+Kinesis Firehose: How billed?	Per-GB ingested (~$0.029–0.035/GB), optional transformation/format conversion, VPC delivery, and data format costs; destination (e.g., S3) charges apply.	aws cost
+Athena: How priced?	~$5.00 per TB scanned (compressed/columnar reduces scan). AWS Glue Data Catalog billed separately. Result set S3 storage charged as normal.	aws cost
+Glue: ETL job pricing?	~$0.44 per DPU-hour (Glue 3.0 example). Crawlers billed per DPU-hour too. Interactive sessions and studio have separate rates.	aws cost
+OpenSearch Service: Main costs?	Instance hours (by type/size), EBS/instance storage GB-mo, snapshots, UltraWarm/Cold storage tiers cheaper per GB. AZ replication doubles infra.	aws cost
+EKS: Control plane cost?	~$0.10/hour ($72/mo) per cluster for control plane. Worker nodes billed as EC2; using Fargate adds per-vCPU/GB-hour.	aws cost
+ECS: Control plane cost?	No charge for ECS control plane. Costs are from EC2/Fargate resources, load balancers, data transfer, and ECR storage.	aws cost
+ECR: Storage and transfer?	~$0.10/GB-mo storage; data transfer out per standard egress; scanning (Basic free; Enhanced has per-scan fees in some regions).	aws cost
+Route 53: Hosted zones and queries?	Hosted zone ~$0.50/zone-mo (first 25); standard queries ~$0.40/million; health checks ~$0.50/check-mo + data transfer for checks.	aws cost
+CloudWatch: Pricing components?	Logs ingest ~$0.50/GB, logs archive ~$0.03/GB-mo, metrics $0.30/metric-mo (first free), dashboards $3 each, alarms ~$0.10/alarm-mo, traces for X-Ray billed per trace/GB.	aws cost
+GuardDuty: How priced?	Per-GB of VPC flow logs, DNS logs, CloudTrail events analyzed (e.g., ~$1.00/GB for VPC flow in us-east-1). S3 malware protection per object scanned.	aws cost
+Security Hub: Cost basis?	Per-enabled standard per account per region with per finding ingestion rates (e.g., ~$0.001 per security check). Aggregation account still billed by member usage.	aws cost
+Macie: What drives costs?	S3 inventory evaluation per object and sensitive data discovery per GB scanned (~$1/GB). Findings storage in CloudWatch/Firehose extra.	aws cost
+Inspector: How billed?	Per-agent per instance-hour for EC2/ECR/ECS scans; per-image for ECR image scans; network reachability per resource tested.	aws cost
+Global Accelerator: Pricing?	~$0.025/hour per accelerator + ~$0.015/GB data transferred out via accelerator (lower than Internet egress in some cases).	aws cost
+WAF: What costs apply?	$5.00/web ACL-mo, $1.00/rule-mo, $1.00/managed rule group-mo, request charges ~$0.60/million. Regional vs CloudFront scope differ in egress.	aws cost
+Direct Connect: Key charges?	Port-hours by speed (e.g., 1 Gbps ~$0.30/hr, 10 Gbps ~$2.25/hr), data transfer out lower than Internet egress; LAGs billed per port.	aws cost
+VPN: Cost structure?	Site-to-Site: ~$0.05/hour per tunnel + data transfer; Client VPN: ~$0.10/hour per endpoint association + $/GB data.	aws cost
+SQS: Standard vs FIFO cost?	Standard ~$0.40/million requests; FIFO ~$0.50/million requests + payload charges; long polling same. Data transfer out standard.	aws cost
+SNS: Pricing?	$0.50/million publishes; delivery to HTTP/HTTPS included; SMS/email/mobile push priced separately; FIFO topics priced differently.	aws cost
+EventBridge: Pricing?	$1.00/million events, schema registry and event bus archive/replay extra storage/requests fees.	aws cost
+Secrets Manager: What costs?	~$0.40/secret-mo + API calls; rotation via Lambda billed separately.	aws cost
+Parameter Store: Advanced tier costs?	Standard free (API limits); Advanced ~$0.05/parameter-mo + API throughput charges. Parameter policies extra.	aws cost
+KMS: Key and request pricing?	~$1.00 per key-mo (symm CMK) + API requests ($0.03/10k); multi-Region keys billed per region; HMAC/Asymmetric differ.	aws cost
+CloudHSM: Price model?	~$1.45/hour per HSM (~$1,050/mo); cluster of 2–3 for HA increases cost.	aws cost
+SageMaker: Key cost levers?	Notebook/Training/Inference instance-hours by type, EBS, processing jobs, endpoint invocations; savings via multi-model endpoints/Serverless Inference.	aws cost
+Athena vs Redshift Spectrum: Cost compare?	Athena ~$5/TB scanned; Spectrum ~$5/TB scanned plus Redshift cluster/serverless compute. Choosing compression/partitioning reduces both.	aws cost
+Redshift: What drives cost?	RA3 instance-hours (or serverless RPU-seconds), managed storage $/TB-mo, concurrency scaling credits; spectrum costs for external queries.	aws cost
+MQ (Managed brokers): Costs?	Broker instance-hours by class (active/standby), storage $/GB-mo, data transfer; higher for active/standby multi-AZ.	aws cost
+Transfer Family: SFTP/FTPS/FTP pricing?	Endpoint ~$0.30/hour + data transfer, per-hour provisioned capacity; EFS/S3 backends charged per use.	aws cost
+AppFlow: How billed?	$0.001 per record processed + data transfer; connectors to SaaS may have different pricing.	aws cost
+Glue DataBrew: Pricing?	$0.48 per node-hour for interactive sessions/jobs; storage in S3 billed separately.	aws cost
+QuickSight: What are SPICE and user costs?	Standard/Enterprise per-user pricing (Author ~$24/mo, Reader ~$5/mo typical), SPICE ~$0.25/GB-mo; capacity pricing for Q.	aws cost
+Bedrock: High-level cost model?	Per-model inference $/1k tokens (input/output) + optional knowledge base retrieval; model/region dependent.	aws cost
+CloudTrail: Pricing?	One trail per region for management events is free; data events billed per 100k events; CloudTrail Lake storage/queries billed per GB.	aws cost
+CloudFront Functions vs Lambda@Edge: Costs?	Functions: ~$0.10/million invocations; L@E: ~$0.60–$1.00/million + duration; data transfer between edge/origin also billed.	aws cost
+CodeBuild: Pricing?	Per-minute by compute type; e.g., general1.small ~$0.005/min. Artifacts storage/transfer extra.	aws cost
+CodePipeline: Pricing?	~$1.00 per active pipeline per month. CodeDeploy free; charges for underlying compute.	aws cost
+Backup: AWS Backup costs?	Per-GB protected $/GB-mo by service tier, lifecycle to cold tier cheaper; restore per-GB; cross-Region copy adds.	aws cost
+Resilience Hub: Pricing?	Per resource protected per month (e.g., ~$0.005/resource-day). Assessments/Scenarios included.	aws cost
+License Manager: Costs?	No additional charge; underlying services (EC2/AMI) billed as usual.	aws cost
+Savings Plans vs RIs: Key difference?	SP applies to usage flexibility (Compute SP across EC2/Fargate/Lambda); RIs tied to instance family/region (std/conv), capacity reservations available.	aws cost
+Spot Instances: Savings and caveats?	Up to 70–90% off On-Demand; interruptions with 2-min notice; use flexible fleets/capacity-optimized ASG.	aws cost 

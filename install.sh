@@ -47,20 +47,21 @@ link_item() {
   echo "Linked: $target_path -> $source_path"
 }
 
-# Map visible repo files/dirs to hidden targets under $HOME
-# Left side is relative to SCRIPT_DIR, right side is the absolute target
-declare -A LINK_MAP=(
-  ["zshrc"]="$HOME/.zshrc"
-  ["zprofile"]="$HOME/.zprofile"
-  ["bash_profile"]="$HOME/.bash_profile"
-  ["vimrc"]="$HOME/.vimrc"
-  ["vimrccomplete"]="$HOME/.vimrccomplete"
-  ["skhdrc"]="$HOME/.skhdrc"
-  ["config/nvim"]="$HOME/.config/nvim"
+# Map visible repo files/dirs to hidden targets under $HOME (portable without assoc arrays)
+links=(
+  "zshrc:$HOME/.zshrc"
+  "zprofile:$HOME/.zprofile"
+  "bash_profile:$HOME/.bash_profile"
+  "vimrc:$HOME/.vimrc"
+  "vimrccomplete:$HOME/.vimrccomplete"
+  "skhdrc:$HOME/.skhdrc"
+  "config/nvim:$HOME/.config/nvim"
 )
 
-for src in "${!LINK_MAP[@]}"; do
-  link_item "$SCRIPT_DIR/$src" "${LINK_MAP[$src]}"
+for item in "${links[@]}"; do
+  src_rel="${item%%:*}"
+  dst_abs="${item#*:}"
+  link_item "$SCRIPT_DIR/$src_rel" "$dst_abs"
 done
 
 # Also link any other top-level entries under config/ into ~/.config/
@@ -70,7 +71,6 @@ if [ -d "$SCRIPT_DIR/config" ]; then
     link_item "$entry" "$HOME/.config/$base_name"
   done < <(find "$SCRIPT_DIR/config" -mindepth 1 -maxdepth 1 -print0)
 fi
-
 
 # Brew setup
 ensure_brew() {

@@ -21,24 +21,6 @@ A simple, prompt-safe dotfile installer for macOS.
 - VS Code press-and-hold is disabled for both Stable and Insiders.
 - `skhd` will be restarted if installed.
 
-## Optional: Using GNU Stow
-
-GNU Stow can manage symlinks for you using a clean package layout.
-
-- Install: `brew install stow` (already included in the `Brewfile`).
-- Typical layout in this repo:
-  - Create directories like `zsh/`, `vim/`, `skhd/` containing files with their final paths relative to `$HOME` (e.g., `zsh/.zshrc`, `vim/.vimrc`).
-- Apply symlinks:
-
-```bash
-stow --target "$HOME" zsh vim skhd
-```
-
-- Helpful flags:
-  - `-n` dry run, `-v` verbose, `-R` restow (relink), `-D` delete.
-  - `--dotfiles` if you keep leading dots in filenames inside package dirs.
-
-Stow makes it easy to enable/disable groups without hand-rolling link logic.
 
 ## Undo
 

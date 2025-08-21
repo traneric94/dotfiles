@@ -13,7 +13,7 @@
 
 # Path to your oh-my-zsh installation.
 ZSH_DISABLE_COMPFIX=true
-export ZSH="/Users/erictran/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -101,7 +101,8 @@ eval $(thefuck --alias)
 function aoc() {
   touch ~/codebase/aoc/2021/day_${1}.py
   touch ~/codebase/aoc/2021/day_${1}_input.txt
-  curl -b 'session=53616c7465645f5fd14f47a45fed814749ba7a359568a7b50210c90eedc0fa76e36d358b716143ca9bb37ef98107397d' "https://adventofcode.com/2021/day/${1}/input" > ~/codebase/aoc/2021/day_${1}_input.txt
+  if [ -z "${AOC_SESSION:-}" ]; then echo "Set AOC_SESSION env var with your Advent of Code session cookie." >&2; return 1; fi
+  curl -b "session=${AOC_SESSION}" "https://adventofcode.com/2021/day/${1}/input" > "$HOME/codebase/aoc/2021/day_${1}_input.txt"
 }
 
 function test() {

@@ -1,0 +1,9 @@
+Baseline governance in AWS?	Control Tower landing zone, OUs, SCP guardrails, IAM Identity Center, logging/monitoring accounts.	aws sap governance
+Compliance at scale?	AWS Config + conformance packs, Security Hub standards, Detective controls, Audit account.	aws sap governance
+Change management?	Infrastructure as Code (CDK/CloudFormation/Terraform), change sets, approvals in CodePipeline.	aws sap governance
+Tag governance?	Tag Policies, mandatory tags via SCP/Config rules; cost allocation tags.	aws sap governance
+Policy exceptions handling?	Document risk acceptance; scoped SCP exception OUs or account-level overrides; time-bound exceptions.	aws sap governance
+Data residency enforcement?	SCPs restricting regions; resource policies requiring aws:RequestedRegion; service allowlists.	aws sap governance
+Access reviews/certification?	Periodic review of permission sets/roles; automate via IAM Access Analyzer reports and Identity Center audit.	aws sap governance
+Backup policy governance?	AWS Backup plans, vault policies, cross-Region copy, immutable vault locks.	aws sap governance
+Logging and audit trails?	Org CloudTrail with log file validation; S3 bucket/KMS controls; CloudTrail Lake for queries.	aws sap governance 

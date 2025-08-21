@@ -94,22 +94,6 @@ alias awsume=". awsume"
 #ugh so nested
 alias golang='cd ~/codebase/golang/src/github.com/crunchyroll/'
 
-# Browser links; escape question marks.
-alias eric='open -a Firefox https://wiki.tenkasu.net/display/SUGAR/On-boarding+checklist+for+Eric+Tran'
-alias sj='open -a Firefox https://jenkins-build.ellationengc.cxc-mgmt.com/view/Secure%20Apps/'
-alias j='open -a Firefox https://jenkins-build.ellationeng.cx-mgmt.com/'
-alias jb='open -a Firefox https://jira.tenkasu.net/secure/RapidBoard.jspa\?rapidView=325'
-alias sumo='open -a Firefox https://service.us2.sumologic.com/ui/'
-alias nr='open -a Firefox '
-alias nr='open -a Firefox https://data-looker.cx-prod.com/folders/home'
-alias sppadmin='open -a Firefox https://cr-admin.etp-proto0.com/spp'
-alias crproto='open -a Firefox https://cr.etp-proto0.com/'
-alias crprotosupport='open -a Firefox https://cr-support.etp-proto0.com/userdash'
-alias staging='open -a Firefox https://stage.crunchyroll.com'
-alias swagger='open -a Firefox https://docs.cx-staging.com'
-alias okrs='open -a Firefox https://docs.google.com/spreadsheets/d/1JlBa2frfsfMQ8c54IzsKKq63rqGEM-fS1-HHQpHcAoo/edit#gid=348612467'
-alias tokrs='open -a Firefox https://wiki.tenkasu.net/display/CTO/Secure+Apps+OKRs'
-alias eventdb='open -a Firefox https://us-west-2.console.aws.amazon.com/dynamodbv2/home?region=us-west-2#edit-item?table=proto0-spp-domain-event-store&itemMode=2&pk=8dac7f77-fdd9-404e-8014-52facb2baa76&sk=3&ref=%23item-explorer%3Ftable%3Dproto0-spp-domain-event-store&route=ROUTE_ITEM_EXPLORER' 
 alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
 eval $(thefuck --alias)
 
@@ -154,3 +138,9 @@ command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
 export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"
+
+# Source local, untracked overrides
+[ -f "$HOME/.chime.sh" ] && source "$HOME/.chime.sh"
+if [ -f "$HOME/.zshrc.chime" ]; then
+  source "$HOME/.zshrc.chime"
+fi

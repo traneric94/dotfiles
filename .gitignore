@@ -1,0 +1,6 @@
+# Local, machine-specific overrides (not committed)
+.chime.sh
+.zshrc.chime
+.zprofile.chime
+.bash_profile.chime
+.vimrc.chime 

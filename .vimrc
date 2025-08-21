@@ -203,3 +203,8 @@ Plug 'github/copilot.vim'
 call plug#end()
 
 " require("telescope").load_extension('harpoon')
+
+" Source local, untracked overrides
+if filereadable(expand("$HOME/.vimrc.chime"))
+  execute 'source' expand("$HOME/.vimrc.chime")
+endif

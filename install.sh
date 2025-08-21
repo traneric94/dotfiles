@@ -27,7 +27,6 @@ link_item() {
   fi
 
   if [ -L "$target_path" ]; then
-    # If it's already the correct symlink, skip
     if [ "$(readlink "$target_path")" = "$source_path" ]; then
       echo "Already linked: $target_path -> $source_path (skipping)"
       return 0
@@ -48,30 +47,23 @@ link_item() {
   echo "Linked: $target_path -> $source_path"
 }
 
-# Dotfiles to link into $HOME
-files=(
-  ".vimrc"
-  ".vimrccomplete"
-  ".zprofile"
-  ".zshrc"
-  ".skhdrc"
-  ".bash_profile"
+# Map visible repo files/dirs to hidden targets under $HOME
+# Left side is relative to SCRIPT_DIR, right side is the absolute target
+declare -A LINK_MAP=(
+  ["zshrc"]="$HOME/.zshrc"
+  ["zprofile"]="$HOME/.zprofile"
+  ["bash_profile"]="$HOME/.bash_profile"
+  ["vimrc"]="$HOME/.vimrc"
+  ["vimrccomplete"]="$HOME/.vimrccomplete"
+  ["skhdrc"]="$HOME/.skhdrc"
+  ["config/nvim"]="$HOME/.config/nvim"
 )
 
-for file in "${files[@]}"; do
-  link_item "$SCRIPT_DIR/$file" "$HOME/$file"
+for src in "${!LINK_MAP[@]}"; do
+  link_item "$SCRIPT_DIR/$src" "${LINK_MAP[$src]}"
 done
 
-# Handle items inside .config (link each entry rather than the whole directory)
-if [ -d "$SCRIPT_DIR/.config" ]; then
-  if prompt_yes_no "Link items inside .config into $HOME/.config?"; then
-    while IFS= read -r -d '' entry; do
-      rel=".config/${entry#${SCRIPT_DIR}/.config/}"
-      link_item "$SCRIPT_DIR/$rel" "$HOME/$rel"
-    done < <(find "$SCRIPT_DIR/.config" -mindepth 1 -maxdepth 1 -print0)
-  fi
-fi
-
+# Brew setup
 ensure_brew() {
   if ! command -v brew >/dev/null 2>&1; then
     echo "Homebrew not found. Please install it from https://brew.sh and re-run."
@@ -87,7 +79,6 @@ brew_setup_and_install() {
   if [ -f "$SCRIPT_DIR/Brewfile" ]; then
     brew bundle --file "$SCRIPT_DIR/Brewfile"
   else
-    # Fallback to inline lists if Brewfile is missing
     local formulae=(
       git
       node
@@ -111,7 +102,6 @@ brew_setup_and_install() {
       visual-studio-code
       postman
       spotify
-      # authy # deprecated desktop app; leave commented by default
     )
 
     for formula in "${formulae[@]}"; do
@@ -126,11 +116,9 @@ brew_setup_and_install() {
 
 brew_setup_and_install
 
-# Start/restart skhd if available
 if command -v skhd >/dev/null 2>&1; then
   brew services restart skhd || true
 fi
 
-# macOS defaults: disable press-and-hold for VS Code and Insiders
 /usr/bin/defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false || true
 /usr/bin/defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false || true

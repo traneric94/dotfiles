@@ -1,0 +1,9 @@
+# Neovim runtime and plugin caches
+plugged/
+pack/
+site/
+undo/
+swap/
+shada/
+.rplugin/
+log/ 

@@ -1,0 +1,13 @@
+# Ignore generated or installed artifacts under config packages
+**/node_modules/
+**/.cache/
+**/Cache/
+**/__pycache__/
+**/dist/
+**/build/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.next/
+**/.parcel-cache/
+**/target/
+**/.DS_Store 

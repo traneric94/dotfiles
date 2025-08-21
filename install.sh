@@ -71,6 +71,7 @@ if [ -d "$SCRIPT_DIR/config" ]; then
   done < <(find "$SCRIPT_DIR/config" -mindepth 1 -maxdepth 1 -print0)
 fi
 
+
 # Brew setup
 ensure_brew() {
   if ! command -v brew >/dev/null 2>&1; then

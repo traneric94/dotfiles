@@ -11,7 +11,6 @@ brew "awscli"
 brew "go"
 brew "1password-cli"
 brew "koekeishiya/formulae/skhd"
-brew "stow"
 brew "thefuck"
 
 cask "google-chrome"

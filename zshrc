@@ -95,7 +95,7 @@ alias awsume=". awsume"
 alias golang='cd ~/codebase/golang/src/github.com/crunchyroll/'
 
 alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
-eval $(thefuck --alias)
+command -v thefuck >/dev/null 2>&1 && eval "$(thefuck --alias)"
 
 # functions
 function aoc() {
@@ -120,23 +120,24 @@ function test() {
 # awsume --config set console.browser_command "\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" -incognito \"{url}\" --user-data-dir=/tmp/{profile} --no-first-run"
 
 
-function jt() {
-    python -mwebbrowser https://jira.tenkasu.net/browse/$(git branch | grep '*' | sed -E 's/\* draft-//;s/([a-zA-Z]+-[0-9]+).*/\1/')
-}
 source "$HOME/.config/zsh/functions"
-export PATH="/usr/local/opt/php@7.4/bin:$PATH"
-export PATH="/usr/local/opt/php@7.4/sbin:$PATH"
+# Prefer Homebrew (ARM) PHP if available; otherwise fallback to Intel path
+if [ -d "/opt/homebrew/opt/php@7.4/bin" ]; then
+  export PATH="/opt/homebrew/opt/php@7.4/bin:/opt/homebrew/opt/php@7.4/sbin:$PATH"
+elif [ -d "/usr/local/opt/php@7.4/bin" ]; then
+  export PATH="/usr/local/opt/php@7.4/bin:/usr/local/opt/php@7.4/sbin:$PATH"
+fi
 
 export PATH="/usr/sbin:$PATH"
-export PATH="/usr/local/opt/php@7.4/bin:$PATH"
 
 # Created by `pipx` on 2023-05-09 16:45:58
-export PATH="$PATH:/Users/erictran/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
 
-export PATH="${PATH}:${HOME}/.pyenv/versions/2.7.18/bin"
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+if command -v pyenv >/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
 export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
 export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"
 

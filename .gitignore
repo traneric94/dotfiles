@@ -3,4 +3,11 @@
 .zshrc.chime
 .zprofile.chime
 .bash_profile.chime
-.vimrc.chime 
+.vimrc.chime
+
+# OS/IDE/editor junk
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.tmp 

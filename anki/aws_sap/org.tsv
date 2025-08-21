@@ -1,0 +1,15 @@
+When use AWS Organizations vs single account?	Multi-account: isolation, blast radius, billing separation, SCP guardrails; single account only for trivial/sandbox.	aws sap org
+How to structure OUs for least surprise?	Top-level: Security, Infrastructure/Shared Services, Sandbox, Workloads (Prod/Non-Prod). Add Compliance/Regulated OUs when needed.	aws sap org
+What do SCPs restrict?	The maximum permissions in an account, regardless of identity policies. Attach to OUs/accounts; allow-list or deny-list models.	aws sap org
+How to block use of unapproved Regions?	Use SCP with aws:RequestedRegion condition to allow only approved Regions.	aws sap org
+How to ensure S3 public access cannot be disabled?	Use SCP to deny s3:PutAccountPublicAccessBlock = false; enforce account-level Block Public Access.	aws sap org
+How to centralize security services?	Use delegated admin for GuardDuty, Security Hub, Macie, Inspector. Aggregate findings in a Security account.	aws sap org
+What’s the account vending pattern?	Control Tower Account Factory or custom account factory via Service Catalog; baseline with guardrails and IAM Identity Center access.	aws sap org
+How to implement SSO across accounts?	IAM Identity Center (AWS SSO) with permission sets and account assignments; optionally federate with external IdP.	aws sap org
+How to share resources without peering?	Use AWS RAM for subnets, Route 53 resolver rules, licenses, KMS keys (via grants) across accounts.	aws sap org
+How to enforce tagging across org?	Use Tag Policies, Config rules, and SCPs denying untagged resource creation.	aws sap org
+How to enable org-wide auditing?	Create an org-level CloudTrail with log file validation, centralized S3/KMS, and CloudTrail Lake as needed.	aws sap org
+How to standardize baseline config?	Use AWS Config aggregators and conformance packs; Control Tower guardrails provide managed sets of controls.	aws sap org
+How to isolate workloads by environment?	Separate Prod/Non-Prod OUs and accounts; restrict Prod access; use CI/CD to promote artifacts.	aws sap org
+How to centralize DNS?	Shared services VPC hosts Route 53 Resolver inbound/outbound endpoints; share rules via RAM; use private hosted zones.	aws sap org
+How to handle break-glass access?	Create a tightly controlled emergency role excluded from certain SCP denies; monitor and alert on usage.	aws sap org 

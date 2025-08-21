@@ -1,0 +1,15 @@
+Difference between SCP, IAM policy, and permission boundary?	SCP sets org-level max permissions; IAM policy grants to principals; permission boundary caps a principal's effective permissions.	aws sap security
+How to design KMS key policies?	Minimal key policy delegating to IAM, restrict via conditions; use grants for cross-account and services; enable key rotation as needed.	aws sap security
+When use multi-Region KMS keys?	When replicating encrypted data across Regions to keep encryption consistent and enable regional decrypt.	aws sap security
+Secrets Manager vs Parameter Store?	Secrets Manager for rotation and auditing; Parameter Store for config/cheaper secrets; Advanced tier adds policies.	aws sap security
+GuardDuty/Macie/Inspector aggregation?	Enable org integration with delegated admin; centralize findings in Security Hub; forward to SIEM.	aws sap security
+S3 public access control?	Account/bucket-level Block Public Access; bucket policies deny public; monitor via Config rules.	aws sap security
+Zero trust patterns in AWS?	Use IAM auth for services, PrivateLink/VPC Lattice, CloudFront signed URLs, and resource-based policies with conditions.	aws sap security
+Certificate management?	ACM for public/private certs; ACM PCA for private hierarchy; automate renewals; enforce TLS policies.	aws sap security
+Signing and verification?	Use SigV4 for AWS APIs; KMS for signing keys (asymmetric or HMAC); Code signing for Lambda/containers.	aws sap security
+Cross-account access principle?	Prefer roles assumed from source account; limit trust policies; use external IDs for third-party access.	aws sap security
+IAM Identity Center permissions?	Permission sets map to roles per account; use least privilege and ABAC with tags if applicable.	aws sap security
+Data classification controls?	Macie for discovery; S3 Object Lock for WORM; KMS + bucket policies; DLP workflows.	aws sap security
+WAF best practices?	Managed rule groups + custom rules, rate limiting, bot control (Shield Advanced), ALB/CloudFront scope.	aws sap security
+Incident response?	Automate isolation (SG quarantine), snapshot forensic images, capture CloudTrail/X-Ray/Flow Logs; use playbooks.	aws sap security
+Boundary isolation?	Use separate accounts/VPCs; SCP denies; endpoint policies; minimize blast radius with least privilege and tagging.	aws sap security 

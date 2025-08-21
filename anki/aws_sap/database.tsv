@@ -1,0 +1,12 @@
+Aurora global database DR pattern?	Primary Region writer, secondary Regions readers; fast failover; consider write forwarding and replication lag impacts.	aws sap database
+RDS Multi-AZ options?	Single standby vs Multi-AZ DB cluster (2 readable standbys, faster failover, better reads); choose per SLA and reads.	aws sap database
+RDS Proxy benefits?	Pooling, IAM auth, faster failover; useful for serverless and spiky connections.	aws sap database
+DynamoDB design basics?	Choose partition key for even distribution; avoid hot partitions; use GSIs/LSIs for access patterns.	aws sap database
+DynamoDB consistency?	Eventually consistent by default; use strongly consistent reads when required; careful in Global Tables.	aws sap database
+DynamoDB TTL and Streams?	TTL for item expiry; Streams for change capture/event-driven patterns.	aws sap database
+DAX use case?	Microsecond cache for reads; eventual consistency; good for read-heavy low-latency apps.	aws sap database
+Purpose-built databases?	Match workload: time series (Timestream), graph (Neptune), KV/doc (DynamoDB/DocumentDB), ledger (QLDB), analytics (Redshift).	aws sap database
+Backup/restore DB strategy?	Automated backups + PITR; snapshots for long-term; cross-Region copy for DR; test restores.	aws sap database
+Encryption at rest for DBs?	Enable KMS; for cross-account, use KMS grants; replicate keys with MRKs when multi-Region.	aws sap database
+Sharding vs read replicas?	Sharding distributes writes; replicas scale reads; combine per load and consistency.	aws sap database
+Blue/green deployments for RDS?	Use Blue/Green for minimal downtime upgrades and schema changes; cutover after sync.	aws sap database 

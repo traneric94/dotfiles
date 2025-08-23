@@ -1,0 +1,168 @@
+Front,Back,Tags
+Service mesh on AWS?,AWS App Mesh for traffic shaping, mTLS, retries/timeouts across ECS/EKS/EC2 services.,aws sap containers
+Cluster autoscaling patterns?,EC2 ASG with Cluster AutoScaler (EKS); Karpenter for provisioning; Fargate for serverless pods/tasks.,aws sap containers
+Ingress choices?,ALB Ingress Controller (EKS), NLB for gRPC/TCP, Gateway API (emerging); WAF at ALB/CloudFront.,aws sap containers
+Registry and image security?,ECR with scanning/signing (Sigstore/Notation), least privilege; private links to ECR.,aws sap containers
+Secrets/config for containers?,Secrets Manager/Parameter Store with IAM task roles; Kubernetes secrets with KMS (EKS Envelope Encryption).,aws sap containers
+Multi-account/multi-VPC connectivity?,TGW hub-and-spoke, PrivateLink for service exposure, VPC Lattice for service connectivity with auth.,aws sap containers
+Logging and tracing?,Sidecars/Daemons for logs/metrics; OpenTelemetry collectors; CloudWatch/Fluent Bit integration.,aws sap containers
+Blue/green and canary?,ECS CodeDeploy blue/green; EKS service mesh or progressive delivery controllers for canary.,aws sap containers
+Cost controls?,Right-size tasks/pods, Spot/Fargate Spot, bin packing, GP2→GP3; avoid cross-AZ data transfer.,aws sap containers VPC data transfer: What are common charges?	Intra-AZ same ENI: $0; cross-AZ in same region: ~$0.01/GB each direction; inter-Region: ~$0.02–0.09/GB; Internet egress: from ~$0.09/GB first 10 TB/mo. Varies by region/tier.	aws cost
+ALB pricing: How are LCUs billed?	ALB ~$0.0225/hour + ~$0.008 per LCU-hour (LCU = max of new conns, active conns, processed bytes, rule evals). Regional variance applies.	aws cost
+NLB pricing: What are LCUs and fixed costs?	NLB ~$0.0225/hour + ~$0.006 per LCU-hour (flows, active connections, processed bytes, TLS). TLS termination adds cert handling costs.	aws cost
+API Gateway REST vs HTTP: Key price deltas?	REST: ~$3.50/million req; HTTP: ~$1.00/million req; WebSocket ~$1.00/million messages. Data transfer out and integration calls extra.	aws cost
+Lambda: How are requests and compute billed?	$0.20/million requests + duration: ~$0.0000166667 per GB-second (rounded to ms), plus provisioned concurrency if used. Free tier applies.	aws cost
+Step Functions Standard vs Express: Cost model?	Standard: ~$0.025 per 1,000 state transitions. Express: billed per requests + duration + memory (cheaper at high TPS). Choose based on pattern.	aws cost
+S3 storage: What are class prices?	Standard: ~$0.023/GB-mo; IA: ~$0.0125/GB-mo + retrieval; One Zone-IA: ~$0.01/GB-mo; Glacier Instant: ~$0.004/GB-mo; Deep Archive: ~$0.00099/GB-mo. Requests extra.	aws cost
+S3 requests: What are common request costs?	PUT/COPY/POST/LIST: ~$0.005/1k; GET/SELECT: ~$0.0004/1k for Standard; different for classes. Data transfer out follows egress pricing.	aws cost
+CloudFront: What drives cost?	Data transfer out to Internet by edge region tier (~$0.02–0.09/GB), HTTP/HTTPS requests (~$0.01–$0.0075 per 10k–100k), functions@edge/Lambda@Edge extra.	aws cost
+EBS gp3: How billed?	Storage ~$0.08/GB-mo; provisioned IOPS ~$0.005/prov-IOPS-mo; provisioned throughput ~$0.04/MBps-mo. Snapshots billed per GB-mo in EBS Snap.	aws cost
+EBS io2: Relative cost?	Higher price for consistent performance: storage ~$0.125/GB-mo; IOPS ~$0.065/prov-IOPS-mo (example). Use when high durability and IOPS needed.	aws cost
+EBS snapshots: Pricing?	~$0.05/GB-mo of stored snapshot data (after compression/dedup). Cross-Region copy incurs transfer + storage in target.	aws cost
+EFS: Standard vs IA costs?	Standard: ~$0.30/GB-mo; IA: ~$0.025/GB-mo + retrieval ~$0.01/GB. Lifecycle mgmt can move files to IA.	aws cost
+FSx for ONTAP: Typical components?	Per-GB storage ~$0.13/GB-mo SSD (example), throughput capacity $/MBps-mo, backups per GB-mo. Pricing varies by deployment.	aws cost
+RDS On-Demand: What factors matter?	Instance hours based on class/region, storage (GB-mo), IOPS (PIOPS), backup storage, Multi-AZ premium. Engine licensing (Oracle/SQL Server) adds cost.	aws cost
+Aurora: Key cost levers?	ACU (serverless) or instance hours (provisioned), storage ~$0.10/GB-mo, I/O ~$0.20 per 1M requests, backup ~$0.021/GB-mo. Global DB x-Region replication adds.	aws cost
+DynamoDB On-Demand: Costs?	Reads ~$1.25/million RCU; writes ~$1.25/million WCU; storage ~$0.25/GB-mo; Streams ~$0.02/million read req. Global Tables replicate costs per region.	aws cost
+DynamoDB Provisioned: What adds cost?	WCU/RCU hours (with auto scaling), storage, DAX (cache nodes hourly), backups/restore, global tables multi-region replication.	aws cost
+Kinesis Data Streams: Cost drivers?	Shard hours ~$0.015/hr, PUT payload units ~$0.014/MB, enhanced fan-out consumers ~$0.015/hr/consumer-shard plus data out. Egress follows transfer pricing.	aws cost
+Kinesis Firehose: How billed?	Per-GB ingested (~$0.029–0.035/GB), optional transformation/format conversion, VPC delivery, and data format costs; destination (e.g., S3) charges apply.	aws cost
+Athena: How priced?	~$5.00 per TB scanned (compressed/columnar reduces scan). AWS Glue Data Catalog billed separately. Result set S3 storage charged as normal.	aws cost
+Glue: ETL job pricing?	~$0.44 per DPU-hour (Glue 3.0 example). Crawlers billed per DPU-hour too. Interactive sessions and studio have separate rates.	aws cost
+OpenSearch Service: Main costs?	Instance hours (by type/size), EBS/instance storage GB-mo, snapshots, UltraWarm/Cold storage tiers cheaper per GB. AZ replication doubles infra.	aws cost
+EKS: Control plane cost?	~$0.10/hour ($72/mo) per cluster for control plane. Worker nodes billed as EC2; using Fargate adds per-vCPU/GB-hour.	aws cost
+ECS: Control plane cost?	No charge for ECS control plane. Costs are from EC2/Fargate resources, load balancers, data transfer, and ECR storage.	aws cost
+ECR: Storage and transfer?	~$0.10/GB-mo storage; data transfer out per standard egress; scanning (Basic free; Enhanced has per-scan fees in some regions).	aws cost
+Route 53: Hosted zones and queries?	Hosted zone ~$0.50/zone-mo (first 25); standard queries ~$0.40/million; health checks ~$0.50/check-mo + data transfer for checks.	aws cost
+CloudWatch: Pricing components?	Logs ingest ~$0.50/GB, logs archive ~$0.03/GB-mo, metrics $0.30/metric-mo (first free), dashboards $3 each, alarms ~$0.10/alarm-mo, traces for X-Ray billed per trace/GB.	aws cost
+GuardDuty: How priced?	Per-GB of VPC flow logs, DNS logs, CloudTrail events analyzed (e.g., ~$1.00/GB for VPC flow in us-east-1). S3 malware protection per object scanned.	aws cost
+Security Hub: Cost basis?	Per-enabled standard per account per region with per finding ingestion rates (e.g., ~$0.001 per security check). Aggregation account still billed by member usage.	aws cost
+Macie: What drives costs?	S3 inventory evaluation per object and sensitive data discovery per GB scanned (~$1/GB). Findings storage in CloudWatch/Firehose extra.	aws cost
+Inspector: How billed?	Per-agent per instance-hour for EC2/ECR/ECS scans; per-image for ECR image scans; network reachability per resource tested.	aws cost
+Global Accelerator: Pricing?	~$0.025/hour per accelerator + ~$0.015/GB data transferred out via accelerator (lower than Internet egress in some cases).	aws cost
+WAF: What costs apply?	$5.00/web ACL-mo, $1.00/rule-mo, $1.00/managed rule group-mo, request charges ~$0.60/million. Regional vs CloudFront scope differ in egress.	aws cost
+Direct Connect: Key charges?	Port-hours by speed (e.g., 1 Gbps ~$0.30/hr, 10 Gbps ~$2.25/hr), data transfer out lower than Internet egress; LAGs billed per port.	aws cost
+VPN: Cost structure?	Site-to-Site: ~$0.05/hour per tunnel + data transfer; Client VPN: ~$0.10/hour per endpoint association + $/GB data.	aws cost
+SQS: Standard vs FIFO cost?	Standard ~$0.40/million requests; FIFO ~$0.50/million requests + payload charges; long polling same. Data transfer out standard.	aws cost
+SNS: Pricing?	$0.50/million publishes; delivery to HTTP/HTTPS included; SMS/email/mobile push priced separately; FIFO topics priced differently.	aws cost
+EventBridge: Pricing?	$1.00/million events, schema registry and event bus archive/replay extra storage/requests fees.	aws cost
+Secrets Manager: What costs?	~$0.40/secret-mo + API calls; rotation via Lambda billed separately.	aws cost
+Parameter Store: Advanced tier costs?	Standard free (API limits); Advanced ~$0.05/parameter-mo + API throughput charges. Parameter policies extra.	aws cost
+KMS: Key and request pricing?	~$1.00 per key-mo (symm CMK) + API requests ($0.03/10k); multi-Region keys billed per region; HMAC/Asymmetric differ.	aws cost
+CloudHSM: Price model?	~$1.45/hour per HSM (~$1,050/mo); cluster of 2–3 for HA increases cost.	aws cost
+SageMaker: Key cost levers?	Notebook/Training/Inference instance-hours by type, EBS, processing jobs, endpoint invocations; savings via multi-model endpoints/Serverless Inference.	aws cost
+Athena vs Redshift Spectrum: Cost compare?	Athena ~$5/TB scanned; Spectrum ~$5/TB scanned plus Redshift cluster/serverless compute. Choosing compression/partitioning reduces both.	aws cost
+Redshift: What drives cost?	RA3 instance-hours (or serverless RPU-seconds), managed storage $/TB-mo, concurrency scaling credits; spectrum costs for external queries.	aws cost
+MQ (Managed brokers): Costs?	Broker instance-hours by class (active/standby), storage $/GB-mo, data transfer; higher for active/standby multi-AZ.	aws cost
+Transfer Family: SFTP/FTPS/FTP pricing?	Endpoint ~$0.30/hour + data transfer, per-hour provisioned capacity; EFS/S3 backends charged per use.	aws cost
+AppFlow: How billed?	$0.001 per record processed + data transfer; connectors to SaaS may have different pricing.	aws cost
+Glue DataBrew: Pricing?	$0.48 per node-hour for interactive sessions/jobs; storage in S3 billed separately.	aws cost
+QuickSight: What are SPICE and user costs?	Standard/Enterprise per-user pricing (Author ~$24/mo, Reader ~$5/mo typical), SPICE ~$0.25/GB-mo; capacity pricing for Q.	aws cost
+Bedrock: High-level cost model?	Per-model inference $/1k tokens (input/output) + optional knowledge base retrieval; model/region dependent.	aws cost
+CloudTrail: Pricing?	One trail per region for management events is free; data events billed per 100k events; CloudTrail Lake storage/queries billed per GB.	aws cost
+CloudFront Functions vs Lambda@Edge: Costs?	Functions: ~$0.10/million invocations; L@E: ~$0.60–$1.00/million + duration; data transfer between edge/origin also billed.	aws cost
+CodeBuild: Pricing?	Per-minute by compute type; e.g., general1.small ~$0.005/min. Artifacts storage/transfer extra.	aws cost
+CodePipeline: Pricing?	~$1.00 per active pipeline per month. CodeDeploy free; charges for underlying compute.	aws cost
+Backup: AWS Backup costs?	Per-GB protected $/GB-mo by service tier, lifecycle to cold tier cheaper; restore per-GB; cross-Region copy adds.	aws cost
+Resilience Hub: Pricing?	Per resource protected per month (e.g., ~$0.005/resource-day). Assessments/Scenarios included.	aws cost
+License Manager: Costs?	No additional charge; underlying services (EC2/AMI) billed as usual.	aws cost
+Savings Plans vs RIs: Key difference?	SP applies to usage flexibility (Compute SP across EC2/Fargate/Lambda); RIs tied to instance family/region (std/conv), capacity reservations available.	aws cost
+Spot Instances: Savings and caveats?	Up to 70–90% off On-Demand; interruptions with 2-min notice; use flexible fleets/capacity-optimized ASG.	aws cost RDS Multi-AZ options?	Single standby vs Multi-AZ DB cluster (2 readable standbys, faster failover, better reads); choose per SLA and reads.	aws sap database
+RDS Proxy benefits?	Pooling, IAM auth, faster failover; useful for serverless and spiky connections.	aws sap database
+DynamoDB design basics?	Choose partition key for even distribution; avoid hot partitions; use GSIs/LSIs for access patterns.	aws sap database
+DynamoDB consistency?	Eventually consistent by default; use strongly consistent reads when required; careful in Global Tables.	aws sap database
+DynamoDB TTL and Streams?	TTL for item expiry; Streams for change capture/event-driven patterns.	aws sap database
+DAX use case?	Microsecond cache for reads; eventual consistency; good for read-heavy low-latency apps.	aws sap database
+Purpose-built databases?	Match workload: time series (Timestream), graph (Neptune), KV/doc (DynamoDB/DocumentDB), ledger (QLDB), analytics (Redshift).	aws sap database
+Backup/restore DB strategy?	Automated backups + PITR; snapshots for long-term; cross-Region copy for DR; test restores.	aws sap database
+Encryption at rest for DBs?	Enable KMS; for cross-account, use KMS grants; replicate keys with MRKs when multi-Region.	aws sap database
+Sharding vs read replicas?	Sharding distributes writes; replicas scale reads; combine per load and consistency.	aws sap database
+Blue/green deployments for RDS?	Use Blue/Green for minimal downtime upgrades and schema changes; cutover after sync.	aws sap database RDS/Aurora DR?,Cross-Region read replicas or Aurora Global Database; test failover; consider write forwarding and replication lag.,aws sap dr
+Stateless app multi-Region?,Replicate state/session to global store (DynamoDB Global Tables/S3); Route 53 failover or Global Accelerator.,aws sap dr
+S3 multi-Region patterns?,CRR, Multi-Region Access Points, versioning/Object Lock; test eventual consistency impacts.,aws sap dr
+Queue/topic DR?,Cross-region SQS queues with failover producers/consumers; SNS to multiple region endpoints.,aws sap dr
+Event-driven DR?,EventBridge global endpoints with failover/health checks; archive/replay for recovery.,aws sap dr
+Testing DR regularly?,GameDays, AWS FIS fault injection, chaos experiments; automated runbooks and checkpointing.,aws sap dr
+Resilience for networking?,Redundant DX/VPN, multi-AZ NAT, TGW route table isolation; GA for front door.,aws sap dr
+RPO/RTO mapping?,Define per workload; choose storage/DB replication and app topology that meets targets; monitor adherence.,aws sap dr Compliance at scale?,AWS Config + conformance packs, Security Hub standards, Detective controls, Audit account.,aws sap governance
+Change management?,Infrastructure as Code (CDK/CloudFormation/Terraform), change sets, approvals in CodePipeline.,aws sap governance
+Tag governance?,Tag Policies, mandatory tags via SCP/Config rules; cost allocation tags.,aws sap governance
+Policy exceptions handling?,Document risk acceptance; scoped SCP exception OUs or account-level overrides; time-bound exceptions.,aws sap governance
+Data residency enforcement?,SCPs restricting regions; resource policies requiring aws:RequestedRegion; service allowlists.,aws sap governance
+Access reviews/certification?,Periodic review of permission sets/roles; automate via IAM Access Analyzer reports and Identity Center audit.,aws sap governance
+Backup policy governance?,AWS Backup plans, vault policies, cross-Region copy, immutable vault locks.,aws sap governance
+Logging and audit trails?,Org CloudTrail with log file validation; S3 bucket/KMS controls; CloudTrail Lake for queries.,aws sap governance Data migration online vs offline?,Online via DataSync, DMS (CDC); offline via Snowball/Snowmobile for PB/EB scale.,aws sap migration
+DB migration with minimal downtime?,Use DMS with CDC, pre-cutover validation, and blue/green deployment; plan rollback.,aws sap migration
+App modernization patterns?,Containers (ECS/EKS), serverless (Lambda/API GW), event-driven; strangler fig for refactor.,aws sap migration
+Network migration approach?,Transit Gateway hub-and-spoke; staged cutovers; coexistence with on-prem DNS/AD.,aws sap migration
+Identity and access migration?,Federate with existing IdP via Identity Center; gradually deprecate long-lived IAM users.,aws sap migration
+Ops readiness?,Landing zone, monitoring baselines, SRE practices; IaC pipelines; backup policies.,aws sap migration
+Cost control during migration?,Budgets/alerts, tagging for showback/chargeback, Savings Plans where steady; spot for flexible.,aws sap migration PrivateLink vs TGW?	PrivateLink exposes specific services privately via interface endpoints; TGW provides full VPC routing.	aws sap networking
+Centralized egress pattern?	Egress VPC with GWLB/NGFW; attach workload VPCs via TGW; route private subnets to same-AZ NAT to avoid cross-AZ charges.	aws sap networking
+Hybrid HA pattern DX+VPN?	Two DX ports in distinct locations with LAG + VPN backup; propagate BGP; test failover.	aws sap networking
+DNS across accounts?	Use Route 53 Resolver inbound/outbound endpoints and shared rules via RAM; split-horizon as needed.	aws sap networking
+ALB vs NLB selection?	ALB for L7 HTTP features/routing; NLB for L4 performance, static IPs, TLS pass-through or termination.	aws sap networking
+GWLB use case?	Transparent insertion of third-party firewalls/IDS across VPCs via GWLB endpoints.	aws sap networking
+VPC Lattice use case?	Service-to-service connectivity + auth/policy across VPCs/accounts without full mesh routing.	aws sap networking
+Global Accelerator vs CloudFront?	GA for TCP/UDP anycast, fast failover for apps; CloudFront for HTTP caching/CDN.	aws sap networking
+R53 routing policies?	Simple, weighted, latency, geolocation, geoproximity, failover, multivalue answer.	aws sap networking
+Multi-Region failover DNS?	Health-check based failover records or GA; replicate state to multi-Region store.	aws sap networking
+Network segmentation in AWS?	Separate VPCs per environment, security domains; use TGW route tables for segmentation; NACLs for coarse, SGs for fine-grained.	aws sap networking
+Endpoint policies best practice?	Restrict VPC endpoints to specific IAM principals and resources; use condition keys in S3/Dynamo policies.	aws sap networking
+IPv6 considerations?	Use dual-stack subnets, egress-only IGW; security groups support v6; pricing for data similar to IPv4 egress.	aws sap networking
+Scaling NLB TLS?	TLS listener with target TLS offload as needed; ensure sufficient LCU headroom; use AWS Certificate Manager.	aws sap networking Cross-account monitoring approach?,Centralized account with cross-account dashboards, metric streams/log subscriptions; org CloudTrail.,aws sap observability
+Log ingestion patterns?,Firehose to S3/OpenSearch; Logs subscriptions to Lambda/Firehose; partition by account/region/app/date.,aws sap observability
+Tracing in AWS?,AWS X-Ray or OpenTelemetry to vendor/ADOT; instrument Lambda/containers; sample appropriately.,aws sap observability
+Alarm design?,Use composite alarms, anomaly detection, metric math; suppress flapping via evaluation periods.,aws sap observability
+Synthetic monitoring?,Canaries for API journeys; alarms for availability/perf; integrate with Incident Manager.,aws sap observability
+OpenSearch vs managed SIEM?,OpenSearch for self-managed log analytics; consider cost/scale; integrate with Security Hub for findings.,aws sap observability
+Cost-aware logging?,Filter at source; use infrequent access/archive tiers; lifecycle to S3 Glacier; avoid duplicate ingestion.,aws sap observability
+Health dashboards?,Aggregate SLO/SLA metrics, error budgets, RTO/RPO monitors; show multi-Region cutover readiness.,aws sap observability
+Incident response integration?,EventBridge rules to Incident Manager/ChatOps; runbooks via Systems Manager Automation.,aws sap observability How to structure OUs for least surprise?	Top-level: Security, Infrastructure/Shared Services, Sandbox, Workloads (Prod/Non-Prod). Add Compliance/Regulated OUs when needed.	aws sap org
+What do SCPs restrict?	The maximum permissions in an account, regardless of identity policies. Attach to OUs/accounts; allow-list or deny-list models.	aws sap org
+How to block use of unapproved Regions?	Use SCP with aws:RequestedRegion condition to allow only approved Regions.	aws sap org
+How to ensure S3 public access cannot be disabled?	Use SCP to deny s3:PutAccountPublicAccessBlock = false; enforce account-level Block Public Access.	aws sap org
+How to centralize security services?	Use delegated admin for GuardDuty, Security Hub, Macie, Inspector. Aggregate findings in a Security account.	aws sap org
+What’s the account vending pattern?	Control Tower Account Factory or custom account factory via Service Catalog; baseline with guardrails and IAM Identity Center access.	aws sap org
+How to implement SSO across accounts?	IAM Identity Center (AWS SSO) with permission sets and account assignments; optionally federate with external IdP.	aws sap org
+How to share resources without peering?	Use AWS RAM for subnets, Route 53 resolver rules, licenses, KMS keys (via grants) across accounts.	aws sap org
+How to enforce tagging across org?	Use Tag Policies, Config rules, and SCPs denying untagged resource creation.	aws sap org
+How to enable org-wide auditing?	Create an org-level CloudTrail with log file validation, centralized S3/KMS, and CloudTrail Lake as needed.	aws sap org
+How to standardize baseline config?	Use AWS Config aggregators and conformance packs; Control Tower guardrails provide managed sets of controls.	aws sap org
+How to isolate workloads by environment?	Separate Prod/Non-Prod OUs and accounts; restrict Prod access; use CI/CD to promote artifacts.	aws sap org
+How to centralize DNS?	Shared services VPC hosts Route 53 Resolver inbound/outbound endpoints; share rules via RAM; use private hosted zones.	aws sap org
+How to handle break-glass access?	Create a tightly controlled emergency role excluded from certain SCP denies; monitor and alert on usage.	aws sap org How to design KMS key policies?	Minimal key policy delegating to IAM, restrict via conditions; use grants for cross-account and services; enable key rotation as needed.	aws sap security
+When use multi-Region KMS keys?	When replicating encrypted data across Regions to keep encryption consistent and enable regional decrypt.	aws sap security
+Secrets Manager vs Parameter Store?	Secrets Manager for rotation and auditing; Parameter Store for config/cheaper secrets; Advanced tier adds policies.	aws sap security
+GuardDuty/Macie/Inspector aggregation?	Enable org integration with delegated admin; centralize findings in Security Hub; forward to SIEM.	aws sap security
+S3 public access control?	Account/bucket-level Block Public Access; bucket policies deny public; monitor via Config rules.	aws sap security
+Zero trust patterns in AWS?	Use IAM auth for services, PrivateLink/VPC Lattice, CloudFront signed URLs, and resource-based policies with conditions.	aws sap security
+Certificate management?	ACM for public/private certs; ACM PCA for private hierarchy; automate renewals; enforce TLS policies.	aws sap security
+Signing and verification?	Use SigV4 for AWS APIs; KMS for signing keys (asymmetric or HMAC); Code signing for Lambda/containers.	aws sap security
+Cross-account access principle?	Prefer roles assumed from source account; limit trust policies; use external IDs for third-party access.	aws sap security
+IAM Identity Center permissions?	Permission sets map to roles per account; use least privilege and ABAC with tags if applicable.	aws sap security
+Data classification controls?	Macie for discovery; S3 Object Lock for WORM; KMS + bucket policies; DLP workflows.	aws sap security
+WAF best practices?	Managed rule groups + custom rules, rate limiting, bot control (Shield Advanced), ALB/CloudFront scope.	aws sap security
+Incident response?	Automate isolation (SG quarantine), snapshot forensic images, capture CloudTrail/X-Ray/Flow Logs; use playbooks.	aws sap security
+Boundary isolation?	Use separate accounts/VPCs; SCP denies; endpoint policies; minimize blast radius with least privilege and tagging.	aws sap security Private API Gateway access?,Use private APIs with interface VPC endpoints and resource policies; share across accounts via NLB/VPC endpoint.,aws sap serverless
+Lambda cold start mitigations?,Provisioned concurrency or SnapStart (Java); smaller packages; keep warm patterns; reuse connections.,aws sap serverless
+Idempotency patterns?,Idempotency keys, DynamoDB conditional writes, SQS FIFO, Step Functions retries with backoff and jitter.,aws sap serverless
+SQS: Standard vs FIFO tradeoffs?,Standard is at-least-once/high throughput; FIFO preserves order/exactly-once with throughput limits.,aws sap serverless
+SNS vs EventBridge?,SNS for pub/sub fanout; EventBridge for routing/filters, SaaS/app buses, archives and replays.,aws sap serverless
+Event-driven chaining patterns?,SNS→SQS for fanout buffering; EventBridge rules per target; Step Functions for orchestration and retries.,aws sap serverless
+Step Functions: Standard vs Express?,Standard for long-running, exactly-once workflow semantics; Express for high-TPS, short-lived, at-least-once.,aws sap serverless
+Integrations with VPC resources?,Lambda in VPC with subnets/SG; use VPC endpoints for AWS services; NAT for Internet egress; keep ENI reuse.,aws sap serverless
+API auth options?,Cognito authorizers/JWT; Lambda authorizers; IAM auth for internal; custom headers/tokens for legacy.,aws sap serverless
+DLQs and retries best practices?,Set per-integration retries, DLQs (SQS/SNS), and alarms; use redrive policies to reprocess failures.,aws sap serverless
+Throttling and backpressure?,Use reserved concurrency, SQS visibility timeouts, batch sizes, and Step Functions concurrency controls.,aws sap serverless S3 Object Lock use cases?	Compliance WORM, legal holds; governance vs compliance mode; combine with versioning and replication.	aws sap storage
+CRR/SRR caveats?	Replicate ACLs, tags, metadata; KMS grants needed; replication time control (RTC) for SLA; delete marker replication optional.	aws sap storage
+S3 Multi-Region Access Points?	Improve cross-Region availability/performance with traffic rules; requires replicated buckets.	aws sap storage
+EBS gp3 vs io2?	gp3 for general with provisionable IOPS/throughput; io2/io2 Block Express for high/performance and durability.	aws sap storage
+EBS Multi-Attach?	For clustered Linux apps; app-level coordination required; not for all volume types.	aws sap storage
+EFS performance modes?	General Purpose vs Max I/O; throughput modes: bursting, provisioned; use IA tier with lifecycle for cost.	aws sap storage
+FSx ONTAP vs FSx Windows vs FSx Lustre?	ONTAP for enterprise NAS features; Windows for SMB with AD; Lustre for HPC linked to S3.	aws sap storage
+Backup/restore strategies?	AWS Backup across services, cross-Region copies; RPO/RTO drive choice; test restores.	aws sap storage
+S3 access patterns and partitioning?	Randomized prefixes no longer required; S3 auto-scales; use Inventory and S3 Select for efficiency.	aws sap storage
+Glacier retrieval tiers?	Expedited, Standard, Bulk; minutes to hours; Instant retrieval class for millisecond archive access.	aws sap storage
+Data consistency in S3?	Strong read-after-write for PUTs and DELETEs of objects in S3 across Regions.	aws sap storage
+Cross-account S3 access?	Use bucket policies with aws:PrincipalOrgID, VPC endpoint policies, and KMS grants for encryption.	aws sap storage 

@@ -1,0 +1,24 @@
+What does . match?,Any character except newline (usually),regex basic
+What does \d match?,A digit [0-9],regex basic
+What does \w match?,Word char [A-Za-z0-9_],regex basic
+What does \s match?,Whitespace (space, tab, etc.),regex basic
+What do +, *, ? mean?,+ one or more, * zero or more, ? zero or one,regex basic
+What does {m,n} mean?,Between m and n repetitions (inclusive),regex basic
+What do ^ and $ anchor?,Start and end of line,regex basic
+How to capture a group?,( ... ) captures; numbered as \1, \2, ...,regex group
+How to make a non-capturing group?,(?: ... ),regex group
+How to use alternation?,foo|bar matches foo or bar,regex alt
+How to use lookahead?,foo(?=bar) positive; foo(?!bar) negative,regex look
+How to use lookbehind?,(?<=foo)bar positive; (?<!foo)bar negative,regex look
+How to make lazy quantifier?,+? *? ?? are lazy (fewest),regex quant
+How to match word boundary?,\b boundary, \B non-boundary,regex anchor
+How to escape a literal dot?,\.,regex escape
+How to match literal backslash?,\\,regex escape
+How to use named groups?,(?P<name>...) Python; (?<name>...) PCRE,regex group
+How to reference a named group?,(?P=name) Python; \k<name> PCRE,regex group
+How to enable multiline mode?,(?m) makes ^ and $ match start/end of lines,regex flag
+How to enable case-insensitive?,(?i) for case-insensitive,regex flag
+How to enable dotall?,(?s) makes . match newline,regex flag
+How to atomic group?,(?>...) prevents backtracking inside group,regex perf
+How to possessive quantifier?,++ *+ ?+ increase greediness, no backtracking,regex perf
+How to conditional subpattern?,(?(id/name)yes|no),regex advanced 

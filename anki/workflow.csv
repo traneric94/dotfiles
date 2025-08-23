@@ -1,0 +1,181 @@
+Front,Back,Tags
+How to find files ignoring case?,find . -iname "readme*",shell find
+How to run a command on each file found?,find . -type f -print0 | xargs -0 -I{} cmd {},shell find
+How to search text recursively?,rg -n "pattern" (ripgrep),shell rg
+How to find files by extension with fd?,fd -e js <pattern>,shell fd
+How to replace text in many files?,rg -l "old" | xargs sed -i '' -e 's/old/new/g',shell sed
+How to use sed inline edit on macOS?,sed -i '' -e 's/old/new/' file,shell sed
+How to extract columns 1 and 3 from CSV?,cut -d, -f1,3 file.csv,shell cut
+How to reformat columns (awk)?,awk -F, '{printf "%s %s\n", $1, $3}' file.csv,shell awk
+How to sum a column (awk)?,awk '{sum+=$1} END {print sum}' file,shell awk
+How to sort by numeric value?,sort -n file,shell sort
+How to get top 10 lines?,head -n 10 file,shell core
+How to tail last 100 lines and follow?,tail -n 100 -f file,shell core
+How to count lines/words/bytes?,wc -l/-w/-c file,shell core
+How to unique and count occurrences?,sort | uniq -c | sort -nr,shell core
+How to check open ports (macOS)?,lsof -iTCP -sTCP:LISTEN -n -P,shell lsof
+How to show processes using a port?,lsof -i :3000,shell lsof
+How to kill by name?,killall -9 <name>,shell core
+How to monitor system stats?,top or htop,shell core
+How to measure command time?,time <command>,shell core
+How to capture stdout and stderr to file?,cmd >out.log 2>&1,shell core
+How to run a command even if terminal closes?,nohup cmd & disown,shell core
+How to schedule a one-off command (macOS)?,launchctl start/stop or use at (if available),shell core
+How to create a tar.gz archive?,tar -czf out.tgz folder/,shell tar
+How to extract a tar.gz archive?,tar -xzf archive.tgz,shell tar
+How to zip/unzip?,zip -r out.zip folder/; unzip out.zip,shell zip
+How to JSON filter with jq?,cat file.json | jq '.items[] | {id, name}',shell jq
+How to pretty print JSON?,jq '.' file.json,shell jq
+How to select multiple JSON keys?,jq '{id: .id, t: .title}',shell jq
+How to create directories recursively?,mkdir -p a/b/c,shell core
+How to copy directory?,rsync -a src/ dst/,shell rsync
+How to show disk usage by dir?,du -sh * | sort -h,shell du
+How to show free disk space?,df -h,shell df
+How to curl with headers?,curl -H 'Authorization: Bearer TOKEN' https://api,curl
+How to POST JSON with curl?,curl -X POST -H 'Content-Type: application/json' -d '{"x":1}' https://api,curl
+How to follow redirects with curl?,curl -L https://example.com,curl
+How to test TLS certificate info?,openssl s_client -connect host:443 -servername host,ssl
+How to base64 encode/decode?,base64 <<< 'text'; base64 -d <<< 'dGV4dA==',shell core How to pass null-delimited paths safely to xargs?,find . -type f -print0 | xargs -0 cmd,shell xargs
+What does set -euo pipefail do?,-e exit on error; -u error on unset vars; -o pipefail fails on any pipeline error,shell bash
+How to default a var if unset/empty?,${var:-default},shell bash
+How to require a var or fail?,${var:?message},shell bash
+How to trim suffix/prefix with parameter expansion?,${var%pattern} (shortest suffix), ${var%%pattern} (longest); ${var#pattern}, ${var##pattern},shell bash
+How to replace substring in var?,${var/foo/bar} (first); ${var//foo/bar} (all),shell bash
+How to get string length?,${#var},shell bash
+How to slice substring?,${var:offset:length},shell bash
+How to enable recursive glob (**) in bash?,shopt -s globstar; then use **,shell bash
+How to avoid no-match expanding to literal pattern?,shopt -s nullglob (or failglob),shell bash
+How to process substitution?,cmd1 <(producer) >(consumer),shell bash
+How to compare strings in [[ ]]?,[[ $a == $b ]] and [[ $a =~ regex ]] (no word-splitting),shell bash
+How to create arrays and iterate?,arr=(a b c); for x in "${arr[@]}"; do ...; done,shell bash
+Difference between "$*" and "$@"?,"$*" joins args as one word; "$@" preserves words (use in loops),shell bash
+How to read lines safely?,while IFS= read -r line; do ...; done < file,shell core
+How to here-doc without variable expansion?,cat <<'EOF' ... EOF,shell core
+How to here-string?,cmd <<< "$data",shell core
+How to run a subshell vs current shell?,( cmds ) runs in subshell; { cmds; } runs in current shell,shell bash
+How to trap signals?,trap 'handler' INT TERM EXIT,shell bash
+How to background and disown?,cmd & disown,shell jobs
+How to check exit status of last command?,$? holds status; or use `set -e` + `||` handlers,shell core
+How to time pipelines accurately?,/usr/bin/time -f '%E %C' bash -lc 'pipeline',shell perf
+How to parallelize commands?,printf '%s\n' a b c | xargs -n1 -P4 cmd,shell perf
+How to split/join columns?,paste, join, and cut combine columns; join needs sorted inputs,shell core
+How to compare sorted files?,comm -12 a b (intersection), comm -23 a b (only in a),shell core
+How to generate sequences?,seq 1 2 10 -> 1 3 5 7 9,shell core
+How to colorize grep output?,grep --color=auto pattern file,shell core
+How to only print matched part?,grep -o 'pat' file,shell core
+How to find large files?,find . -type f -size +100M -print,shell find
+How to find recently modified files?,find . -type f -mtime -1 -print,shell find
+How to check command location and type?,type cmd; command -v cmd,shell core
+How to ensure a variable is exported for children?,export VAR=value,shell core
+How to see which branch tracks what?,git branch -vv,git core
+How to add interactively (hunks)?,git add -p,git staging
+How to unstage a file?,git restore --staged <path>,git staging
+How to discard local changes in a file?,git restore <path>,git staging
+How to create a new branch?,git switch -c <branch> (or: git checkout -b <branch>),git branch
+How to switch branches?,git switch <branch> (or: git checkout <branch>),git branch
+How to track a remote branch?,git switch -t origin/<branch>,git branch
+How to set upstream for current branch?,git push -u origin HEAD,git remote
+How to rename current branch?,git branch -m <new-name>,git branch
+How to fetch all remotes and prune?,git fetch --all --prune,git remote
+How to see the log graph?,git log --oneline --graph --decorate --all,git log
+How to see a file’s history?,git log -- <path>,git log
+How to blame a file?,git blame <path>,git inspect
+How to show which commit introduced a line?,git log -L <start,end>:<path>,git inspect
+How to show staged vs HEAD diff?,git diff --cached,git diff
+How to show working tree vs HEAD diff?,git diff,git diff
+How to amend the last commit message?,git commit --amend,git commit
+How to amend without changing message?,git commit --amend --no-edit,git commit
+How to drop the last commit but keep changes?,git reset --soft HEAD~1,git reset
+How to drop the last commit and changes?,git reset --hard HEAD~1,git reset
+How to move HEAD but keep index/worktree?,git reset --mixed <rev> (default),git reset
+How to revert a commit (new commit)?,git revert <sha>,git revert
+How to make a fixup commit against <sha>?,git commit --fixup <sha>,git rebase
+How to autosquash fixups in rebase?,git rebase -i --autosquash <upstream>,git rebase
+How to reword a commit in interactive rebase?,In todo list, mark it as reword (r),git rebase
+How to squash multiple commits?,In rebase todo, mark them as squash (s),git rebase
+How to continue/abort an in-progress rebase?,git rebase --continue / --abort,git rebase
+How to cherry-pick a commit?,git cherry-pick <sha>,git cherry-pick
+How to skip a failing cherry-pick?,git cherry-pick --skip,git cherry-pick
+How to stash changes?,git stash push -m "msg" (or: git stash),git stash
+How to list stashes?,git stash list,git stash
+How to apply/pop a stash?,git stash apply [stash] / git stash pop [stash],git stash
+How to drop a stash?,git stash drop [stash],git stash
+How to see reflog of HEAD?,git reflog,git safety
+How to recover a lost branch/commit?,Find it in git reflog, then git switch -c <new> <sha>,git safety
+How to bisect a regression?,git bisect start BAD GOOD; mark bad/good until found,git bisect
+How to list files changed between two refs?,git diff --name-only <ref1>..<ref2>,git diff
+How to clean untracked files/dirs?,git clean -fd (careful!),git clean
+How to add only part of a file?,git add -p or git add --patch <path>,git staging
+How to sign a commit with GPG/SSH?,git commit -S (configure user.signingkey & gpg/ssh),git signing
+How to configure a per-repo author?,git config user.name/email in repo,git config
+How to use sparse checkout?,git sparse-checkout init; git sparse-checkout set <dirs>,git advanced
+How to submodule add/update?,git submodule add <repo> <path>; git submodule update --init --recursive,git submodule How to list sessions?,tmux ls,tmux core
+How to attach to a session?,tmux attach -t name (or tmux a),tmux core
+How to detach from session?,Prefix (Ctrl-b) then d,tmux core
+How to rename session?,Prefix $ (or: tmux rename-session -t old new),tmux core
+How to create a new window?,Prefix c,tmux window
+How to list windows?,Prefix w,tmux window
+How to next/prev window?,Prefix n / p,tmux window
+How to rename a window?,Prefix ,,tmux window
+How to split horizontally?,Prefix ",tmux pane
+How to split vertically?,Prefix %,tmux pane
+How to navigate panes?,Prefix Arrow keys (or h/j/k/l with bindings),tmux pane
+How to resize panes?,Prefix : resize-pane -L/R/U/D 5 (or bind keys),tmux pane
+How to swap panes?,Prefix { and },tmux pane
+How to kill pane?,Prefix x,tmux pane
+How to synchronize panes?,Prefix : setw synchronize-panes on/off,tmux pane
+How to show pane numbers?,Prefix q,tmux pane
+How to move pane to its own window?,Prefix !,tmux pane
+How to copy mode?,Prefix [ then navigate; Space to start selection; Enter to copy,tmux copy
+How to paste buffer?,Prefix ],tmux copy
+How to list buffers?,Prefix : list-buffers,tmux copy
+How to save buffer to file?,Prefix : save-buffer file.txt,tmux copy
+How to set default shell?,set -g default-shell /bin/zsh (in tmux.conf),tmux config
+How to set mouse mode?,set -g mouse on,tmux config
+How to reload config?,Prefix : source-file ~/.tmux.conf,tmux config
+How to kill server?,tmux kill-server (kills all sessions),tmux core ripgrep: ignore .gitignore?,rg -uu to ignore; default respects .gitignore,cli rg
+ripgrep: only match filenames,rg -l "pattern",cli rg
+ripgrep: context lines before/after,rg -C3 (or -A after, -B before),cli rg
+ripgrep: fixed string (no regex),rg -F "literal",cli rg
+fd: find files by pattern,fd <pattern>,cli fd
+fd: limit by extension,fd -e ts -e tsx component,cli fd
+fd: search hidden files too,fd -H <pattern>,cli fd
+jq: pretty print JSON,jq '.' file.json,cli jq
+jq: select fields from objects,jq '.items[] | {id, name}',cli jq
+jq: filter by condition,jq '.[] | select(.active == true)',cli jq
+jq: read from stdin and compact,cat file.json | jq -c '.items[]',cli jq
+curl: GET with headers,curl -H 'Accept: application/json' https://api,cli curl
+curl: POST JSON,curl -X POST -H 'Content-Type: application/json' -d '{"x":1}' https://api,cli curl
+curl: save response to file,curl -o out.json https://api,cli curl
+curl: show only response code,curl -s -o /dev/null -w '%{http_code}\n' URL,cli curl .PHONY: clean build,make phony
+How to set a default target?,First target in file is default (often 'all'),make core
+How to declare variables?,FOO=bar (recursive) or FOO:=bar (simple),make var
+Difference between = and :=?,= is recursively expanded; := is expanded immediately,make var
+How to append to a variable?,FOO += more,make var
+How to reference a variable?,$(FOO) or ${FOO},make var
+How to pass vars from CLI?,make FOO=bar (overrides),make var
+How to use shell command substitution?,FOO := $(shell date +%s),make shell
+How to run a command and ignore errors?,-prefix with - (e.g., -rm -rf build),make cmd
+How to echo commands being run?,make VERBOSE=1 or remove leading @ from recipe lines,make cmd
+How to quiet a command?,Prefix with @ to avoid echoing the command,make cmd
+How to create directories safely?,mkdir -p $(dir $@),make recipe
+What do $@, $<, $^ mean?,$@ target, $< first prereq, $^ all prereqs,make auto
+How to write a pattern rule?,%.o: %.c\n\t$(CC) -c $< -o $@,make pattern
+How to use static pattern rules?
+objects = foo.o bar.o\n$(objects): %.o: %.c\n\t$(CC) -c $< -o $@,make pattern
+How to define target-specific variables?,prog: CFLAGS+=-O3 (applies only to prog),make var
+How to conditionally include a file?,-include .env (ignored if missing),make include
+How to include multiple files?,include a.mk b.mk (errors if missing),make include
+How to write conditional logic?
+ifeq ($(OS),Darwin)\n  CC=clang\nelse\n  CC=gcc\nendif,make cond
+How to foreach over a list?,$(foreach f,$(FILES),$(info $$f)),make func
+How to map/filter with functions?,$(patsubst %.c,%.o,$(SOURCES)) replaces .c with .o,make func
+How to wildcard files?,$(wildcard src/*.c),make func
+How to compute file list relative to a dir?,SOURCES := $(shell find src -name '*.c'),make shell
+How to detect OS in Makefile?,UNAME_S := $(shell uname -s),make shell
+How to use environment defaults with override?,FOO ?= default,make var
+How to export variables to recipes?,export FOO (then visible inside recipe shells),make var
+How to run multiple commands in one recipe line?,Use ; or backslashes to continue lines; each line runs in its own shell unless joined with \\ or set -e
+make recipe
+How to keep a target even if recipe fails mid-way?,Use .DELETE_ON_ERROR to delete targets on errors (omit to keep),make core
+How to print a colored message?,@printf '\033[0;32m%s\033[0m\n' "Done",make cmd 

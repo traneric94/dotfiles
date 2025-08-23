@@ -1,0 +1,33 @@
+How to define a phony target?
+.PHONY: clean build,make phony
+How to set a default target?,First target in file is default (often 'all'),make core
+How to declare variables?,FOO=bar (recursive) or FOO:=bar (simple),make var
+Difference between = and :=?,= is recursively expanded; := is expanded immediately,make var
+How to append to a variable?,FOO += more,make var
+How to reference a variable?,$(FOO) or ${FOO},make var
+How to pass vars from CLI?,make FOO=bar (overrides),make var
+How to use shell command substitution?,FOO := $(shell date +%s),make shell
+How to run a command and ignore errors?,-prefix with - (e.g., -rm -rf build),make cmd
+How to echo commands being run?,make VERBOSE=1 or remove leading @ from recipe lines,make cmd
+How to quiet a command?,Prefix with @ to avoid echoing the command,make cmd
+How to create directories safely?,mkdir -p $(dir $@),make recipe
+What do $@, $<, $^ mean?,$@ target, $< first prereq, $^ all prereqs,make auto
+How to write a pattern rule?,%.o: %.c\n\t$(CC) -c $< -o $@,make pattern
+How to use static pattern rules?
+objects = foo.o bar.o\n$(objects): %.o: %.c\n\t$(CC) -c $< -o $@,make pattern
+How to define target-specific variables?,prog: CFLAGS+=-O3 (applies only to prog),make var
+How to conditionally include a file?,-include .env (ignored if missing),make include
+How to include multiple files?,include a.mk b.mk (errors if missing),make include
+How to write conditional logic?
+ifeq ($(OS),Darwin)\n  CC=clang\nelse\n  CC=gcc\nendif,make cond
+How to foreach over a list?,$(foreach f,$(FILES),$(info $$f)),make func
+How to map/filter with functions?,$(patsubst %.c,%.o,$(SOURCES)) replaces .c with .o,make func
+How to wildcard files?,$(wildcard src/*.c),make func
+How to compute file list relative to a dir?,SOURCES := $(shell find src -name '*.c'),make shell
+How to detect OS in Makefile?,UNAME_S := $(shell uname -s),make shell
+How to use environment defaults with override?,FOO ?= default,make var
+How to export variables to recipes?,export FOO (then visible inside recipe shells),make var
+How to run multiple commands in one recipe line?,Use ; or backslashes to continue lines; each line runs in its own shell unless joined with \\ or set -e
+make recipe
+How to keep a target even if recipe fails mid-way?,Use .DELETE_ON_ERROR to delete targets on errors (omit to keep),make core
+How to print a colored message?,@printf '\033[0;32m%s\033[0m\n' "Done",make cmd 

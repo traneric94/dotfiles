@@ -1,0 +1,44 @@
+How to view concise status?,git status -sb,git core
+How to see which branch tracks what?,git branch -vv,git core
+How to add interactively (hunks)?,git add -p,git staging
+How to unstage a file?,git restore --staged <path>,git staging
+How to discard local changes in a file?,git restore <path>,git staging
+How to create a new branch?,git switch -c <branch> (or: git checkout -b <branch>),git branch
+How to switch branches?,git switch <branch> (or: git checkout <branch>),git branch
+How to track a remote branch?,git switch -t origin/<branch>,git branch
+How to set upstream for current branch?,git push -u origin HEAD,git remote
+How to rename current branch?,git branch -m <new-name>,git branch
+How to fetch all remotes and prune?,git fetch --all --prune,git remote
+How to see the log graph?,git log --oneline --graph --decorate --all,git log
+How to see a file’s history?,git log -- <path>,git log
+How to blame a file?,git blame <path>,git inspect
+How to show which commit introduced a line?,git log -L <start,end>:<path>,git inspect
+How to show staged vs HEAD diff?,git diff --cached,git diff
+How to show working tree vs HEAD diff?,git diff,git diff
+How to amend the last commit message?,git commit --amend,git commit
+How to amend without changing message?,git commit --amend --no-edit,git commit
+How to drop the last commit but keep changes?,git reset --soft HEAD~1,git reset
+How to drop the last commit and changes?,git reset --hard HEAD~1,git reset
+How to move HEAD but keep index/worktree?,git reset --mixed <rev> (default),git reset
+How to revert a commit (new commit)?,git revert <sha>,git revert
+How to make a fixup commit against <sha>?,git commit --fixup <sha>,git rebase
+How to autosquash fixups in rebase?,git rebase -i --autosquash <upstream>,git rebase
+How to reword a commit in interactive rebase?,In todo list, mark it as reword (r),git rebase
+How to squash multiple commits?,In rebase todo, mark them as squash (s),git rebase
+How to continue/abort an in-progress rebase?,git rebase --continue / --abort,git rebase
+How to cherry-pick a commit?,git cherry-pick <sha>,git cherry-pick
+How to skip a failing cherry-pick?,git cherry-pick --skip,git cherry-pick
+How to stash changes?,git stash push -m "msg" (or: git stash),git stash
+How to list stashes?,git stash list,git stash
+How to apply/pop a stash?,git stash apply [stash] / git stash pop [stash],git stash
+How to drop a stash?,git stash drop [stash],git stash
+How to see reflog of HEAD?,git reflog,git safety
+How to recover a lost branch/commit?,Find it in git reflog, then git switch -c <new> <sha>,git safety
+How to bisect a regression?,git bisect start BAD GOOD; mark bad/good until found,git bisect
+How to list files changed between two refs?,git diff --name-only <ref1>..<ref2>,git diff
+How to clean untracked files/dirs?,git clean -fd (careful!),git clean
+How to add only part of a file?,git add -p or git add --patch <path>,git staging
+How to sign a commit with GPG/SSH?,git commit -S (configure user.signingkey & gpg/ssh),git signing
+How to configure a per-repo author?,git config user.name/email in repo,git config
+How to use sparse checkout?,git sparse-checkout init; git sparse-checkout set <dirs>,git advanced
+How to submodule add/update?,git submodule add <repo> <path>; git submodule update --init --recursive,git submodule 

@@ -1,0 +1,26 @@
+How to start a new session?,tmux new -s name,tmux core
+How to list sessions?,tmux ls,tmux core
+How to attach to a session?,tmux attach -t name (or tmux a),tmux core
+How to detach from session?,Prefix (Ctrl-b) then d,tmux core
+How to rename session?,Prefix $ (or: tmux rename-session -t old new),tmux core
+How to create a new window?,Prefix c,tmux window
+How to list windows?,Prefix w,tmux window
+How to next/prev window?,Prefix n / p,tmux window
+How to rename a window?,Prefix ,,tmux window
+How to split horizontally?,Prefix ",tmux pane
+How to split vertically?,Prefix %,tmux pane
+How to navigate panes?,Prefix Arrow keys (or h/j/k/l with bindings),tmux pane
+How to resize panes?,Prefix : resize-pane -L/R/U/D 5 (or bind keys),tmux pane
+How to swap panes?,Prefix { and },tmux pane
+How to kill pane?,Prefix x,tmux pane
+How to synchronize panes?,Prefix : setw synchronize-panes on/off,tmux pane
+How to show pane numbers?,Prefix q,tmux pane
+How to move pane to its own window?,Prefix !,tmux pane
+How to copy mode?,Prefix [ then navigate; Space to start selection; Enter to copy,tmux copy
+How to paste buffer?,Prefix ],tmux copy
+How to list buffers?,Prefix : list-buffers,tmux copy
+How to save buffer to file?,Prefix : save-buffer file.txt,tmux copy
+How to set default shell?,set -g default-shell /bin/zsh (in tmux.conf),tmux config
+How to set mouse mode?,set -g mouse on,tmux config
+How to reload config?,Prefix : source-file ~/.tmux.conf,tmux config
+How to kill server?,tmux kill-server (kills all sessions),tmux core 

@@ -1,0 +1,20 @@
+Set current namespace,kubectl config set-context --current --namespace=ns,k8s ctx
+List contexts,kubectl config get-contexts,k8s ctx
+Switch context,kubectl config use-context NAME,k8s ctx
+Get pods/services/deployments,kubectl get pods|svc|deploy -n ns,k8s get
+Describe a resource,kubectl describe pod NAME -n ns,k8s inspect
+Get logs of a pod,kubectl logs -f pod/NAME -n ns,k8s logs
+Exec into a pod,kubectl exec -it pod/NAME -n ns -- /bin/sh,k8s exec
+Port-forward a service,kubectl port-forward svc/NAME 8080:80 -n ns,k8s net
+Apply a manifest,kubectl apply -f file.yaml,k8s apply
+Diff a manifest,kubectl diff -f file.yaml,k8s apply
+Dry-run create,kubectl create -f file.yaml --dry-run=client -o yaml,k8s apply
+Scale deployment,kubectl scale deploy/NAME --replicas=3 -n ns,k8s scale
+Rollout status,kubectl rollout status deploy/NAME -n ns,k8s rollout
+Rollback deployment,kubectl rollout undo deploy/NAME -n ns,k8s rollout
+View events,kubectl get events --sort-by=.metadata.creationTimestamp -n ns,k8s inspect
+Top pods/nodes,kubectl top pods|nodes -n ns,k8s metrics
+JSONPath output,kubectl get pod NAME -o jsonpath='{.status.podIP}' -n ns,k8s jsonpath
+Wide output,kubectl get pods -o wide -n ns,k8s get
+Delete with label selector,kubectl delete pod -l app=myapp -n ns,k8s delete
+Replace image in deployment,kubectl set image deploy/NAME container=repo:tag -n ns,k8s set 

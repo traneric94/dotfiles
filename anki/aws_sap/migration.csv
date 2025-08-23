@@ -1,0 +1,8 @@
+7 Rs of migration?,Rehost, Replatform, Repurchase, Refactor, Retain, Retire, Relocate; choose per constraints and ROI.,aws sap migration
+Data migration online vs offline?,Online via DataSync, DMS (CDC); offline via Snowball/Snowmobile for PB/EB scale.,aws sap migration
+DB migration with minimal downtime?,Use DMS with CDC, pre-cutover validation, and blue/green deployment; plan rollback.,aws sap migration
+App modernization patterns?,Containers (ECS/EKS), serverless (Lambda/API GW), event-driven; strangler fig for refactor.,aws sap migration
+Network migration approach?,Transit Gateway hub-and-spoke; staged cutovers; coexistence with on-prem DNS/AD.,aws sap migration
+Identity and access migration?,Federate with existing IdP via Identity Center; gradually deprecate long-lived IAM users.,aws sap migration
+Ops readiness?,Landing zone, monitoring baselines, SRE practices; IaC pipelines; backup policies.,aws sap migration
+Cost control during migration?,Budgets/alerts, tagging for showback/chargeback, Savings Plans where steady; spot for flexible.,aws sap migration 

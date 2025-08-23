@@ -1,0 +1,9 @@
+DR strategies and tradeoffs?,Backup/Restore, Pilot Light, Warm Standby, Multi-Region Active/Active; trade cost vs RTO/RPO.,aws sap dr
+RDS/Aurora DR?,Cross-Region read replicas or Aurora Global Database; test failover; consider write forwarding and replication lag.,aws sap dr
+Stateless app multi-Region?,Replicate state/session to global store (DynamoDB Global Tables/S3); Route 53 failover or Global Accelerator.,aws sap dr
+S3 multi-Region patterns?,CRR, Multi-Region Access Points, versioning/Object Lock; test eventual consistency impacts.,aws sap dr
+Queue/topic DR?,Cross-region SQS queues with failover producers/consumers; SNS to multiple region endpoints.,aws sap dr
+Event-driven DR?,EventBridge global endpoints with failover/health checks; archive/replay for recovery.,aws sap dr
+Testing DR regularly?,GameDays, AWS FIS fault injection, chaos experiments; automated runbooks and checkpointing.,aws sap dr
+Resilience for networking?,Redundant DX/VPN, multi-AZ NAT, TGW route table isolation; GA for front door.,aws sap dr
+RPO/RTO mapping?,Define per workload; choose storage/DB replication and app topology that meets targets; monitor adherence.,aws sap dr 

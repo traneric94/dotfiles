@@ -1,0 +1,15 @@
+When choose VPC peering vs Transit Gateway?	Peering for simple pairwise, static routing; TGW for scalable hub-and-spoke across many VPCs/accounts/Regions.	aws sap networking
+PrivateLink vs TGW?	PrivateLink exposes specific services privately via interface endpoints; TGW provides full VPC routing.	aws sap networking
+Centralized egress pattern?	Egress VPC with GWLB/NGFW; attach workload VPCs via TGW; route private subnets to same-AZ NAT to avoid cross-AZ charges.	aws sap networking
+Hybrid HA pattern DX+VPN?	Two DX ports in distinct locations with LAG + VPN backup; propagate BGP; test failover.	aws sap networking
+DNS across accounts?	Use Route 53 Resolver inbound/outbound endpoints and shared rules via RAM; split-horizon as needed.	aws sap networking
+ALB vs NLB selection?	ALB for L7 HTTP features/routing; NLB for L4 performance, static IPs, TLS pass-through or termination.	aws sap networking
+GWLB use case?	Transparent insertion of third-party firewalls/IDS across VPCs via GWLB endpoints.	aws sap networking
+VPC Lattice use case?	Service-to-service connectivity + auth/policy across VPCs/accounts without full mesh routing.	aws sap networking
+Global Accelerator vs CloudFront?	GA for TCP/UDP anycast, fast failover for apps; CloudFront for HTTP caching/CDN.	aws sap networking
+R53 routing policies?	Simple, weighted, latency, geolocation, geoproximity, failover, multivalue answer.	aws sap networking
+Multi-Region failover DNS?	Health-check based failover records or GA; replicate state to multi-Region store.	aws sap networking
+Network segmentation in AWS?	Separate VPCs per environment, security domains; use TGW route tables for segmentation; NACLs for coarse, SGs for fine-grained.	aws sap networking
+Endpoint policies best practice?	Restrict VPC endpoints to specific IAM principals and resources; use condition keys in S3/Dynamo policies.	aws sap networking
+IPv6 considerations?	Use dual-stack subnets, egress-only IGW; security groups support v6; pricing for data similar to IPv4 egress.	aws sap networking
+Scaling NLB TLS?	TLS listener with target TLS offload as needed; ensure sufficient LCU headroom; use AWS Certificate Manager.	aws sap networking 

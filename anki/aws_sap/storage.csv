@@ -1,0 +1,13 @@
+S3 class selection strategy?	Use Standard for hot, IA/One Zone-IA for warm with retrieval costs, Glacier tiers for cold archive; lifecycle policies automate transitions.	aws sap storage
+S3 Object Lock use cases?	Compliance WORM, legal holds; governance vs compliance mode; combine with versioning and replication.	aws sap storage
+CRR/SRR caveats?	Replicate ACLs, tags, metadata; KMS grants needed; replication time control (RTC) for SLA; delete marker replication optional.	aws sap storage
+S3 Multi-Region Access Points?	Improve cross-Region availability/performance with traffic rules; requires replicated buckets.	aws sap storage
+EBS gp3 vs io2?	gp3 for general with provisionable IOPS/throughput; io2/io2 Block Express for high/performance and durability.	aws sap storage
+EBS Multi-Attach?	For clustered Linux apps; app-level coordination required; not for all volume types.	aws sap storage
+EFS performance modes?	General Purpose vs Max I/O; throughput modes: bursting, provisioned; use IA tier with lifecycle for cost.	aws sap storage
+FSx ONTAP vs FSx Windows vs FSx Lustre?	ONTAP for enterprise NAS features; Windows for SMB with AD; Lustre for HPC linked to S3.	aws sap storage
+Backup/restore strategies?	AWS Backup across services, cross-Region copies; RPO/RTO drive choice; test restores.	aws sap storage
+S3 access patterns and partitioning?	Randomized prefixes no longer required; S3 auto-scales; use Inventory and S3 Select for efficiency.	aws sap storage
+Glacier retrieval tiers?	Expedited, Standard, Bulk; minutes to hours; Instant retrieval class for millisecond archive access.	aws sap storage
+Data consistency in S3?	Strong read-after-write for PUTs and DELETEs of objects in S3 across Regions.	aws sap storage
+Cross-account S3 access?	Use bucket policies with aws:PrincipalOrgID, VPC endpoint policies, and KMS grants for encryption.	aws sap storage 

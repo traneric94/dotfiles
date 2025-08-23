@@ -1,0 +1,10 @@
+CloudWatch components?,Metrics, Logs, Alarms, Dashboards, Metric Math, Contributor Insights, Anomaly Detection, RUM/Synthetics.,aws sap observability
+Cross-account monitoring approach?,Centralized account with cross-account dashboards, metric streams/log subscriptions; org CloudTrail.,aws sap observability
+Log ingestion patterns?,Firehose to S3/OpenSearch; Logs subscriptions to Lambda/Firehose; partition by account/region/app/date.,aws sap observability
+Tracing in AWS?,AWS X-Ray or OpenTelemetry to vendor/ADOT; instrument Lambda/containers; sample appropriately.,aws sap observability
+Alarm design?,Use composite alarms, anomaly detection, metric math; suppress flapping via evaluation periods.,aws sap observability
+Synthetic monitoring?,Canaries for API journeys; alarms for availability/perf; integrate with Incident Manager.,aws sap observability
+OpenSearch vs managed SIEM?,OpenSearch for self-managed log analytics; consider cost/scale; integrate with Security Hub for findings.,aws sap observability
+Cost-aware logging?,Filter at source; use infrequent access/archive tiers; lifecycle to S3 Glacier; avoid duplicate ingestion.,aws sap observability
+Health dashboards?,Aggregate SLO/SLA metrics, error budgets, RTO/RPO monitors; show multi-Region cutover readiness.,aws sap observability
+Incident response integration?,EventBridge rules to Incident Manager/ChatOps; runbooks via Systems Manager Automation.,aws sap observability 

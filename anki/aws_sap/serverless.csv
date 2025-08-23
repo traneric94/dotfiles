@@ -1,0 +1,12 @@
+When use API Gateway REST vs HTTP vs WebSocket?,REST for rich features/WAF; HTTP for cheaper/lower latency; WebSocket for bidirectional messaging.,aws sap serverless
+Private API Gateway access?,Use private APIs with interface VPC endpoints and resource policies; share across accounts via NLB/VPC endpoint.,aws sap serverless
+Lambda cold start mitigations?,Provisioned concurrency or SnapStart (Java); smaller packages; keep warm patterns; reuse connections.,aws sap serverless
+Idempotency patterns?,Idempotency keys, DynamoDB conditional writes, SQS FIFO, Step Functions retries with backoff and jitter.,aws sap serverless
+SQS: Standard vs FIFO tradeoffs?,Standard is at-least-once/high throughput; FIFO preserves order/exactly-once with throughput limits.,aws sap serverless
+SNS vs EventBridge?,SNS for pub/sub fanout; EventBridge for routing/filters, SaaS/app buses, archives and replays.,aws sap serverless
+Event-driven chaining patterns?,SNS→SQS for fanout buffering; EventBridge rules per target; Step Functions for orchestration and retries.,aws sap serverless
+Step Functions: Standard vs Express?,Standard for long-running, exactly-once workflow semantics; Express for high-TPS, short-lived, at-least-once.,aws sap serverless
+Integrations with VPC resources?,Lambda in VPC with subnets/SG; use VPC endpoints for AWS services; NAT for Internet egress; keep ENI reuse.,aws sap serverless
+API auth options?,Cognito authorizers/JWT; Lambda authorizers; IAM auth for internal; custom headers/tokens for legacy.,aws sap serverless
+DLQs and retries best practices?,Set per-integration retries, DLQs (SQS/SNS), and alarms; use redrive policies to reprocess failures.,aws sap serverless
+Throttling and backpressure?,Use reserved concurrency, SQS visibility timeouts, batch sizes, and Step Functions concurrency controls.,aws sap serverless 

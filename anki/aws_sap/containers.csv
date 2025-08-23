@@ -1,0 +1,10 @@
+ECS vs EKS selection?,ECS for AWS-native simplicity; EKS for Kubernetes ecosystem/portability; both support Fargate.,aws sap containers
+Service mesh on AWS?,AWS App Mesh for traffic shaping, mTLS, retries/timeouts across ECS/EKS/EC2 services.,aws sap containers
+Cluster autoscaling patterns?,EC2 ASG with Cluster AutoScaler (EKS); Karpenter for provisioning; Fargate for serverless pods/tasks.,aws sap containers
+Ingress choices?,ALB Ingress Controller (EKS), NLB for gRPC/TCP, Gateway API (emerging); WAF at ALB/CloudFront.,aws sap containers
+Registry and image security?,ECR with scanning/signing (Sigstore/Notation), least privilege; private links to ECR.,aws sap containers
+Secrets/config for containers?,Secrets Manager/Parameter Store with IAM task roles; Kubernetes secrets with KMS (EKS Envelope Encryption).,aws sap containers
+Multi-account/multi-VPC connectivity?,TGW hub-and-spoke, PrivateLink for service exposure, VPC Lattice for service connectivity with auth.,aws sap containers
+Logging and tracing?,Sidecars/Daemons for logs/metrics; OpenTelemetry collectors; CloudWatch/Fluent Bit integration.,aws sap containers
+Blue/green and canary?,ECS CodeDeploy blue/green; EKS service mesh or progressive delivery controllers for canary.,aws sap containers
+Cost controls?,Right-size tasks/pods, Spot/Fargate Spot, bin packing, GP2→GP3; avoid cross-AZ data transfer.,aws sap containers 

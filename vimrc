@@ -82,7 +82,9 @@ nmap <leader>8 <Plug>AirlineSelectTab8
 nmap <leader>9 <Plug>AirlineSelectTab9
 nmap <leader>0 <Plug>AirlineSelectTab0
 nmap <leader>- <Plug>AirlineSelectPrevTab
-nmap <leader>+ <Plug>AirlineSelectNextTab" Multicursor
+nmap <leader>+ <Plug>AirlineSelectNextTab
+
+" Multicursor
 let g:multi_cursor_use_default_mapping=0
 let g:multi_cursor_next_key='<C-e>'
 let g:multi_cursor_quit_key='<Esc>'
@@ -101,7 +103,7 @@ nmap <leader>0 :set invnumber<CR>
 
 " Use <C-L> to clear the highlighting of :set hlsearch.
 if maparg('<C-L>', 'n') ==# ''
-nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
+  nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 endif
 
 
@@ -165,13 +167,7 @@ augroup lsp_install
 augroup END
 
 
-let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
-if empty(glob(data_dir . '/autoload/plug.vim'))
-  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-endif
-
-
+" Auto-install vim-plug if not found
 let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
 if empty(glob(data_dir . '/autoload/plug.vim'))
   silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'

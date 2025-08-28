@@ -7,6 +7,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 prompt_yes_no() {
   local prompt_msg="$1"
   local response
+  
+  # Check if running in interactive mode
+  if [[ ! -t 0 ]] || [[ "${NON_INTERACTIVE:-}" == "1" ]]; then
+    echo "$prompt_msg [y/n] y (auto-answering yes in non-interactive mode)"
+    return 0
+  fi
+  
   while true; do
     read -r -p "$prompt_msg [y/n] " response < /dev/tty || true
     case "${response:-}" in
@@ -91,12 +98,22 @@ brew_setup_and_install() {
     local formulae=(
       git
       node
-      java
       python
       awscli
       go
       1password-cli
-      koekeishiya/formulae/skhd
+      koekeishiya/formulae/skhd # window manipulation
+      mas # app store apps
+      tlrc # tldr for mac
+      zsh-autosuggestions
+      zsh-syntax-highlighting
+      zsh-vi-mode
+      fzf
+      fd
+      bat
+      fzf-git
+      yazi # ranger-like navigation
+      tmux
     )
 
     local casks=(

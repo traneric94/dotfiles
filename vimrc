@@ -208,3 +208,5 @@ call plug#end()
 if filereadable(expand("$HOME/.vimrc.chime"))
   execute 'source' expand("$HOME/.vimrc.chime")
 endif
+
+set rtp+=/opt/homebrew/opt/fzf

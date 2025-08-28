@@ -114,6 +114,7 @@ brew_setup_and_install() {
       fzf-git
       yazi # ranger-like navigation
       tmux
+      zoxide # smart cd replacement
     )
 
     local casks=(

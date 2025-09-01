@@ -62,6 +62,7 @@ links=(
   "vimrc:$HOME/.vimrc"
   "vimrccomplete:$HOME/.vimrccomplete"
   "skhdrc:$HOME/.skhdrc"
+  "tmux.conf:$HOME/.tmux.conf"
   "config/nvim:$HOME/.config/nvim"
 )
 
@@ -143,9 +144,35 @@ brew_setup_and_install() {
 
 brew_setup_and_install
 
+# Install TPM (Tmux Plugin Manager)
+install_tpm() {
+  local tpm_dir="$HOME/.tmux/plugins/tpm"
+  
+  if [ ! -d "$tpm_dir" ]; then
+    echo "Installing TPM (Tmux Plugin Manager)..."
+    git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+    echo "TPM installed successfully!"
+  else
+    echo "TPM already installed at $tpm_dir"
+  fi
+}
+
+install_tpm
+
 if command -v skhd >/dev/null 2>&1; then
   brew services restart skhd || true
 fi
 
 /usr/bin/defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false || true
 /usr/bin/defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false || true
+
+echo ""
+echo "✅ Installation complete!"
+echo ""
+echo "To finish tmux setup:"
+echo "1. Start a new tmux session: 'tmux new'"
+echo "2. Install tmux plugins: Press 'Ctrl-t + I' (capital I)"
+echo "3. Use tmux-resurrect:"
+echo "   • Save session: 'Ctrl-t + Ctrl-s'"
+echo "   • Restore session: 'Ctrl-t + Ctrl-r'"
+echo ""

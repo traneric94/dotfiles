@@ -33,9 +33,8 @@ set tabstop=2 shiftwidth=2 expandtab
 set gdefault                    " Use 'g' flag by default with :s/foo/bar/.
 set magic                       " Use 'magic' patterns (extended regular expressions).
 set number                      " Set line numbers
+set relativenumber              " Enable relative line numbers (hybrid mode)
 set clipboard=unnamed           " Use system clipboard
-set rnu!                        " Enable relative line numbers
-set nu!
 set colorcolumn=100              " Set max line length
 
 " Search and Replace
@@ -87,17 +86,59 @@ let g:multi_cursor_quit_key='<Esc>'
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
                               \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
+" LSP keybindings
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+nmap <leader>rn <Plug>(coc-rename)
+nnoremap <silent> K :call ShowDocumentation()<CR>
+
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Highlight the symbol and its references when holding the cursor
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Auto-install useful language servers
+let g:coc_global_extensions = [
+  \ 'coc-pyright',
+  \ 'coc-tsserver', 
+  \ 'coc-go',
+  \ 'coc-rust-analyzer',
+  \ 'coc-json',
+  \ 'coc-yaml',
+  \ 'coc-html',
+  \ 'coc-css',
+  \ 'coc-prettier',
+  \ 'coc-eslint',
+  \ 'coc-docker'
+\ ]
+
 " Other
 set mouse=
 set list
 
 " Buffer handling
-nmap L :let &number=1-&number<CR>
 nmap <leader>l :bnext<CR>
 nmap <c-h> :bprevious<CR>
 nmap <leader>bq :bp <BAR> bd #<CR>
 nmap <leader>bl :ls<CR>
-nmap <leader>n :set invnumber<CR>
+nmap <leader>n :e ~/.config/nvim/init.vim<CR>
+nmap <leader>r :source ~/.config/nvim/init.vim<CR>:echo "Config reloaded!"<CR>
+
+" Auto-reload config on save
+augroup config_reload
+  autocmd!
+  autocmd BufWritePost ~/.config/nvim/init.vim source ~/.config/nvim/init.vim | echo "Config auto-reloaded!"
+augroup END
 
 " Use <C-L> to clear the highlighting of :set hlsearch.
 if maparg('<C-L>', 'n') ==# ''
@@ -219,5 +260,11 @@ nnoremap <leader>vb <cmd>lua telescope_buffers_vsplit()<CR>
 augroup telescope_harpoon
   autocmd!
   autocmd VimEnter * silent! lua require("telescope").load_extension('harpoon')
+augroup END
+
+" Make netrw change working directory
+augroup netrw_follow
+  autocmd!
+  autocmd FileType netrw setlocal autochdir
 augroup END
 

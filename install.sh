@@ -59,8 +59,6 @@ links=(
   "zshrc:$HOME/.zshrc"
   "zprofile:$HOME/.zprofile"
   "bash_profile:$HOME/.bash_profile"
-  "vimrc:$HOME/.vimrc"
-  "vimrccomplete:$HOME/.vimrccomplete"
   "skhdrc:$HOME/.skhdrc"
   "tmux.conf:$HOME/.tmux.conf"
   "config/nvim:$HOME/.config/nvim"
@@ -92,6 +90,7 @@ brew_setup_and_install() {
   ensure_brew
   brew update
   brew tap koekeishiya/formulae || true
+  brew tap homebrew/cask-fonts || true
 
   if [ -f "$SCRIPT_DIR/Brewfile" ]; then
     brew bundle --file "$SCRIPT_DIR/Brewfile"
@@ -132,6 +131,7 @@ brew_setup_and_install() {
       visual-studio-code
       postman
       spotify
+      font-hack-nerd-font
     )
 
     for formula in "${formulae[@]}"; do

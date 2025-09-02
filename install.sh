@@ -57,11 +57,12 @@ link_item() {
 # Map visible repo files/dirs to hidden targets under $HOME (portable without assoc arrays)
 links=(
   ".zshrc:$HOME/.zshrc"
-  ".zshenv:$HOME/.zshenv"
+  "zshenv:$HOME/.zshenv"
   ".zprofile:$HOME/.zprofile"
   ".bash_profile:$HOME/.bash_profile"
   ".skhdrc:$HOME/.skhdrc"
   "tmux.conf:$HOME/.tmux.conf"
+  "alacritty.toml:$HOME/.config/alacritty/alacritty.toml"
   "config/nvim:$HOME/.config/nvim"
 )
 

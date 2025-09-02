@@ -112,6 +112,8 @@ brew_setup_and_install() {
       fzf
       fd
       bat
+      eza # modern ls replacement
+      ripgrep # fast grep
       fzf-git
       yazi # ranger-like navigation
       tmux

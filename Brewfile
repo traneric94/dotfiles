@@ -24,4 +24,5 @@ cask "rectangle" # Replaces the unmaintained Spectacle
 cask "visual-studio-code"
 cask "postman"
 cask "spotify"
+cask "alacritty"
 # cask "authy" # Deprecated desktop app; uncomment only if you still want it 

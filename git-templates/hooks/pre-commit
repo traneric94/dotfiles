@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Global pre-commit hook for Go repositories
+# Run goimports on all staged Go files
+
+# Check if this is a Go repository
+if [ ! -f "go.mod" ]; then
+    exit 0
+fi
+
+# Get list of staged Go files
+STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+
+if [ -z "$STAGED_GO_FILES" ]; then
+    exit 0
+fi
+
+echo "Running goimports on staged Go files..."
+
+# Run goimports on each staged file
+for FILE in $STAGED_GO_FILES; do
+    if [ -f "$FILE" ]; then
+        goimports -w "$FILE"
+        git add "$FILE"
+    fi
+done
+
+echo "✅ Go imports cleaned up"

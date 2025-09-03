@@ -3,6 +3,9 @@
 #PATH=/usr/bin:/bin:/usr/sbin:/sbin
 #export PATH
 
+# Add Homebrew to PATH (if not already present)
+[[ ":$PATH:" != *":/opt/homebrew/bin:"* ]] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+
 # add custom, local installations to PATH
 #PATH=/usr/local/bin:/usr/local/sbin:"$PATH"
 
@@ -66,7 +69,7 @@ alias ls='ls -G'
 alias ll='ls -a1F'
 alias la='ls -A'
 alias l='ls -CF'
-alias sl='ls'
+# alias sl='ls'
 
 alias ga='git add'
 alias gb="git for-each-ref --format='%(color:cyan)%(authordate:format:%m/%d/%Y %I:%M %p)    %(align:25,left)%(color:yellow)%(authorname)%(end) %(color:reset)%(refname:strip=3)' --sort=authordate refs/remotes"
@@ -119,8 +122,9 @@ function test() {
 # profiles per window
 # awsume --config set console.browser_command "\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" -incognito \"{url}\" --user-data-dir=/tmp/{profile} --no-first-run"
 
+# Source external function definitions
+[ -f "$HOME/.config/zsh/functions" ] && source "$HOME/.config/zsh/functions"
 
-source "$HOME/.config/zsh/functions"
 # Prefer Homebrew (ARM) PHP if available; otherwise fallback to Intel path
 if [ -d "/opt/homebrew/opt/php@7.4/bin" ]; then
   export PATH="/opt/homebrew/opt/php@7.4/bin:/opt/homebrew/opt/php@7.4/sbin:$PATH"
@@ -129,6 +133,152 @@ elif [ -d "/usr/local/opt/php@7.4/bin" ]; then
 fi
 
 export PATH="/usr/sbin:$PATH"
+
+### Quality of Life Aliases
+# ==============================================================================
+alias vim=nvim
+alias cat=bat
+alias cd=z
+alias mkdir='mkdir -p'  # Create parent directories as needed
+alias c='clear'          # Clear terminal screen
+alias reload='source ~/.zshrc'  # Reload ZSH Configuration
+alias fman="compgen -c | fzf | xargs man"
+alias ssh-target='echo "eric.tran@$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk "{print \$2}")"'  # Print SSH target with current IP
+
+# ==============================================================================
+# File System Aliases (using eza)
+# ==============================================================================
+
+# Enhanced eza commands (modern ls replacement)
+alias ls='eza --icons=always --color=always'                    # Basic listing with icons
+alias ll='eza --long --all --icons=always --no-user'            # Long format, all files, no user column
+alias la='eza --all --icons=always'                             # All files including hidden
+alias l='eza --icons=always'                                    # Same as ls (simple)
+alias lt='eza --tree --icons=always --level=2'                  # Tree view (2 levels deep)
+# alias sl='ls'                                                   # Typo protection
+
+# ==============================================================================
+# Git Aliases
+# ==============================================================================
+
+# Basic git operations
+alias ga='git add'
+alias gc='git commit'
+alias gca='git commit --amend'
+alias gs='git status'
+alias gl='git log'
+alias gh='git checkout'
+alias ghb='git checkout -b'
+
+# Git diff commands
+alias gd='git diff --color -b'
+alias gdc='git diff --color -b --cached'
+alias gdh='git diff --color -b HEAD~1 HEAD'
+
+# Git remote operations  
+alias gf='git fetch origin'
+alias gp='git push origin HEAD:refs/for/develop'
+
+# Git rebase operations
+alias gr='git rebase'
+alias grc='git rebase --continue'  
+alias grd='git rebase origin/develop-stable'
+alias gfr='git fetch origin; git rebase origin/develop-stable'
+
+# Git utilities
+alias ge='git clean -fd'
+alias gm='git mergetool'
+alias gb="git for-each-ref --format='%(color:cyan)%(authordate:format:%m/%d/%Y %I:%M %p)    %(align:25,left)%(color:yellow)%(authorname)%(end) %(color:reset)%(refname:strip=3)' --sort=authordate refs/remotes"
+alias hlog='git log --date-order --all --graph --format="%C(green)%h %Creset%C(yellow)%an%Creset %C(blue bold)%ar%Creset %C(red bold)%d%Creset %s"'
+alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
+
+# ==============================================================================
+# Custom Functions
+# ==============================================================================
+
+# Auto-tidy after go get
+go() {
+  if [[ "$1" == "get" ]]; then
+    command go "$@" && go mod tidy
+  else
+    command go "$@"
+  fi
+}
+
+# Ripgrep + fzf interactive search with syntax highlighting
+# Usage: rgf "search_term"
+function rgf() {
+  rg --line-number --no-heading --color=always --with-filename "$1" | \
+  awk -F: -v OFS=: '{printf "%-50s %4s: %s\n", $1, $2, substr($0, index($0, $3))}' | \
+  fzf --ansi \
+      --delimiter : \
+      --nth 1,2 \
+      --preview 'FILE=$(echo {} | awk "{print \$1}" | sed "s/[[:space:]]*$//"); LINE=$(echo {} | awk "{print \$2}" | tr -d ":"); /opt/homebrew/bin/bat --color=always --style=numbers --highlight-line $LINE "$FILE"' \
+      --preview-window up:60% \
+      --layout=reverse \
+      --info=inline
+}
+
+# Function to find and open files using zoxide and fzf
+# Usage: search_with_zoxdie [search_term] or nzo [search_term]
+function search_with_zoxdie() {
+    if [ -z "$1" ]; then
+        # Use fd with fzf to select & open a file when no args are provided
+        file="$(fd --type f --strip-cwd-prefix -I -H -E .git -E .git-crypt -E .cache -E .backup | xargs -I {} eza --icons=always --color=always {} | fzf --height=70% --ansi --preview='/opt/homebrew/bin//opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')"
+        if [ -n "$file" ]; then
+            # Extract the actual filename (everything after the icon and space)
+            actual_file=$(echo "$file" | sed 's/^[^ ]* //')
+            nvim "$actual_file"
+        fi
+    else
+        # Handle when an argument is provided - only search within current directory and subdirectories
+        lines=$({ fd --type f -I -H -E .git -E .git-crypt -E .cache -E .backup -E .vscode "$1" .; zoxide query -l | while read -r dir; do if [ -d "$dir" ]; then case "$dir" in "$(pwd)"*) rel_dir="${dir#$(pwd)/}"; if [ "$rel_dir" != "$dir" ]; then fd --type f -I -H -E .git -E .git-crypt -E .cache -E .backup -E .vscode "$1" "$dir" | sed "s|^$dir/|$rel_dir/|" 2>/dev/null; fi ;; esac; fi; done; } | sort -u | xargs -I {} eza --icons=always --color=always {} | fzf --no-sort --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')
+        line_count="$(echo "$lines" | wc -l | xargs)"
+
+        if [ -n "$lines" ] && [ "$line_count" -eq 1 ]; then
+            actual_file=$(echo "$lines" | sed 's/^[^ ]* //')
+            nvim "$actual_file"
+        elif [ -n "$lines" ]; then
+            file=$(echo "$lines" | fzf --query="$1" --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')
+            if [ -n "$file" ]; then
+                actual_file=$(echo "$file" | sed 's/^[^ ]* //')
+                nvim "$actual_file"
+            fi
+        else
+            echo "No matches found." >&2
+        fi
+    fi
+}
+
+# Alias for zoxide file opener
+alias nzo='search_with_zoxdie'
+
+# Bypass version that shows ALL files (including ignored)
+function search_with_zoxdie_bypass() {
+    if [ -z "$1" ]; then
+        file="$(fd --type f --strip-cwd-prefix --no-ignore -H | xargs -I {} eza --icons=always --color=always {} | fzf --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')"
+        if [ -n "$file" ]; then
+            actual_file=$(echo "$file" | sed 's/^[^ ]* //')
+            nvim "$actual_file"
+        fi
+    else
+        lines=$({ fd --type f --no-ignore -H "$1" .; zoxide query -l | while read -r dir; do if [ -d "$dir" ]; then case "$dir" in "$(pwd)"*) rel_dir="${dir#$(pwd)/}"; if [ "$rel_dir" != "$dir" ]; then fd --type f --no-ignore -H "$1" "$dir" | sed "s|^$dir/|$rel_dir/|" 2>/dev/null; fi ;; esac; fi; done; } | sort -u | xargs -I {} eza --icons=always --color=always {} | fzf --no-sort --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')
+        line_count="$(echo "$lines" | wc -l | xargs)"
+        if [ -n "$lines" ] && [ "$line_count" -eq 1 ]; then
+            actual_file=$(echo "$lines" | sed 's/^[^ ]* //')
+            nvim "$actual_file"
+        elif [ -n "$lines" ]; then
+            file=$(echo "$lines" | fzf --query="$1" --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')
+            if [ -n "$file" ]; then
+                actual_file=$(echo "$file" | sed 's/^[^ ]* //')
+                nvim "$actual_file"
+            fi
+        else
+            echo "No matches found." >&2
+        fi
+    fi
+}
+alias nzo-all='search_with_zoxdie_bypass'
 
 # Created by `pipx` on 2023-05-09 16:45:58
 export PATH="$PATH:$HOME/.local/bin"
@@ -143,8 +293,6 @@ fi
 if command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init zsh)"
 fi
-export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
-export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"
 
 # Source local, untracked overrides
 [ -f "$HOME/.chime.sh" ] && source "$HOME/.chime.sh"
@@ -156,5 +304,36 @@ source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /opt/homebrew/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-# Bind Ctrl-E to accept autosuggestions
-bindkey '^E' autosuggest-accept
+# zsh-vi-mode hook to load fzf-git after vi-mode initializes
+function zvm_after_init() {
+  source ~/codebase/dotfiles/fzf-git.sh/fzf-git.sh
+}
+
+# Key bindings for autosuggestions
+bindkey -e
+bindkey '^I' autosuggest-accept
+
+# FZF
+eval "$(/opt/homebrew/bin/fzf --zsh)"
+export FZF_DEFAULT_COMMAND="/opt/homebrew/bin/fd --hidden --strip-cwd-prefix --exclude .git"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND="/opt/homebrew/bin/fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+
+# Catppuccin Mocha theme for FZF
+export FZF_DEFAULT_OPTS="--height 50% --layout=default --border \
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6ac,pointer:#f5e0dc \
+--color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6ac,hl+:#f38ba8 \
+--bind=ctrl-u:preview-up,ctrl-d:preview-down,ctrl-b:preview-page-up,ctrl-f:preview-page-down"
+export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200' --preview-window=right:60%:wrap"
+
+export FZF_TMUX_OPTS=" -p90%, 70% "
+
+# Set FZF previews
+export FZF_CTRL_T_OPTS="--preview '/opt/homebrew/bin/bat --color=always -n --line-range :500 {}'"
+export FZF_ATC_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
+
+# Remove broken list-expand binding to allow fzf-git Ctrl+G prefix to work
+bindkey -r "^G"
+
+set rtp+=/opt/homebrew/opt/fzf

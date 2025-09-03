@@ -1,0 +1,128 @@
+# Alacritty Configuration (TOML format for v0.13+)
+
+[env]
+TERM = "xterm-256color"
+
+[window]
+opacity = 0.95
+blur = true
+decorations = "buttonless"
+startup_mode = "Windowed"
+dynamic_title = true
+
+[scrolling]
+history = 10000
+multiplier = 3
+
+[font]
+size = 14.0
+
+[font.normal]
+family = "Hack Nerd Font Mono"
+style = "Regular"
+
+[font.bold]
+family = "Hack Nerd Font Mono"
+style = "Bold"
+
+[font.italic]
+family = "Hack Nerd Font Mono"
+style = "Italic"
+
+[colors]
+# Catppuccin Mocha theme - modern and pleasant
+[colors.primary]
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+dim_foreground = "#a6adc8"
+bright_foreground = "#cdd6f4"
+
+[colors.cursor]
+text = "#1e1e2e"
+cursor = "#f5e0dc"
+
+[colors.vi_mode_cursor]
+text = "#1e1e2e"
+cursor = "#b4befe"
+
+[colors.search]
+matches = { foreground = "#1e1e2e", background = "#a6adc8" }
+focused_match = { foreground = "#1e1e2e", background = "#a6e3a1" }
+
+[colors.hints]
+start = { foreground = "#1e1e2e", background = "#f9e2af" }
+end = { foreground = "#1e1e2e", background = "#a6adc8" }
+
+[colors.selection]
+text = "#1e1e2e"
+background = "#f5e0dc"
+
+[colors.normal]
+black = "#45475a"
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+magenta = "#f5c2e7"
+cyan = "#94e2d5"
+white = "#bac2de"
+
+[colors.bright]
+black = "#585b70"
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+magenta = "#f5c2e7"
+cyan = "#94e2d5"
+white = "#a6adc8"
+
+[colors.dim]
+black = "#45475a"
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+magenta = "#f5c2e7"
+cyan = "#94e2d5"
+white = "#bac2de"
+
+[keyboard]
+bindings = [
+  # Copy/Paste
+  { key = "C", mods = "Command", action = "Copy" },
+  { key = "V", mods = "Command", action = "Paste" },
+  
+  # New window/tab (will open new Alacritty instance)
+  { key = "T", mods = "Command", action = "CreateNewWindow" },
+  { key = "N", mods = "Command", action = "CreateNewWindow" },
+  
+  # Quit
+  { key = "W", mods = "Command", action = "Quit" },
+  
+  # Split-like behavior with new windows
+  { key = "D", mods = "Command", action = "CreateNewWindow" },
+  { key = "D", mods = "Command|Shift", action = "CreateNewWindow" },
+  
+  # Font size
+  { key = "Plus", mods = "Command", action = "IncreaseFontSize" },
+  { key = "Minus", mods = "Command", action = "DecreaseFontSize" },
+  { key = "Key0", mods = "Command", action = "ResetFontSize" },
+  
+  # Forward Alt key combinations (Option key on macOS)
+  { key = "C", mods = "Alt", chars = "\u001bc" },
+  { key = "T", mods = "Alt", chars = "\u001bt" },
+  { key = "G", mods = "Alt", chars = "\u001bg" },
+  { key = "F", mods = "Alt", chars = "\u001bf" },
+  { key = "B", mods = "Alt", chars = "\u001bb" },
+  { key = "D", mods = "Alt", chars = "\u001bd" },
+  { key = "U", mods = "Alt", chars = "\u001bu" },
+  
+  # Forward Ctrl combinations for tmux
+  { key = "B", mods = "Control", chars = "\u0002" },
+]
+
+[terminal]
+
+[terminal.shell]
+program = "/bin/zsh"

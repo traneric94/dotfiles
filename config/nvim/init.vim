@@ -708,3 +708,107 @@ highlight CatppuccinPink guifg=#f5c2e7 ctermfg=218
 highlight CatppuccinFlamingo guifg=#f2cdcd ctermfg=217
 highlight CatppuccinRed guifg=#f38ba8 ctermfg=203
 
+" Folding configuration
+set foldenable                " Enable folding
+set foldlevel=2               " Start with folds open up to level 2
+set foldmethod=manual         " Use manual folding for import auto-folding
+set foldcolumn=1              " Show fold indicators in gutter
+
+" Folding keybindings
+nnoremap <leader>za za        " Toggle fold under cursor
+nnoremap <leader>zM zM        " Close all folds
+nnoremap <leader>zR zR        " Open all folds
+nnoremap <leader>zm zm        " Increase fold level (close more folds)
+nnoremap <leader>zr zr        " Decrease fold level (open more folds)
+
+" Auto-fold imports function
+function! AutoFoldImports()
+  let current_line = 1
+  let total_lines = line('$')
+  
+  " Clear existing manual folds
+  normal! zE
+  
+  while current_line <= total_lines
+    let line_content = getline(current_line)
+    
+    " Detect import blocks for different languages
+    if &filetype == 'go'
+      " Go imports: look for "import (" block
+      if line_content =~ '^\s*import\s*('
+        let import_start = current_line
+        let current_line = current_line + 1
+        
+        " Find the end of import block
+        while current_line <= total_lines && getline(current_line) !~ '^\s*)'
+          let current_line = current_line + 1
+        endwhile
+        
+        if current_line <= total_lines
+          " Create fold for import block
+          execute import_start . ',' . current_line . 'fold'
+        endif
+      endif
+      
+    elseif &filetype == 'typescript' || &filetype == 'typescriptreact' || &filetype == 'javascript' || &filetype == 'javascriptreact'
+      " TypeScript/JavaScript imports
+      if line_content =~ '^\s*import\s\+.*from'
+        let import_start = current_line
+        
+        " Find consecutive import lines
+        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*import\s\+.*from'
+          let current_line = current_line + 1
+        endwhile
+        
+        " Create fold if there are multiple consecutive imports
+        if current_line > import_start
+          execute import_start . ',' . current_line . 'fold'
+        endif
+      endif
+      
+    elseif &filetype == 'ruby'
+      " Ruby requires
+      if line_content =~ '^\s*require'
+        let import_start = current_line
+        
+        " Find consecutive require lines
+        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*require'
+          let current_line = current_line + 1
+        endwhile
+        
+        " Create fold if there are multiple consecutive requires
+        if current_line > import_start
+          execute import_start . ',' . current_line . 'fold'
+        endif
+      endif
+      
+    elseif &filetype == 'python'
+      " Python imports
+      if line_content =~ '^\s*\(import\|from\)\s'
+        let import_start = current_line
+        
+        " Find consecutive import lines
+        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*\(import\|from\)\s'
+          let current_line = current_line + 1
+        endwhile
+        
+        " Create fold if there are multiple consecutive imports
+        if current_line > import_start
+          execute import_start . ',' . current_line . 'fold'
+        endif
+      endif
+    endif
+    
+    let current_line = current_line + 1
+  endwhile
+endfunction
+
+" Auto-fold imports on file open and save
+augroup auto_fold_imports
+  autocmd!
+  autocmd BufReadPost,BufWritePost *.go,*.ts,*.tsx,*.js,*.jsx,*.rb,*.py call AutoFoldImports()
+augroup END
+
+" Manual command to fold imports
+command! FoldImports call AutoFoldImports()
+

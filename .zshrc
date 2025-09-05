@@ -337,3 +337,5 @@ export FZF_ATC_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
 bindkey -r "^G"
 
 set rtp+=/opt/homebrew/opt/fzf
+export GPG_TTY=$(tty)
+gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1

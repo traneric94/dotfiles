@@ -121,10 +121,12 @@ bindings = [
   
   # Forward Ctrl combinations for tmux
   { key = "B", mods = "Control", chars = "\u0002" },
+  
+  # Vi mode toggle
+  { key = "Space", mods = "Control|Shift", action = "ToggleViMode" },
 ]
 
 [terminal]
 
 [terminal.shell]
 program = "/bin/zsh"
-args = ["-c", "cd /Users/eric.tran/codebase && exec zsh"]

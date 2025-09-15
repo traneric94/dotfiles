@@ -65,37 +65,8 @@ setopt HIST_BEEP                 # Beep when accessing nonexistent history.# Pre
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
 
-alias ls='ls -G'
-alias ll='ls -a1F'
-alias la='ls -A'
-alias l='ls -CF'
-# alias sl='ls'
-
-alias ga='git add'
-alias gb="git for-each-ref --format='%(color:cyan)%(authordate:format:%m/%d/%Y %I:%M %p)    %(align:25,left)%(color:yellow)%(authorname)%(end) %(color:reset)%(refname:strip=3)' --sort=authordate refs/remotes"
-alias gc='git commit'
-alias gca='git commit --amend'
-alias gd='git diff --color -b'
-alias gdc='git diff --color -b --cached'
-alias gdh='git diff --color -b HEAD~1 HEAD'
-alias ge='git clean -fd'
-alias gf='git fetch origin'
-alias gfr='git fetch origin; git rebase origin/develop-stable'
-alias gh='git checkout'
-alias ghb='git checkout -b'
-alias gl='git log'
-alias gm='git mergetool'
-alias gp='git push origin HEAD:refs/for/develop'
-alias gr='git rebase'
-alias grc='git rebase --continue'
-alias grd='git rebase origin/develop-stable'
-alias gs='git status'
-alias hlog='git log --date-order --all --graph --format="%C(green)%h %Creset%C(yellow)%an%Creset %C(blue bold)%ar%Creset %C(red bold)%d%Creset %s"'
 
 alias awsume=". awsume"
-
-#ugh so nested
-alias golang='cd ~/codebase/golang/src/github.com/crunchyroll/'
 
 alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
 command -v thefuck >/dev/null 2>&1 && eval "$(thefuck --alias)"
@@ -155,13 +126,12 @@ alias ll='eza --long --all --icons=always --no-user'            # Long format, a
 alias la='eza --all --icons=always'                             # All files including hidden
 alias l='eza --icons=always'                                    # Same as ls (simple)
 alias lt='eza --tree --icons=always --level=2'                  # Tree view (2 levels deep)
-# alias sl='ls'                                                   # Typo protection
 
 # ==============================================================================
 # Git Aliases
 # ==============================================================================
 
-# Basic git operations
+# Git operations
 alias ga='git add'
 alias gc='git commit'
 alias gca='git commit --amend'
@@ -169,23 +139,15 @@ alias gs='git status'
 alias gl='git log'
 alias gh='git checkout'
 alias ghb='git checkout -b'
-
-# Git diff commands
 alias gd='git diff --color -b'
 alias gdc='git diff --color -b --cached'
 alias gdh='git diff --color -b HEAD~1 HEAD'
-
-# Git remote operations  
 alias gf='git fetch origin'
 alias gp='git push origin HEAD:refs/for/develop'
-
-# Git rebase operations
 alias gr='git rebase'
-alias grc='git rebase --continue'  
+alias grc='git rebase --continue'
 alias grd='git rebase origin/develop-stable'
 alias gfr='git fetch origin; git rebase origin/develop-stable'
-
-# Git utilities
 alias ge='git clean -fd'
 alias gm='git mergetool'
 alias gb="git for-each-ref --format='%(color:cyan)%(authordate:format:%m/%d/%Y %I:%M %p)    %(align:25,left)%(color:yellow)%(authorname)%(end) %(color:reset)%(refname:strip=3)' --sort=authordate refs/remotes"

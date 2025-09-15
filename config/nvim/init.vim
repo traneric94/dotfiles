@@ -127,7 +127,7 @@ let g:coc_global_extensions = [
 \ ]
 
 " Other
-set mouse=
+set mouse=a
 set list
 set listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:⣿
 
@@ -149,6 +149,12 @@ augroup END
 if maparg('<C-L>', 'n') ==# ''
   nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 endif
+
+" Smooth scrolling with Shift+hjkl (keeps cursor position relative to screen)
+nnoremap <S-j> <C-E>
+nnoremap <S-k> <C-Y>
+nnoremap <S-h> zh
+nnoremap <S-l> zl
 
 
 let g:python_host_prog="/usr/local/bin/python3.9"

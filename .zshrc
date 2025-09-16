@@ -301,3 +301,10 @@ bindkey -r "^G"
 set rtp+=/opt/homebrew/opt/fzf
 export GPG_TTY=$(tty)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
+export MAX_THINKING_TOKENS=2048
+export CLAUDE_CODE_MAX_OUTPUT_TOKENS=8192
+
+# OSC 7 sequence to report current directory to terminal
+precmd () {
+  printf "\e]7;file://%s%s\e\\" "$HOSTNAME" "$PWD"
+}

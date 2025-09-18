@@ -116,6 +116,7 @@ brew_setup_and_install() {
       eza # modern ls replacement
       ripgrep # fast grep
       fzf-git
+      gh # GitHub CLI
       yazi # ranger-like navigation
       tmux
       zoxide # smart cd replacement

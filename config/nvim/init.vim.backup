@@ -1,0 +1,747 @@
+syntax on
+set ruler                       " Show the line and column numbers of the cursor.
+set formatoptions+=o            " Continue comment marker in new lines.
+set nowrap                      " do not automatically wrap on load
+set formatoptions-=t            " do not automatically wrap text when typing
+set modeline                    " Enable modeline.
+set linespace=0                 " Set line-spacing to minimum.
+set nojoinspaces                " Prevents inserting two spaces after punctuation on a join (J)
+                                " More natural splits
+set splitbelow                  " Horizontal split below current.
+set splitright                  " Vertical split to right of current.
+set scrolloff=3                 " Show next 3 lines while scrolling.
+set sidescrolloff=5             " Show next 5 columns while side-scrollin.
+set nostartofline               " Do not jump to first character with page commands.
+set noerrorbells                " No beeps
+set backspace=indent,eol,start  " Makes backspace key more powerful.
+set showcmd                     " Show me what I'm typing
+set showmode                    " Show current mode.
+set noswapfile                  " Don't use swapfile
+set nobackup            	    " Don't create annoying backup files
+set encoding=utf-8              " Set default encoding to UTF-8
+set autowrite                   " Automatically save before :next, :make etc.
+set autoread                    " Automatically reread changed files without asking me anything
+set laststatus=2
+set fileformats=unix,dos,mac    " Prefer Unix over Windows over OS 9 formats
+set showmatch                   " Do not show matching brackets by flickering
+set incsearch                   " Shows the match while typing
+set hlsearch                    " Highlight found searches
+set ignorecase                  " Search case insensitive...
+set smartcase                   " ... but not when search pattern contains upper case characters
+set autoindent
+set tabstop=2 shiftwidth=2 expandtab
+set gdefault                    " Use 'g' flag by default with :s/foo/bar/.
+set magic                       " Use 'magic' patterns (extended regular expressions).
+set number                      " Set line numbers
+set relativenumber              " Enable relative line numbers (hybrid mode)
+set clipboard=unnamed           " Use system clipboard
+set colorcolumn=100              " Set max line length
+
+" Search and Replace
+nmap <Leader>s :%s//g<Left><Left>
+
+" Leader key is like a command prefix. 
+let mapleader=' '
+
+
+" set cursorcolumn
+nmap <Space> <PageDown>
+vmap <BS> x
+
+" nerdtree config
+map <C-n> :NERDTreeFind<CR>
+
+let NERDTreeShowHidden=1
+let g:NERDTreeChDirMode=2
+let g:NERDTreeAutoDeleteBuffer=1
+let g:NERDTreeMinimalUI=1
+let g:NERDTreeDirArrows=1
+
+" Auto-follow and startup behavior
+augroup nerdtree_follow
+  autocmd!
+  " Close NERDTree if it's the last window
+  autocmd BufEnter * if winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | q | endif
+
+  " Open NERDTree automatically when nvim starts with no files
+  autocmd StdinReadPre * let s:std_in=1
+  autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | NERDTree | endif
+
+  " Open NERDTree when opening a directory, but focus on it
+  autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists('s:std_in') | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
+augroup END
+
+" Manual follow function for when you want to find current file
+nnoremap <leader>nf :NERDTreeFind<CR>
+
+" Git mappings (avoiding conflicts)
+nnoremap <leader>gg :Git<CR>
+nnoremap <leader>gd :Gdiffsplit<CR>
+nnoremap <leader>gc :Git commit<CR>
+nnoremap <leader>gb :GBrowse<CR>
+vnoremap <leader>gb :GBrowse<CR>
+nnoremap <leader>bb :lua require('gitsigns').toggle_current_line_blame()<CR>
+nnoremap <leader>gp :call OpenPullRequest()<CR>
+
+" Function to open PR for current line's commit
+function! OpenPullRequest()
+  let line_num = line('.')
+  let commit_hash = systemlist('git blame -L' . line_num . ',' . line_num . ' --porcelain ' . expand('%'))[0]
+  let commit_hash = split(commit_hash)[0]
+
+  if len(commit_hash) == 40
+    let pr_num = trim(system('gh pr list --search "' . commit_hash . '" --json number --jq ".[0].number // empty"'))
+    if pr_num != '' && pr_num != 'null'
+      echo 'Opening PR #' . pr_num . ' for commit ' . commit_hash[0:7]
+      call system('gh pr view ' . pr_num . ' --web')
+    else
+      echo 'No PR found for commit ' . commit_hash[0:7]
+    endif
+  else
+    echo 'Could not get commit hash for current line'
+  endif
+endfunction
+" airline settings
+let g:airline#extensions#tabline#enabled = 2
+let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline#extensions#tabline#left_sep = ' '
+let g:airline#extensions#tabline#left_alt_sep = '|'
+let g:airline#extensions#tabline#right_sep = ' '
+let g:airline#extensions#tabline#right_alt_sep = '|'
+let g:airline_left_sep = ' '
+let g:airline_left_alt_sep = '|'
+let g:airline_right_sep = ' '
+let g:airline_right_alt_sep = '|'
+let g:airline_powerline_fonts=1
+" Airline theme will be set after colorscheme is loaded
+let g:airline#extensions#tabline#buffer_idx_mode = 1
+nmap <leader>1 <Plug>AirlineSelectTab1
+nmap <leader>2 <Plug>AirlineSelectTab2
+nmap <leader>3 <Plug>AirlineSelectTab3
+nmap <leader>4 <Plug>AirlineSelectTab4
+nmap <leader>5 <Plug>AirlineSelectTab5
+nmap <leader>6 <Plug>AirlineSelectTab6
+nmap <leader>7 <Plug>AirlineSelectTab7
+nmap <leader>8 <Plug>AirlineSelectTab8
+nmap <leader>9 <Plug>AirlineSelectTab9
+nmap <leader>0 <Plug>AirlineSelectTab0
+nmap <leader>- <Plug>AirlineSelectPrevTab
+nmap <leader>+ <Plug>AirlineSelectNextTab
+
+" Multicursor
+let g:multi_cursor_use_default_mapping=0
+let g:multi_cursor_next_key='<C-e>'
+let g:multi_cursor_quit_key='<Esc>'
+
+" coc.nvim config
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+
+" LSP keybindings
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+nmap <leader>rn <Plug>(coc-rename)
+nnoremap <silent> K :call ShowDocumentation()<CR>
+
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Highlight the symbol and its references when holding the cursor
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Auto-install useful language servers
+let g:coc_global_extensions = [
+  \ 'coc-pyright',
+  \ 'coc-tsserver', 
+  \ 'coc-go',
+  \ 'coc-rust-analyzer',
+  \ 'coc-solargraph',
+  \ 'coc-json',
+  \ 'coc-yaml',
+  \ 'coc-html',
+  \ 'coc-css',
+  \ 'coc-prettier',
+  \ 'coc-eslint',
+  \ 'coc-docker'
+\ ]
+
+" Other
+set mouse=a
+set list
+set listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:⣿
+
+" Buffer handling
+nmap <leader>l :bnext<CR>
+nmap <c-h> :bprevious<CR>
+nmap <leader>bq :bp <BAR> bd #<CR>
+nmap <leader>bl :ls<CR>
+nmap <leader>n :e ~/.config/nvim/init.vim<CR>
+nmap <leader>r :source ~/.config/nvim/init.vim<CR>:echo "Config reloaded!"<CR>
+
+" Auto-reload config on save
+augroup config_reload
+  autocmd!
+  autocmd BufWritePost ~/.config/nvim/init.vim source ~/.config/nvim/init.vim | echo "Config auto-reloaded!"
+augroup END
+
+" Use <C-L> to clear the highlighting of :set hlsearch.
+if maparg('<C-L>', 'n') ==# ''
+  nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
+endif
+
+" Smooth scrolling with Shift+hjkl (keeps cursor position relative to screen)
+nnoremap <S-j> <C-E>
+nnoremap <S-k> <C-Y>
+nnoremap <S-h> zh
+nnoremap <S-l> zl
+
+
+let g:python_host_prog="/usr/local/bin/python3.9"
+
+let g:session_autosave = 'yes'
+let g:session_autoload = 'yes'
+let g:session_default_to_last = 1
+
+" Auto-install vim-plug if not found
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+" Smart relative line number toggle
+augroup numbertoggle
+  autocmd!
+  autocmd BufEnter,FocusGained,InsertLeave,WinEnter * if &nu && mode() != "i" | set rnu   | endif
+  autocmd BufLeave,FocusLost,InsertEnter,WinLeave   * if &nu                  | set nornu | endif
+augroup END
+
+" Plugins here
+call plug#begin('~/.config/nvim/plugged')
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'scrooloose/nerdtree'
+Plug 'terryma/vim-multiple-cursors'
+Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
+Plug 'sheerun/vim-polyglot'
+" Enhanced syntax highlighting
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-treesitter/nvim-treesitter-textobjects'
+" LSP and completion
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" AI assistance
+Plug 'github/copilot.vim'
+" Navigation and search
+Plug 'nvim-lua/plenary.nvim'
+Plug 'ThePrimeagen/harpoon'
+Plug 'nvim-telescope/telescope.nvim'
+" Git integration
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-rhubarb'  " GitHub support for fugitive
+Plug 'lewis6991/gitsigns.nvim'
+call plug#end()
+
+" Catppuccin configuration (only if plugin is installed)
+lua << EOF
+local status_ok, catppuccin = pcall(require, "catppuccin")
+if status_ok then
+  catppuccin.setup({
+    flavour = "mocha", -- latte, frappe, macchiato, mocha
+    background = { -- :h background
+        light = "latte",
+        dark = "mocha",
+    },
+    transparent_background = false,
+    show_end_of_buffer = false,
+    term_colors = true,
+    dim_inactive = {
+        enabled = false,
+        shade = "dark",
+        percentage = 0.15,
+    },
+    integrations = {
+        coc_nvim = true,
+        telescope = true,
+        harpoon = true,
+        native_lsp = {
+            enabled = true,
+            underlines = {
+                errors = { "undercurl" },
+                hints = { "undercurl" },
+                warnings = { "undercurl" },
+                information = { "undercurl" },
+            },
+            inlay_hints = {
+                background = true,
+            },
+        },
+        treesitter = true,
+        semantic_tokens = true,
+    },
+    custom_highlights = function(colors)
+      return {
+        -- LSP and CoC highlighting
+        CocErrorSign = { fg = colors.red },
+        CocWarningSign = { fg = colors.yellow },
+        CocInfoSign = { fg = colors.sky },
+        CocHintSign = { fg = colors.teal },
+        CocErrorHighlight = { bg = colors.none, sp = colors.red, undercurl = true },
+        CocWarningHighlight = { bg = colors.none, sp = colors.yellow, undercurl = true },
+        CocInfoHighlight = { bg = colors.none, sp = colors.sky, undercurl = true },
+        CocHintHighlight = { bg = colors.none, sp = colors.teal, undercurl = true },
+        -- Enhanced semantic highlighting
+        CocSemClass = { fg = colors.yellow, style = { "bold" } },
+        CocSemEnum = { fg = colors.peach },
+        CocSemInterface = { fg = colors.yellow, style = { "italic" } },
+        CocSemStruct = { fg = colors.yellow, style = { "bold" } },
+        CocSemType = { fg = colors.yellow },
+        CocSemTypeParameter = { fg = colors.maroon, style = { "italic" } },
+        CocSemVariable = { fg = colors.text },
+        CocSemParameter = { fg = colors.maroon, style = { "italic" } },
+        CocSemEnumMember = { fg = colors.teal },
+        CocSemFunction = { fg = colors.blue, style = { "bold" } },
+        CocSemMethod = { fg = colors.blue, style = { "bold" } },
+        CocSemProperty = { fg = colors.teal },
+        CocSemKeyword = { fg = colors.mauve, style = { "bold" } },
+        CocSemModifier = { fg = colors.mauve },
+        CocSemNamespace = { fg = colors.pink, style = { "italic" } },
+        CocSemOperator = { fg = colors.sky },
+        CocSemComment = { fg = colors.overlay1, style = { "italic" } },
+        CocSemString = { fg = colors.green },
+        CocSemNumber = { fg = colors.peach },
+        CocSemRegexp = { fg = colors.pink },
+        CocSemDecorator = { fg = colors.pink },
+        -- Treesitter enhancements
+        ["@function"] = { fg = colors.blue, style = { "bold" } },
+        ["@function.builtin"] = { fg = colors.sky, style = { "bold" } },
+        ["@method"] = { fg = colors.blue, style = { "bold" } },
+        ["@parameter"] = { fg = colors.maroon, style = { "italic" } },
+        ["@variable"] = { fg = colors.text },
+        ["@variable.builtin"] = { fg = colors.red, style = { "italic" } },
+        ["@field"] = { fg = colors.teal },
+        ["@property"] = { fg = colors.teal },
+        -- Enhanced type differentiation
+        ["@type"] = { fg = colors.yellow },
+        ["@type.builtin"] = { fg = colors.peach, style = { "bold" } }, -- string, int, bool
+        ["@type.definition"] = { fg = colors.yellow, style = { "bold" } }, -- struct definitions
+        ["@type.qualifier"] = { fg = colors.mauve }, -- const, var keywords
+        ["@constructor"] = { fg = colors.sapphire },
+        ["@constant"] = { fg = colors.peach, style = { "bold" } },
+        ["@constant.builtin"] = { fg = colors.flamingo, style = { "bold" } }, -- true, false, nil
+        ["@number"] = { fg = colors.peach },
+        ["@number.float"] = { fg = colors.peach, style = { "italic" } },
+        ["@boolean"] = { fg = colors.flamingo, style = { "bold" } },
+        ["@string"] = { fg = colors.green },
+        ["@string.escape"] = { fg = colors.pink },
+        ["@character"] = { fg = colors.teal },
+        ["@comment"] = { fg = colors.overlay1, style = { "italic" } },
+        ["@keyword"] = { fg = colors.mauve, style = { "bold" } },
+        ["@keyword.function"] = { fg = colors.mauve, style = { "bold" } },
+        ["@keyword.operator"] = { fg = colors.mauve },
+        ["@keyword.return"] = { fg = colors.pink, style = { "bold" } },
+        ["@keyword.import"] = { fg = colors.pink },
+        ["@operator"] = { fg = colors.sky },
+        ["@punctuation"] = { fg = colors.overlay2 },
+        ["@punctuation.delimiter"] = { fg = colors.overlay2 },
+        ["@punctuation.bracket"] = { fg = colors.overlay2 },
+        ["@punctuation.special"] = { fg = colors.sky },
+        -- Go-specific enhancements
+        ["@namespace"] = { fg = colors.pink, style = { "italic" } },
+        ["@label"] = { fg = colors.sapphire, style = { "italic" } },
+        ["@tag"] = { fg = colors.mauve },
+        ["@tag.attribute"] = { fg = colors.teal },
+        ["@tag.delimiter"] = { fg = colors.overlay2 },
+      }
+    end,
+  })
+end
+EOF
+
+" Set Catppuccin colorscheme
+silent! colorscheme catppuccin
+
+" Use a compatible dark airline theme that works well with Catppuccin
+let g:airline_theme = 'dark'
+
+" Telescope setup with enhanced mappings
+lua << EOF
+require('telescope').setup{
+  defaults = {
+    mappings = {
+      i = {
+        -- Navigation
+        ["<C-j>"] = require('telescope.actions').move_selection_next,
+        ["<C-k>"] = require('telescope.actions').move_selection_previous,
+        
+        -- Send to qflist  
+        ["<C-q>"] = require('telescope.actions').send_to_qflist + require('telescope.actions').open_qflist,
+        ["<M-q>"] = require('telescope.actions').send_selected_to_qflist + require('telescope.actions').open_qflist,
+        
+        -- Preview scrolling
+        ["<C-u>"] = require('telescope.actions').preview_scrolling_up,
+        ["<C-d>"] = require('telescope.actions').preview_scrolling_down,
+        
+        -- Split options
+        ["<C-x>"] = require('telescope.actions').select_horizontal,
+        ["<C-v>"] = require('telescope.actions').select_vertical,
+        ["<C-t>"] = require('telescope.actions').select_tab,
+      },
+      n = {
+        -- Same mappings for normal mode
+        ["<C-q>"] = require('telescope.actions').send_to_qflist + require('telescope.actions').open_qflist,
+        ["<M-q>"] = require('telescope.actions').send_selected_to_qflist + require('telescope.actions').open_qflist,
+        ["<C-x>"] = require('telescope.actions').select_horizontal,
+        ["<C-v>"] = require('telescope.actions').select_vertical,
+        ["<C-t>"] = require('telescope.actions').select_tab,
+      },
+    },
+  },
+}
+EOF
+
+" Telescope key mappings
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+" Additional useful telescope mappings
+nnoremap <leader>fr <cmd>Telescope oldfiles<cr>
+nnoremap <leader>fc <cmd>Telescope git_commits<cr>
+nnoremap <leader>fs <cmd>Telescope git_status<cr>
+
+" Use ripgrep as default grep program
+set grepprg=rg\ --vimgrep\ --smart-case
+set grepformat=%f:%l:%c:%m
+
+" Grep mappings
+nnoremap <leader>g :grep<space>
+nnoremap <leader>G :grep <C-r><C-w><CR>
+
+" Quickfix list mappings
+nnoremap <leader>co <cmd>copen<cr>
+nnoremap <leader>cc <cmd>cclose<cr>
+nnoremap ]q <cmd>cnext<cr>
+nnoremap [q <cmd>cprev<cr>
+nnoremap ]Q <cmd>clast<cr>
+nnoremap [Q <cmd>cfirst<cr>
+
+" Simplified test toggle function
+function! ToggleTestFile()
+  let current_file = expand('%:p')
+  let file_ext = expand('%:e')
+
+  if file_ext ==# 'rb'
+    " Ruby: spec <-> source
+    if current_file =~# '_spec\.rb$'
+      let target = substitute(current_file, '_spec\.rb$', '.rb', '')
+      let target = substitute(target, '/spec/', '/lib/', '')
+    else
+      let target = substitute(current_file, '\.rb$', '_spec.rb', '')
+      let target = substitute(target, '/lib/', '/spec/', '')
+    endif
+  elseif file_ext =~# '\(ts\|tsx\|js\|jsx\)$'
+    " TypeScript/JS: .test. <-> source
+    if current_file =~# '\.test\.\(ts\|tsx\|js\|jsx\)$'
+      let target = substitute(current_file, '\.test\.', '.', '')
+    else
+      let target = substitute(current_file, '\.\(ts\|tsx\|js\|jsx\)$', '.test.\1', '')
+    endif
+  elseif file_ext ==# 'go'
+    " Go: _test.go <-> .go
+    if current_file =~# '_test\.go$'
+      let target = substitute(current_file, '_test\.go$', '.go', '')
+    else
+      let target = substitute(current_file, '\.go$', '_test.go', '')
+    endif
+  else
+    echo "No test pattern for: " . file_ext
+    return
+  endif
+
+  execute 'edit ' . fnameescape(target)
+  echo "Toggled to: " . fnamemodify(target, ':t')
+endfunction
+
+" Test toggle keybinding
+nnoremap <leader>tt <cmd>call ToggleTestFile()<cr>
+
+" Go formatting function
+function! GoFormat()
+  if &filetype == 'go'
+    " First run goimports to remove unused imports and add missing ones
+    let goimports_cmd = "~/go/bin/goimports -w " . shellescape(expand('%'))
+    let goimports_result = system(goimports_cmd)
+    if v:shell_error != 0
+      return
+    endif
+    
+    " Then run gci to group imports properly
+    let cmd = "~/go/bin/gci write --skip-generated --skip-vendor -s standard -s default -s \"prefix(github.com/1debit)\" " . shellescape(expand('%'))
+    let result = system(cmd)
+    edit
+  endif
+endfunction
+
+" Go formatting and import management on save 
+augroup go_format
+  autocmd!
+  autocmd BufWritePost *.go call GoFormat()
+augroup END
+
+
+" Harpoon key mappings for quick file navigation
+nnoremap <leader>a <cmd>lua require("harpoon.mark").add_file()<cr>
+nnoremap <leader>h <cmd>lua require("harpoon.ui").toggle_quick_menu()<cr>
+nnoremap <leader>m1 <cmd>lua require("harpoon.ui").nav_file(1)<cr>
+nnoremap <leader>m2 <cmd>lua require("harpoon.ui").nav_file(2)<cr>
+nnoremap <leader>m3 <cmd>lua require("harpoon.ui").nav_file(3)<cr>
+nnoremap <leader>m4 <cmd>lua require("harpoon.ui").nav_file(4)<cr>
+
+" Simple vsplit telescope mappings
+nnoremap <leader>vf <cmd>vsplit<cr><cmd>Telescope find_files<cr>
+nnoremap <leader>vg <cmd>vsplit<cr><cmd>Telescope live_grep<cr>
+nnoremap <leader>vb <cmd>vsplit<cr><cmd>Telescope buffers<cr>
+
+" Load telescope harpoon extension after plugins are loaded
+augroup telescope_harpoon
+  autocmd!
+  autocmd VimEnter * silent! lua require("telescope").load_extension('harpoon')
+augroup END
+
+" Make netrw change working directory
+augroup netrw_follow
+  autocmd!
+  autocmd FileType netrw setlocal autochdir
+augroup END
+
+" Override CoC signs after it loads (less intrusive symbols)
+augroup coc_signs
+  autocmd!
+  autocmd User CocNvimInit call SetupCocSigns()
+  autocmd VimEnter * call SetupCocSigns()
+augroup END
+
+function! SetupCocSigns()
+  sign define CocError text=● texthl=CocErrorSign linehl= numhl=
+  sign define CocWarning text=● texthl=CocWarningSign linehl= numhl=  
+  sign define CocInfo text=● texthl=CocInfoSign linehl= numhl=
+  sign define CocHint text=● texthl=CocHintSign linehl= numhl=
+endfunction
+
+" Configure Treesitter for enhanced syntax highlighting
+lua << EOF
+local status_ok, treesitter = pcall(require, "nvim-treesitter.configs")
+if status_ok then
+  treesitter.setup {
+    ensure_installed = { "go", "javascript", "typescript", "tsx", "python", "ruby", "lua", "vim", "yaml", "json", "html", "css", "bash", "dockerfile", "rust", "toml" },
+    sync_install = false,
+    auto_install = true,
+    highlight = {
+      enable = true,
+      additional_vim_regex_highlighting = false,
+    },
+    indent = {
+      enable = true,
+    },
+    textobjects = {
+      select = {
+        enable = true,
+        lookahead = true,
+        keymaps = {
+          ["af"] = "@function.outer",
+          ["if"] = "@function.inner",
+          ["ac"] = "@class.outer",
+          ["ic"] = "@class.inner",
+          ["as"] = "@scope",
+        },
+      },
+    },
+  }
+end
+EOF
+
+" GitSigns configuration
+lua << EOF
+local status_ok, gitsigns = pcall(require, "gitsigns")
+if status_ok then
+  gitsigns.setup {
+    signs = {
+      add          = { text = '│' },
+      change       = { text = '│' },
+      delete       = { text = '_' },
+      topdelete    = { text = '‾' },
+      changedelete = { text = '~' },
+      untracked    = { text = '┆' },
+    },
+    signcolumn = true,  -- Toggle with `:Gitsigns toggle_signs`
+    numhl      = false, -- Toggle with `:Gitsigns toggle_numhl`
+    linehl     = false, -- Toggle with `:Gitsigns toggle_linehl`
+    word_diff  = false, -- Toggle with `:Gitsigns toggle_word_diff`
+    watch_gitdir = {
+      follow_files = true
+    },
+    attach_to_untracked = true,
+    current_line_blame = false, -- Toggle with `:Gitsigns toggle_current_line_blame`
+    current_line_blame_opts = {
+      virt_text = true,
+      virt_text_pos = 'eol', -- 'eol' | 'overlay' | 'right_align'
+      delay = 1000,
+      ignore_whitespace = false,
+    },
+    current_line_blame_formatter = '<author>, <author_time:%Y-%m-%d> - <summary>',
+    sign_priority = 6,
+    update_debounce = 100,
+    status_formatter = nil, -- Use default
+    max_file_length = 40000, -- Disable if file is longer than this (in lines)
+    preview_config = {
+      -- Options passed to nvim_open_win
+      border = 'single',
+      style = 'minimal',
+      relative = 'cursor',
+      row = 0,
+      col = 1
+    },
+  }
+end
+EOF
+
+" Enhanced CoC semantic tokens (disabled for Go to allow custom highlighting)
+call coc#config('semanticTokens.enable', v:true)
+call coc#config('semanticTokens.filetypes', ['javascript', 'typescript', 'typescriptreact', 'python', 'ruby', 'rust', 'lua'])
+
+" Ruby configuration
+let g:ruby_indent_assignment_style = 'variable'
+let g:ruby_indent_block_style = 'do'
+let g:ruby_space_errors = 1
+let g:ruby_operators = 1
+
+" React Native / TSX configuration
+let g:typescript_indent_disable = 0
+
+" Enable more colorful Go syntax
+let g:go_highlight_functions = 1
+let g:go_highlight_function_parameters = 1  
+let g:go_highlight_function_calls = 1
+let g:go_highlight_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_build_constraints = 1
+let g:go_highlight_generate_tags = 1
+let g:go_highlight_variable_assignments = 1
+let g:go_highlight_variable_declarations = 1
+
+" Simplified Go highlighting (treesitter handles most syntax)
+let g:go_highlight_types = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_function_calls = 1
+
+" Folding configuration
+set foldenable                " Enable folding
+set foldlevel=2               " Start with folds open up to level 2
+set foldmethod=manual         " Use manual folding for import auto-folding
+set foldcolumn=1              " Show fold indicators in gutter
+
+
+" Auto-fold imports function
+function! AutoFoldImports()
+  let current_line = 1
+  let total_lines = line('$')
+  
+  " Clear existing manual folds
+  normal! zE
+  
+  while current_line <= total_lines
+    let line_content = getline(current_line)
+    
+    " Detect import blocks for different languages
+    if &filetype == 'go'
+      " Go imports: look for "import (" block
+      if line_content =~ '^\s*import\s*('
+        let import_start = current_line
+        let current_line = current_line + 1
+        
+        " Find the end of import block
+        while current_line <= total_lines && getline(current_line) !~ '^\s*)'
+          let current_line = current_line + 1
+        endwhile
+        
+        if current_line <= total_lines
+          " Create fold for import block
+          execute import_start . ',' . current_line . 'fold'
+        endif
+      endif
+      
+    elseif &filetype == 'typescript' || &filetype == 'typescriptreact' || &filetype == 'javascript' || &filetype == 'javascriptreact'
+      " TypeScript/JavaScript imports
+      if line_content =~ '^\s*import\s\+.*from'
+        let import_start = current_line
+        
+        " Find consecutive import lines
+        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*import\s\+.*from'
+          let current_line = current_line + 1
+        endwhile
+        
+        " Create fold if there are multiple consecutive imports
+        if current_line > import_start
+          execute import_start . ',' . current_line . 'fold'
+        endif
+      endif
+      
+    elseif &filetype == 'ruby'
+      " Ruby requires
+      if line_content =~ '^\s*require'
+        let import_start = current_line
+        
+        " Find consecutive require lines
+        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*require'
+          let current_line = current_line + 1
+        endwhile
+        
+        " Create fold if there are multiple consecutive requires
+        if current_line > import_start
+          execute import_start . ',' . current_line . 'fold'
+        endif
+      endif
+      
+    elseif &filetype == 'python'
+      " Python imports
+      if line_content =~ '^\s*\(import\|from\)\s'
+        let import_start = current_line
+        
+        " Find consecutive import lines
+        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*\(import\|from\)\s'
+          let current_line = current_line + 1
+        endwhile
+        
+        " Create fold if there are multiple consecutive imports
+        if current_line > import_start
+          execute import_start . ',' . current_line . 'fold'
+        endif
+      endif
+    endif
+    
+    let current_line = current_line + 1
+  endwhile
+endfunction
+
+" Auto-fold imports on file open and save
+augroup auto_fold_imports
+  autocmd!
+  autocmd BufReadPost,BufWritePost *.go,*.ts,*.tsx,*.js,*.jsx,*.rb,*.py call AutoFoldImports()
+augroup END
+
+" Manual command to fold imports
+command! FoldImports call AutoFoldImports()
+

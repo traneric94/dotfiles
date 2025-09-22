@@ -46,15 +46,9 @@ augroup netrw_follow
   autocmd FileType netrw setlocal autochdir
 augroup END
 
-" Override CoC signs after it loads (less intrusive symbols)
-augroup coc_signs
-  autocmd!
-  autocmd User CocNvimInit call SetupCocSigns()
-  autocmd VimEnter * call SetupCocSigns()
-augroup END
 
 " Auto-fold imports on file open and save
 augroup auto_fold_imports
   autocmd!
-  autocmd BufReadPost,BufWritePost *.go,*.ts,*.tsx,*.js,*.jsx,*.rb,*.py call AutoFoldImports()
+  autocmd BufReadPost,BufWritePost *.go,*.ts,*.tsx,*.js,*.jsx,*.rb,*.py call FoldImports()
 augroup END

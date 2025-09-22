@@ -157,6 +157,23 @@ alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
 # Custom Functions
 # ==============================================================================
 
+# Auto-create .ruby-version from Gemfile when entering Ruby projects
+auto_ruby_version() {
+  if [[ -f "Gemfile" && ! -f ".ruby-version" ]]; then
+    local ruby_req=$(grep '^ruby ' Gemfile 2>/dev/null)
+    if [[ -n "$ruby_req" ]]; then
+      local version=$(echo "$ruby_req" | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+      if [[ -n "$version" ]]; then
+        local available=$(rbenv versions --bare | grep "^${version}" | head -1 2>/dev/null)
+        if [[ -n "$available" ]]; then
+          echo "$available" > .ruby-version
+          echo "📝 Created .ruby-version with Ruby $available"
+        fi
+      fi
+    fi
+  fi
+}
+
 # Auto-tidy after go get
 go() {
   if [[ "$1" == "get" ]]; then
@@ -255,6 +272,11 @@ if command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init zsh)"
 fi
 
+# Ruby version management (rbenv)
+if command -v rbenv >/dev/null 2>&1; then
+  eval "$(rbenv init - zsh)"
+fi
+
 # Source local, untracked overrides
 [ -f "$HOME/.chime.sh" ] && source "$HOME/.chime.sh"
 if [ -f "$HOME/.zshrc.chime" ]; then
@@ -307,3 +329,6 @@ export CLAUDE_CODE_MAX_OUTPUT_TOKENS=8192
 precmd () {
   printf "\e]7;file://%s%s\e\\" "$HOSTNAME" "$PWD"
 }
+
+# Hook auto Ruby version detection into directory changes
+precmd_functions+=(auto_ruby_version)

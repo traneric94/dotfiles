@@ -89,3 +89,9 @@ let g:coc_global_extensions = [
   \ 'coc-eslint',
   \ 'coc-docker'
 \ ]
+
+" Ruby Solargraph configuration - let CoC manage installation
+call coc#config('solargraph.useBundler', v:false)
+call coc#config('solargraph.bundlerPath', 'bundle')
+call coc#config('solargraph.checkGemVersion', v:false)
+call coc#config('solargraph.diagnostics', v:true)

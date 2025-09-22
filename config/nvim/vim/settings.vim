@@ -43,6 +43,10 @@ set mouse=a
 set list
 set listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:⣿
 
+" Preview window settings
+set previewheight=12
+set completeopt=menu,menuone,preview,noselect
+
 " Use ripgrep as default grep program
 set grepprg=rg\ --vimgrep\ --smart-case
 set grepformat=%f:%l:%c:%m
@@ -55,6 +59,10 @@ set foldcolumn=1              " Show fold indicators in gutter
 
 " Language-specific settings
 let g:python_host_prog="/usr/local/bin/python3.9"
+
+" Go make configuration
+autocmd FileType go setlocal makeprg=make
+autocmd FileType go setlocal errorformat=%E%f:%l:%c:\ %m,%E%f:%l:\ %m,%-G%.%#
 
 " Ruby configuration
 let g:ruby_indent_assignment_style = 'variable'

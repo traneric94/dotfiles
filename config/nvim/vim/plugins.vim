@@ -58,11 +58,21 @@ let g:NERDTreeChDirMode=2
 let g:NERDTreeAutoDeleteBuffer=1
 let g:NERDTreeMinimalUI=1
 let g:NERDTreeDirArrows=1
+let g:NERDTreeCreatePrefix='silent keepalt keepjumps'
+
 
 " CoC settings
 " Enhanced CoC semantic tokens (disabled for Go to allow custom highlighting)
 call coc#config('semanticTokens.enable', v:true)
 call coc#config('semanticTokens.filetypes', ['javascript', 'typescript', 'typescriptreact', 'python', 'ruby', 'rust', 'lua'])
+
+" Fix hover preview rendering issues
+call coc#config('hover.target', 'preview')
+call coc#config('hover.autoHide', v:false)
+call coc#config('hover.floatConfig', {
+  \ 'border': v:true,
+  \ 'rounded': v:true
+  \ })
 
 " Auto-install useful language servers
 let g:coc_global_extensions = [

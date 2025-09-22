@@ -1,4 +1,52 @@
-" Show documentation function for CoC
+" Clean, refactored functions
+
+" Config
+let g:go_bin_path = "/Users/eric.tran/go/bin/"
+
+" Shared quickfix error parsing
+function! ParseErrorsToQuickfix(output, clear=v:true)
+  if a:clear | call setqflist([], 'r') | endif
+
+  let qf_items = []
+  for line in split(a:output, '\n')
+    if line =~ ':\d\+:\d\+:' || line =~ 'FAIL:'
+      let parts = matchlist(line, '\(.\{-}\):\(\d\+\):\(\d\+\):\s*\(.*\)')
+      if len(parts) >= 5
+        call add(qf_items, {'filename': parts[1], 'lnum': parts[2], 'col': parts[3], 'text': parts[4]})
+      else
+        call add(qf_items, {'text': line})
+      endif
+    endif
+  endfor
+
+  call setqflist(qf_items, a:clear ? 'r' : 'a')
+  return len(qf_items)
+endfunction
+
+" Simple async runner
+function! RunAsync(cmd, msg, callback)
+  echo a:msg . " (async)..."
+  let s:output = []
+
+  function! s:OnOutput(job_id, data, event) closure
+    call extend(s:output, a:data)
+  endfunction
+
+  function! s:OnExit(job_id, exit_code, event) closure
+    call a:callback(a:exit_code, s:output)
+    let s:output = []
+  endfunction
+
+  call jobstart(a:cmd, {
+    \ 'on_stdout': function('s:OnOutput'),
+    \ 'on_stderr': function('s:OnOutput'),
+    \ 'on_exit': function('s:OnExit'),
+    \ 'stdout_buffered': v:true,
+    \ 'stderr_buffered': v:true
+    \ })
+endfunction
+
+" CoC documentation
 function! ShowDocumentation()
   if CocAction('hasProvider', 'hover')
     call CocActionAsync('doHover')
@@ -7,7 +55,7 @@ function! ShowDocumentation()
   endif
 endfunction
 
-" Function to open PR for current line's commit
+" Git PR opener
 function! OpenPullRequest()
   let line_num = line('.')
   let commit_hash = systemlist('git blame -L' . line_num . ',' . line_num . ' --porcelain ' . expand('%'))[0]
@@ -26,149 +74,118 @@ function! OpenPullRequest()
   endif
 endfunction
 
-" Simplified test toggle function
+" Test file toggle
 function! ToggleTestFile()
-  let current_file = expand('%:p')
-  let file_ext = expand('%:e')
+  let patterns = {
+    \ 'rb': [['_spec\.rb$', '.rb', '/spec/', '/lib/'], ['\.rb$', '_spec.rb', '/lib/', '/spec/']],
+    \ 'go': [['_test\.go$', '.go'], ['\.go$', '_test.go']],
+    \ 'ts\|tsx\|js\|jsx': [['\.test\.', '.'], ['\.\(ts\|tsx\|js\|jsx\)$', '.test.\1']]
+  \ }
 
-  if file_ext ==# 'rb'
-    " Ruby: spec <-> source
-    if current_file =~# '_spec\.rb$'
-      let target = substitute(current_file, '_spec\.rb$', '.rb', '')
-      let target = substitute(target, '/spec/', '/lib/', '')
-    else
-      let target = substitute(current_file, '\.rb$', '_spec.rb', '')
-      let target = substitute(target, '/lib/', '/spec/', '')
-    endif
-  elseif file_ext =~# '\(ts\|tsx\|js\|jsx\)$'
-    " TypeScript/JS: .test. <-> source
-    if current_file =~# '\.test\.\(ts\|tsx\|js\|jsx\)$'
-      let target = substitute(current_file, '\.test\.', '.', '')
-    else
-      let target = substitute(current_file, '\.\(ts\|tsx\|js\|jsx\)$', '.test.\1', '')
-    endif
-  elseif file_ext ==# 'go'
-    " Go: _test.go <-> .go
-    if current_file =~# '_test\.go$'
-      let target = substitute(current_file, '_test\.go$', '.go', '')
-    else
-      let target = substitute(current_file, '\.go$', '_test.go', '')
-    endif
-  else
-    echo "No test pattern for: " . file_ext
-    return
-  endif
+  let ext = expand('%:e')
+  let file = expand('%:p')
 
-  execute 'edit ' . fnameescape(target)
-  echo "Toggled to: " . fnamemodify(target, ':t')
+  for [pattern_ext, transforms] in items(patterns)
+    if ext =~# pattern_ext
+      for transform in transforms
+        if file =~# get(transform, 0)
+          let target = substitute(file, get(transform, 0), get(transform, 1), '')
+          if len(transform) > 2
+            let target = substitute(target, get(transform, 2), get(transform, 3), '')
+          endif
+          execute 'edit ' . fnameescape(target)
+          echo "Toggled to: " . fnamemodify(target, ':t')
+          return
+        endif
+      endfor
+    endif
+  endfor
+
+  echo "No test pattern for: " . ext
 endfunction
 
-" Go formatting function
+" Go format (simplified)
 function! GoFormat()
-  if &filetype == 'go'
-    " First run goimports to remove unused imports and add missing ones
-    let goimports_cmd = "~/go/bin/goimports -w " . shellescape(expand('%'))
-    let goimports_result = system(goimports_cmd)
-    if v:shell_error != 0
-      return
-    endif
+  if &filetype != 'go' | return | endif
 
-    " Then run gci to group imports properly
-    let cmd = "~/go/bin/gci write --skip-generated --skip-vendor -s standard -s default -s \"prefix(github.com/1debit)\" " . shellescape(expand('%'))
-    let result = system(cmd)
+  let file = shellescape(expand('%'))
+  let result = system(g:go_bin_path . 'goimports -w ' . file . ' 2>&1')
+
+  if v:shell_error != 0
+    call ParseErrorsToQuickfix(result)
+    copen
+  else
+    let result = system(g:go_bin_path . 'gci write --skip-generated --skip-vendor -s standard -s default -s "prefix(github.com/1debit)" ' . file)
     edit
   endif
 endfunction
 
-" Setup CoC signs with less intrusive symbols
-function! SetupCocSigns()
-  sign define CocError text=● texthl=CocErrorSign linehl= numhl=
-  sign define CocWarning text=● texthl=CocWarningSign linehl= numhl=
-  sign define CocInfo text=● texthl=CocInfoSign linehl= numhl=
-  sign define CocHint text=● texthl=CocHintSign linehl= numhl=
-endfunction
-
-" Auto-fold imports function
-function! AutoFoldImports()
-  let current_line = 1
-  let total_lines = line('$')
-
-  " Clear existing manual folds
-  normal! zE
-
-  while current_line <= total_lines
-    let line_content = getline(current_line)
-
-    " Detect import blocks for different languages
-    if &filetype == 'go'
-      " Go imports: look for "import (" block
-      if line_content =~ '^\s*import\s*('
-        let import_start = current_line
-        let current_line = current_line + 1
-
-        " Find the end of import block
-        while current_line <= total_lines && getline(current_line) !~ '^\s*)'
-          let current_line = current_line + 1
-        endwhile
-
-        if current_line <= total_lines
-          " Create fold for import block
-          execute import_start . ',' . current_line . 'fold'
-        endif
-      endif
-
-    elseif &filetype == 'typescript' || &filetype == 'typescriptreact' || &filetype == 'javascript' || &filetype == 'javascriptreact'
-      " TypeScript/JavaScript imports
-      if line_content =~ '^\s*import\s\+.*from'
-        let import_start = current_line
-
-        " Find consecutive import lines
-        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*import\s\+.*from'
-          let current_line = current_line + 1
-        endwhile
-
-        " Create fold if there are multiple consecutive imports
-        if current_line > import_start
-          execute import_start . ',' . current_line . 'fold'
-        endif
-      endif
-
-    elseif &filetype == 'ruby'
-      " Ruby requires
-      if line_content =~ '^\s*require'
-        let import_start = current_line
-
-        " Find consecutive require lines
-        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*require'
-          let current_line = current_line + 1
-        endwhile
-
-        " Create fold if there are multiple consecutive requires
-        if current_line > import_start
-          execute import_start . ',' . current_line . 'fold'
-        endif
-      endif
-
-    elseif &filetype == 'python'
-      " Python imports
-      if line_content =~ '^\s*\(import\|from\)\s'
-        let import_start = current_line
-
-        " Find consecutive import lines
-        while current_line + 1 <= total_lines && getline(current_line + 1) =~ '^\s*\(import\|from\)\s'
-          let current_line = current_line + 1
-        endwhile
-
-        " Create fold if there are multiple consecutive imports
-        if current_line > import_start
-          execute import_start . ',' . current_line . 'fold'
-        endif
-      endif
+" Go test (async)
+function! GoTestQuick()
+  function! s:TestCallback(exit_code, output)
+    if a:exit_code != 0
+      let error_count = ParseErrorsToQuickfix(join(a:output, "\n"))
+      if error_count > 0 | copen | endif
+      echo "Tests failed - check quickfix"
+    else
+      echo "All tests passed"
     endif
+  endfunction
 
-    let current_line = current_line + 1
-  endwhile
+  call RunAsync(['go', 'test', './...'], 'Running tests', function('s:TestCallback'))
 endfunction
 
-" Manual command to fold imports
-command! FoldImports call AutoFoldImports()
+" Go vet (sync)
+function! GoVetQuick()
+  let result = system('go vet ./... 2>&1')
+  let error_count = ParseErrorsToQuickfix(result)
+
+  if error_count > 0
+    copen
+  else
+    echo "Go vet passed"
+  endif
+endfunction
+
+" Go build (sync)
+function! GoBuildQuick()
+  let result = system('go build ./... 2>&1')
+  let error_count = ParseErrorsToQuickfix(result)
+
+  if error_count > 0
+    copen
+  else
+    echo "Build successful"
+  endif
+endfunction
+
+" Simple import folder
+function! FoldImports()
+  let patterns = {
+    \ 'go': '^\s*import\s*(',
+    \ 'typescript\|typescriptreact\|javascript\|javascriptreact': '^\s*import\s\+.*from',
+    \ 'ruby': '^\s*require',
+    \ 'python': '^\s*\(import\|from\)\s'
+  \ }
+
+  for [ft, pattern] in items(patterns)
+    if &filetype =~# ft
+      let lines = getline(1, '$')
+      let start = -1
+
+      for i in range(len(lines))
+        if lines[i] =~# pattern
+          if start == -1 | let start = i + 1 | endif
+        elseif start != -1 && lines[i] !~ '^\s*$'
+          if i > start
+            execute start . ',' . i . 'fold'
+          endif
+          let start = -1
+        endif
+      endfor
+      break
+    endif
+  endfor
+endfunction
+
+command! FoldImports call FoldImports()

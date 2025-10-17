@@ -30,6 +30,10 @@ style = "Bold"
 family = "Hack Nerd Font Mono"
 style = "Italic"
 
+[font.bold_italic]
+family = "Hack Nerd Font Mono"
+style = "Bold Italic"
+
 [colors]
 # Catppuccin Mocha theme - modern and pleasant
 [colors.primary]
@@ -127,7 +131,7 @@ bindings = [
 ]
 
 [general]
-working_directory = "/Users/eric.tran/codebase"
+working_directory = "/Users/eric/codebase"
 
 [terminal]
 

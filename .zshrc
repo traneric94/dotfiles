@@ -18,6 +18,14 @@
 ZSH_DISABLE_COMPFIX=true
 export ZSH="$HOME/.oh-my-zsh"
 
+# Determine dotfiles directory for sourcing helper scripts
+if [[ -z "${DOTFILES_DIR:-}" ]]; then
+  DOTFILES_DIR="$HOME/dotfiles"
+  if [[ ! -d "$DOTFILES_DIR" ]]; then
+    DOTFILES_DIR="${${(%):-%N}:a:h}"
+  fi
+fi
+
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
@@ -31,7 +39,9 @@ ZSH_THEME="robbyrussell"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
 
-source $ZSH/oh-my-zsh.sh
+if [[ -f "$ZSH/oh-my-zsh.sh" ]]; then
+  source "$ZSH/oh-my-zsh.sh"
+fi
 
 # User configuration
 
@@ -69,7 +79,12 @@ setopt HIST_BEEP                 # Beep when accessing nonexistent history.# Pre
 alias awsume=". awsume"
 
 alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
-command -v thefuck >/dev/null 2>&1 && eval "$(thefuck --alias)"
+if command -v thefuck >/dev/null 2>&1; then
+  if __thefuck_alias=$(thefuck --alias 2>/dev/null); then
+    eval "$__thefuck_alias"
+  fi
+  unset __thefuck_alias
+fi
 
 # functions
 function aoc() {
@@ -109,7 +124,9 @@ export PATH="/usr/sbin:$PATH"
 # ==============================================================================
 alias vim=nvim
 alias cat=bat
-alias cd=z
+if command -v zoxide >/dev/null 2>&1; then
+  alias cd='z'
+fi
 alias mkdir='mkdir -p'  # Create parent directories as needed
 alias c='clear'          # Clear terminal screen
 alias reload='source ~/.zshrc'  # Reload ZSH Configuration
@@ -283,21 +300,26 @@ if [ -f "$HOME/.zshrc.chime" ]; then
   source "$HOME/.zshrc.chime"
 fi
 
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /opt/homebrew/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+# Interactive-only enhancements
+if [[ -t 1 ]]; then
+  [[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+  [[ -f /opt/homebrew/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh ]] && source /opt/homebrew/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
+  [[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-# zsh-vi-mode hook to load fzf-git after vi-mode initializes
-function zvm_after_init() {
-  source ~/codebase/dotfiles/fzf-git.sh/fzf-git.sh
-}
+  # zsh-vi-mode hook to load fzf-git after vi-mode initializes
+  function zvm_after_init() {
+    local fzf_git="$DOTFILES_DIR/scripts/fzf-git.sh"
+    [[ -f "$fzf_git" ]] && source "$fzf_git"
+  }
 
-# Key bindings for autosuggestions
-bindkey -e
-bindkey '^I' autosuggest-accept
+  # Key bindings for autosuggestions
+  bindkey -e
+  bindkey '^I' autosuggest-accept
 
-# FZF
-eval "$(/opt/homebrew/bin/fzf --zsh)"
+  if command -v fzf >/dev/null 2>&1; then
+    eval "$(/opt/homebrew/bin/fzf --zsh 2>/dev/null)"
+  fi
+fi
 export FZF_DEFAULT_COMMAND="/opt/homebrew/bin/fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="/opt/homebrew/bin/fd --type=d --hidden --strip-cwd-prefix --exclude .git"
@@ -317,7 +339,9 @@ export FZF_CTRL_T_OPTS="--preview '/opt/homebrew/bin/bat --color=always -n --lin
 export FZF_ATC_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
 
 # Remove broken list-expand binding to allow fzf-git Ctrl+G prefix to work
-bindkey -r "^G"
+if [[ -t 1 ]]; then
+  bindkey -r "^G"
+fi
 
 set rtp+=/opt/homebrew/opt/fzf
 export GPG_TTY=$(tty)

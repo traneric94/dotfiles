@@ -9,10 +9,9 @@ endif
 call plug#begin('~/.config/nvim/plugged')
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'scrooloose/nerdtree'
+Plug 'preservim/nerdtree'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
-Plug 'sheerun/vim-polyglot'
 " Enhanced syntax highlighting
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/nvim-treesitter-textobjects'
@@ -62,17 +61,25 @@ let g:NERDTreeCreatePrefix='silent keepalt keepjumps'
 
 
 " CoC settings
-" Enhanced CoC semantic tokens (disabled for Go to allow custom highlighting)
-call coc#config('semanticTokens.enable', v:true)
-call coc#config('semanticTokens.filetypes', ['javascript', 'typescript', 'typescriptreact', 'python', 'ruby', 'rust', 'lua'])
+if exists('*coc#config')
+  " Enhanced CoC semantic tokens (disabled for Go to allow custom highlighting)
+  call coc#config('semanticTokens.enable', v:true)
+  call coc#config('semanticTokens.filetypes', ['javascript', 'typescript', 'typescriptreact', 'python', 'ruby', 'rust', 'lua'])
 
-" Fix hover preview rendering issues
-call coc#config('hover.target', 'preview')
-call coc#config('hover.autoHide', v:false)
-call coc#config('hover.floatConfig', {
-  \ 'border': v:true,
-  \ 'rounded': v:true
-  \ })
+  " Fix hover preview rendering issues
+  call coc#config('hover.target', 'preview')
+  call coc#config('hover.autoHide', v:false)
+  call coc#config('hover.floatConfig', {
+    \ 'border': v:true,
+    \ 'rounded': v:true
+    \ })
+
+  " Ruby Solargraph configuration - let CoC manage installation
+  call coc#config('solargraph.useBundler', v:false)
+  call coc#config('solargraph.bundlerPath', 'bundle')
+  call coc#config('solargraph.checkGemVersion', v:false)
+  call coc#config('solargraph.diagnostics', v:true)
+endif
 
 " Auto-install useful language servers
 let g:coc_global_extensions = [
@@ -89,9 +96,3 @@ let g:coc_global_extensions = [
   \ 'coc-eslint',
   \ 'coc-docker'
 \ ]
-
-" Ruby Solargraph configuration - let CoC manage installation
-call coc#config('solargraph.useBundler', v:false)
-call coc#config('solargraph.bundlerPath', 'bundle')
-call coc#config('solargraph.checkGemVersion', v:false)
-call coc#config('solargraph.diagnostics', v:true)

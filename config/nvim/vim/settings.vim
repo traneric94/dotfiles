@@ -58,7 +58,7 @@ set foldmethod=manual         " Use manual folding for import auto-folding
 set foldcolumn=1              " Show fold indicators in gutter
 
 " Language-specific settings
-let g:python_host_prog="/usr/local/bin/python3.9"
+let g:python_host_prog = exepath('python3')
 
 " Go make configuration
 autocmd FileType go setlocal makeprg=make

@@ -1,7 +1,7 @@
 " Clean, refactored functions
 
 " Config
-let g:go_bin_path = "/Users/eric.tran/go/bin/"
+let g:go_bin_path = expand('$HOME/go/bin/')
 
 " Shared quickfix error parsing
 function! ParseErrorsToQuickfix(output, clear=v:true)
@@ -115,7 +115,7 @@ function! GoFormat()
     call ParseErrorsToQuickfix(result)
     copen
   else
-    let result = system(g:go_bin_path . 'gci write --skip-generated --skip-vendor -s standard -s default -s "prefix(github.com/1debit)" ' . file)
+    let result = system(g:go_bin_path . 'gci write --skip-generated --skip-vendor -s standard -s default ' . file)
     edit
   endif
 endfunction

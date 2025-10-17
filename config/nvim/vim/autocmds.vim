@@ -6,10 +6,10 @@ augroup nerdtree_follow
 
   " Open NERDTree automatically when nvim starts with no files
   autocmd StdinReadPre * let s:std_in=1
-  autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | NERDTree | endif
+  autocmd VimEnter * if argc() == 0 && !exists('s:std_in') && exists(':NERDTree') | NERDTree | endif
 
   " Open NERDTree when opening a directory, but focus on it
-  autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists('s:std_in') | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
+  autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists('s:std_in') && exists(':NERDTree') | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
 augroup END
 
 " Smart relative line number toggle
@@ -26,7 +26,7 @@ augroup config_reload
 augroup END
 
 " Highlight the symbol and its references when holding the cursor (CoC)
-autocmd CursorHold * silent call CocActionAsync('highlight')
+autocmd CursorHold * if exists('*CocActionAsync') | silent call CocActionAsync('highlight') | endif
 
 " Go formatting and import management on save
 augroup go_format

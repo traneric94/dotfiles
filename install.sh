@@ -103,7 +103,6 @@ brew_setup_and_install() {
       python
       awscli
       go
-      1password-cli
       koekeishiya/formulae/skhd # window manipulation
       mas # app store apps
       tlrc # tldr for mac
@@ -115,7 +114,6 @@ brew_setup_and_install() {
       bat
       eza # modern ls replacement
       ripgrep # fast grep
-      fzf-git
       gh # GitHub CLI
       yazi # ranger-like navigation
       tmux
@@ -125,10 +123,11 @@ brew_setup_and_install() {
     local casks=(
       google-chrome
       firefox
-      cron
+      notion-calendar
       zoom
       slack
       1password
+      1password-cli
       raycast
       rectangle
       visual-studio-code
@@ -147,7 +146,24 @@ brew_setup_and_install() {
   fi
 }
 
+ensure_oh_my_zsh() {
+  local target="$HOME/.oh-my-zsh"
+
+  if [ -d "$target" ]; then
+    echo "oh-my-zsh already installed at $target"
+    return 0
+  fi
+
+  echo "Installing oh-my-zsh..."
+  if git clone --depth 1 https://github.com/ohmyzsh/ohmyzsh.git "$target"; then
+    echo "oh-my-zsh installed to $target"
+  else
+    echo "Failed to install oh-my-zsh. You can install it manually from https://ohmyz.sh/."
+  fi
+}
+
 brew_setup_and_install
+ensure_oh_my_zsh
 
 # Install TPM (Tmux Plugin Manager)
 install_tpm() {
@@ -167,6 +183,25 @@ install_tpm
 if command -v skhd >/dev/null 2>&1; then
   brew services restart skhd || true
 fi
+
+install_go_tools() {
+  if ! command -v go >/dev/null 2>&1; then
+    echo "Go not installed; skipping go tool bootstrap."
+    return
+  fi
+
+  local tools=(
+    "golang.org/x/tools/cmd/goimports@latest"
+    "github.com/daixiang0/gci@latest"
+  )
+
+  for tool in "${tools[@]}"; do
+    echo "Installing ${tool}..."
+    GO111MODULE=on go install "$tool" >/dev/null 2>&1 || true
+  done
+}
+
+install_go_tools
 
 /usr/bin/defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false || true
 /usr/bin/defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false || true

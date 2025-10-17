@@ -1,11 +1,29 @@
--- Configure Treesitter for enhanced syntax highlighting
 local status_ok, treesitter = pcall(require, "nvim-treesitter.configs")
 if not status_ok then
   return
 end
 
-treesitter.setup {
-  ensure_installed = { "go", "javascript", "typescript", "tsx", "python", "ruby", "lua", "vim", "yaml", "json", "html", "css", "bash", "dockerfile", "rust", "toml" },
+treesitter.setup({
+  ensure_installed = {
+    "bash",
+    "css",
+    "dockerfile",
+    "go",
+    "html",
+    "javascript",
+    "json",
+    "lua",
+    "markdown",
+    "markdown_inline",
+    "python",
+    "ruby",
+    "rust",
+    "toml",
+    "tsx",
+    "typescript",
+    "vim",
+    "yaml",
+  },
   sync_install = false,
   auto_install = true,
   highlight = {
@@ -28,4 +46,4 @@ treesitter.setup {
       },
     },
   },
-}
+})

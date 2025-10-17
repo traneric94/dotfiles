@@ -1,0 +1,76 @@
+local opt = vim.opt
+local g = vim.g
+
+vim.cmd("syntax enable")
+vim.cmd("filetype plugin indent on")
+
+opt.ruler = true
+opt.formatoptions = opt.formatoptions + "o"
+opt.formatoptions = opt.formatoptions - "t"
+opt.wrap = false
+opt.modeline = true
+opt.linespace = 0
+opt.joinspaces = false
+opt.splitbelow = true
+opt.splitright = true
+opt.scrolloff = 3
+opt.sidescrolloff = 5
+opt.startofline = false
+opt.errorbells = false
+opt.backspace = { "indent", "eol", "start" }
+opt.showcmd = true
+opt.showmode = true
+opt.swapfile = false
+opt.backup = false
+opt.encoding = "utf-8"
+opt.autowrite = true
+opt.autoread = true
+opt.laststatus = 2
+opt.fileformats = { "unix", "dos", "mac" }
+opt.showmatch = true
+opt.incsearch = true
+opt.hlsearch = true
+opt.ignorecase = true
+opt.smartcase = true
+opt.autoindent = true
+opt.tabstop = 2
+opt.shiftwidth = 2
+opt.expandtab = true
+opt.gdefault = true
+opt.magic = true
+opt.number = true
+opt.relativenumber = true
+opt.clipboard = "unnamed"
+opt.colorcolumn = "100"
+opt.mouse = "a"
+opt.list = true
+opt.listchars = {
+  tab = "  ",
+  trail = "·",
+  extends = "»",
+  precedes = "«",
+  nbsp = "⣿",
+}
+opt.previewheight = 12
+opt.completeopt = { "menu", "menuone", "preview", "noselect" }
+opt.grepprg = "rg --vimgrep --smart-case"
+opt.grepformat = { "%f:%l:%c:%m" }
+opt.foldenable = true
+opt.foldlevel = 2
+opt.foldmethod = "expr"
+opt.foldexpr = "nvim_treesitter#foldexpr()"
+opt.foldcolumn = "1"
+
+g.python3_host_prog = vim.fn.exepath("python3")
+g.go_bin_path = vim.fn.expand("$HOME/go/bin/")
+g.ruby_indent_assignment_style = "variable"
+g.ruby_indent_block_style = "do"
+g.ruby_space_errors = 1
+g.ruby_operators = 1
+g.typescript_indent_disable = 0
+g.go_highlight_types = 1
+g.go_highlight_functions = 1
+g.go_highlight_function_calls = 1
+g.session_autosave = "yes"
+g.session_autoload = "yes"
+g.session_default_to_last = 1

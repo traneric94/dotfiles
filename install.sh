@@ -80,72 +80,6 @@ if [ -d "$SCRIPT_DIR/config" ]; then
   done < <(find "$SCRIPT_DIR/config" -mindepth 1 -maxdepth 1 -print0)
 fi
 
-# Brew setup
-ensure_brew() {
-  if ! command -v brew >/dev/null 2>&1; then
-    echo "Homebrew not found. Please install it from https://brew.sh and re-run."
-    exit 1
-  fi
-}
-
-brew_setup_and_install() {
-  ensure_brew
-  brew update
-  brew tap koekeishiya/formulae || true
-  brew tap homebrew/cask-fonts || true
-
-  if [ -f "$SCRIPT_DIR/Brewfile" ]; then
-    brew bundle --file "$SCRIPT_DIR/Brewfile"
-  else
-    local formulae=(
-      git
-      node
-      python
-      awscli
-      go
-      koekeishiya/formulae/skhd # window manipulation
-      mas # app store apps
-      tlrc # tldr for mac
-      zsh-autosuggestions
-      zsh-syntax-highlighting
-      zsh-vi-mode
-      fzf
-      fd
-      bat
-      eza # modern ls replacement
-      ripgrep # fast grep
-      gh # GitHub CLI
-      yazi # ranger-like navigation
-      tmux
-      zoxide # smart cd replacement
-    )
-
-    local casks=(
-      google-chrome
-      firefox
-      notion-calendar
-      zoom
-      slack
-      1password
-      1password-cli
-      raycast
-      rectangle
-      visual-studio-code
-      postman
-      spotify
-      font-hack-nerd-font
-    )
-
-    for formula in "${formulae[@]}"; do
-      brew install "$formula" || true
-    done
-
-    for cask in "${casks[@]}"; do
-      brew install --cask "$cask" || true
-    done
-  fi
-}
-
 ensure_oh_my_zsh() {
   local target="$HOME/.oh-my-zsh"
 
@@ -162,7 +96,6 @@ ensure_oh_my_zsh() {
   fi
 }
 
-brew_setup_and_install
 ensure_oh_my_zsh
 
 # Install TPM (Tmux Plugin Manager)
@@ -179,10 +112,6 @@ install_tpm() {
 }
 
 install_tpm
-
-if command -v skhd >/dev/null 2>&1; then
-  brew services restart skhd || true
-fi
 
 install_go_tools() {
   if ! command -v go >/dev/null 2>&1; then

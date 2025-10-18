@@ -3,6 +3,9 @@
 #PATH=/usr/bin:/bin:/usr/sbin:/sbin
 #export PATH
 
+# Ensure Go binaries are available (for gopls, etc.)
+[[ ":$PATH:" != *":$HOME/go/bin:"* ]] && export PATH="$HOME/go/bin:$PATH"
+
 # Add Homebrew to PATH (if not already present)
 [[ ":$PATH:" != *":/opt/homebrew/bin:"* ]] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 

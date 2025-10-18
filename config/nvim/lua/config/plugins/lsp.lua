@@ -5,6 +5,7 @@ end
 
 local luasnip = require("luasnip")
 local status_autopairs, cmp_autopairs = pcall(require, "nvim-autopairs.completion.cmp")
+local wk_ok, wk = pcall(require, "which-key")
 
 require("luasnip.loaders.from_vscode").lazy_load()
 
@@ -117,22 +118,42 @@ capabilities.textDocument.foldingRange = {
 }
 
 local on_attach = function(client, bufnr)
+  local telescope_ok, telescope_builtin = pcall(require, "telescope.builtin")
+
   local map = function(mode, lhs, rhs, desc)
     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
   end
 
-  map("n", "gd", vim.lsp.buf.definition, "Goto definition")
+  local implementations = telescope_ok and function()
+    telescope_builtin.lsp_implementations({ reuse_win = true })
+  end or vim.lsp.buf.implementation
+
+  local references = telescope_ok and function()
+    telescope_builtin.lsp_references({ show_line = false })
+  end or vim.lsp.buf.references
+
+  local type_definitions = telescope_ok and telescope_builtin.lsp_type_definitions and function()
+    telescope_builtin.lsp_type_definitions({ reuse_win = true })
+  end or vim.lsp.buf.type_definition
+
+  local definitions = telescope_ok and telescope_builtin.lsp_definitions and function()
+    telescope_builtin.lsp_definitions({ reuse_win = true })
+  end or vim.lsp.buf.definition
+
+  map("n", "gd", definitions, "Goto definition")
   map("n", "gD", vim.lsp.buf.declaration, "Goto declaration")
-  map("n", "gi", vim.lsp.buf.implementation, "Goto implementation")
-  map("n", "gr", vim.lsp.buf.references, "Goto references")
+  map("n", "gi", implementations, "Goto implementation")
+  map("n", "gr", references, "Goto references")
   map("n", "K", vim.lsp.buf.hover, "Hover")
-  map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-  map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
-  map("n", "[g", vim.diagnostic.goto_prev, "Prev diagnostic")
-  map("n", "]g", vim.diagnostic.goto_next, "Next diagnostic")
-  map("n", "<leader>F", function()
+  map("n", "gl", vim.diagnostic.open_float, "Line diagnostics")
+  map("n", "<leader>lr", vim.lsp.buf.rename, "Rename symbol")
+  map({ "n", "v" }, "<leader>la", vim.lsp.buf.code_action, "Code action")
+  map("n", "<leader>lf", function()
     vim.lsp.buf.format({ async = true })
   end, "Format buffer")
+  map("n", "<leader>lD", type_definitions, "Goto type definition")
+  map("n", "<leader>ls", vim.lsp.buf.signature_help, "Signature help")
+  map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature help")
 
   if client.name == "tsserver" then
     client.server_capabilities.documentFormattingProvider = false
@@ -150,6 +171,19 @@ local on_attach = function(client, bufnr)
       buffer = bufnr,
       callback = vim.lsp.buf.clear_references,
     })
+  end
+
+  if wk_ok then
+    wk.register({
+      ["<leader>l"] = {
+        name = "+lsp",
+        a = "Code action",
+        D = "Goto type definition",
+        f = "Format buffer",
+        r = "Rename symbol",
+        s = "Signature help",
+      },
+    }, { buffer = bufnr })
   end
 end
 

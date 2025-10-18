@@ -1,93 +1,449 @@
-What are the core multi-account building blocks on AWS?,AWS Organizations, Organizational Units (OUs), Service Control Policies (SCPs), AWS Control Tower landing zone, shared services (e.g., centralized DNS/ID/network), delegated admin,aws sap org
-When should you use Service Control Policies (SCPs)?,To set guardrails at org/OU/account level that limit the maximum available permissions, applying even if IAM policies allow actions,aws sap org
-What’s the difference between SCPs and permission boundaries?,SCPs limit permissions at the org level; permission boundaries limit the maximum permissions for a principal within an account,aws sap org
-How do you implement SSO across accounts?,Use IAM Identity Center (AWS SSO) with permission sets and account assignments; optionally external IdP (OIDC/SAML) federation,aws sap org
-When do you choose Resource Access Manager (RAM)?,To share AWS resources cross-account (e.g., subnets, Route 53 resolver rules, KMS keys with grants) without duplicating them,aws sap org
-How do you bootstrap a secure landing zone quickly?,Use AWS Control Tower to set up organizations, OUs, guardrails, account factory, and baseline controls,aws sap org
-What is the best practice OU structure?,Security, Infrastructure/Shared Services, Sandbox, Workloads/Prod/Non-Prod; segregate by compliance or sensitivity when needed,aws sap org
-How do you centrally manage service permissions at scale?,Use SCPs for guardrails, identity center for access, and delegated admin for services (e.g., GuardDuty, Config, Security Hub),aws sap org
-
-When do you use VPC peering vs Transit Gateway (TGW)?,Peering for simple one-to-one peered VPCs; TGW for scalable hub-and-spoke, multi-VPC, multi-account, hybrid connectivity,aws sap networking
-When do you use AWS PrivateLink vs VPC peering?,PrivateLink to privately access services over interface endpoints without full routing; peering for full bidirectional VPC routing,aws sap networking
-How do you connect many VPCs to on-prem?,Use Transit Gateway with DX and/or VPN attachments, route tables per domain, and propagation/associations,aws sap networking
-How to scale hybrid networking resiliency?,Use redundant DX connections (in different locations) with LAGs, plus VPN failover; BGP for dynamic failover,aws sap networking
-How can you enforce egress controls?,Use NAT Gateways in each AZ, central egress VPC with TGW+firewall, or VPC-lattice/ALB with WAF; consider VPC endpoints,aws sap networking
-When use Gateway Load Balancer (GWLB)?,For transparent insertion of third-party virtual appliances (FW/IDS/IPS) at L3/L4 across VPCs via GWLB endpoints,aws sap networking
-When choose NLB vs ALB?,NLB for TCP/UDP/TLS pass-through, static IPs, extreme performance; ALB for HTTP/HTTPS, routing rules, headers, WebSockets,aws sap networking
-How to expose private services to other accounts?,PrivateLink with interface endpoints; share via RAM or endpoint service with acceptance policy,aws sap networking
-How to simplify service-to-service across VPCs with auth?,Amazon VPC Lattice for service discovery, auth, and connectivity across VPCs and accounts,aws sap networking
-How to do global anycast front door for multi-Region?,AWS Global Accelerator for TCP/UDP with static anycast IPs, health checks, and fast regional failover,aws sap networking
-What are Route 53 routing policies to know?,Simple, weighted, latency-based, geolocation, geoproximity, multivalue answer, and failover,aws sap networking
-
-How to choose between WAF, Shield, and Firewall Manager?,WAF for L7 rules, Shield Advanced for DDoS protection with response team, Firewall Manager to manage WAF/Shield across accounts,aws sap security
-How do you choose between KMS and CloudHSM?,KMS for managed key management; CloudHSM when you need single-tenant HSM control and custom cryptographic operations,aws sap security
-Best practice for KMS key policy design?,Minimize grants; rely on key policies that delegate to IAM; use multi-Region keys if needed; restrict via conditions and grants,aws sap security
-Cross-account encryption strategy?,Use KMS grants or key policies allowing other accounts; control via conditions on AWS:PrincipalAccount and encryption context,aws sap security
-When use IAM Roles Anywhere?,For workloads outside AWS needing to assume roles using X.509 certs without long-lived AWS keys,aws sap security
-Secrets Manager vs SSM Parameter Store?,Secrets Manager for rotation/integration and secrets lifecycle; Parameter Store for configuration, basic secrets, cheaper,aws sap security
-How to mandate encryption in transit?,Use TLS everywhere (ALB/NLB TLS), ACM certificates, Private CA for internal certs, enforce policies via WAF/ALB listener rules,aws sap security
-How to centrally detect findings?,Enable GuardDuty, Macie, Inspector, Security Hub with org-wide aggregation and delegated admin; forward to SIEM/SOAR,aws sap security
-How to enforce S3 public access blocking?,Enable Block Public Access at account and bucket level; use SCPs to prevent disabling; audit via Config,aws sap security
-
-S3 replication choices and caveats?,SRR/CRR for same/cross-Region; supports replication of object metadata/tags, with IAM role; Object Lock and KMS grant considerations,aws sap storage
-When use S3 Object Lock?,For WORM compliance and immutability (governance/compliance modes), plus legal holds,aws sap storage
-S3 Multi-Region Access Points use case?,To improve access performance/failover across Regions with traffic control; replicate data across Regions,aws sap storage
-EBS Multi-Attach suitability?,For clustered Linux applications requiring shared block storage; app must handle concurrent writes,aws sap storage
-EFS vs FSx ONTAP vs FSx for Windows?,EFS: POSIX, serverless NFS; FSx ONTAP: enterprise NAS features; FSx Windows: SMB with AD integration,aws sap storage
-FSx for Lustre best fit?,High-performance parallel file system for HPC, ML, media rendering; can link to S3 for durable storage,aws sap storage
-
-Aurora global database use case?,Multi-Region low-RPO with one primary Region and secondary read-only Regions; fast cross-Region failover,aws sap database
-RDS Multi-AZ options difference?,Multi-AZ (one standby) vs Multi-AZ DB cluster (2 readable standbys, faster failover, better read scaling),aws sap database
-DynamoDB Global Tables use case?,Multi-Region, multi-writer with eventual consistency; design for conflict resolution and PK correctness,aws sap database
-DynamoDB capacity modes?,On-Demand vs Provisioned with auto scaling; On-Demand for spiky/unknown traffic,aws sap database
-DynamoDB DAX use case?,Microsecond read cache for eventually consistent reads; good for read-heavy workloads,aws sap database
-RDS Proxy benefits?,Connection pooling, faster failover, IAM auth, improves DB efficiency for spiky serverless workloads,aws sap database
-Choosing purpose-built databases?,Use right engine per workload: Key-value, document, graph, time series, ledger, wide column, relational,aws sap database
-
-Kinesis Data Streams vs Firehose?,Streams for real-time custom processing; Firehose for delivery to S3/OpenSearch/3rd party with minimal ops,aws sap data
-MSK vs Kinesis?,MSK for managed Apache Kafka compatibility; Kinesis for fully managed serverless streaming,aws sap data
-Glue vs EMR vs Athena?,Glue for ETL serverless, EMR for big data frameworks control, Athena for serverless SQL on S3,aws sap data
-Lake Formation benefits?,Fine-grained data permissions, governed tables, centralized permissions across analytics services,aws sap data
-OpenSearch Service vs Elasticsearch on EC2?,Use OpenSearch managed service for scaling, snapshots, security integration; EC2 only for custom control,aws sap data
-
-When use Step Functions standard vs express?,Standard for long-running, at-least-once with history; Express for high-throughput, short executions, lower cost,aws sap serverless
-How to handle Lambda cold starts?,Provisioned concurrency or SnapStart (Java); keep package small; VPC networking optimized with ENI reuse,aws sap serverless
-API Gateway types and when?,REST (features, WAF), HTTP (lower cost/latency), WebSocket (bidirectional). Private endpoints via VPC endpoints,aws sap serverless
-EventBridge vs SNS/SQS?,EventBridge for event bus and routing/filtering; SNS pub/sub; SQS queuing with DLQs,aws sap serverless
-SQS FIFO vs Standard?,FIFO for ordering/exactly-once with throughput limits; Standard for at-least-once and high throughput,aws sap serverless
-SQS DLQ redrive policy?,Automatic retry to source queue after DLQ reprocessing using redrive; configure maxReceiveCount,aws sap serverless
-Idempotency patterns for serverless?,Use idempotency keys, DynamoDB conditional writes, Step Functions retries with backoff,aws sap serverless
-
-CloudWatch vs X-Ray vs OpenTelemetry?,CloudWatch metrics/logs/alarms; X-Ray tracing; OpenTelemetry for vendor-neutral telemetry,aws sap observability
-Cross-account monitoring?,Use CloudWatch cross-account dashboards and metrics, log subscriptions to central account, CloudTrail org trail,aws sap observability
-CloudWatch Metric Math use case?,Compose metrics/alarms from multiple sources for SLOs and aggregate KPIs,aws sap observability
-Config and conformance packs?,Record configuration changes and evaluate compliance; conformance packs bundle rules across accounts,aws sap governance
-AWS Organizations delegated admin pattern?,Delegate service admin (e.g., GuardDuty, Config, Security Hub) to a central account for org-wide management,aws sap governance
-Control Tower guardrails?,Predefined preventive (SCP) and detective (Config) controls you can enable across OUs/accounts,aws sap governance
-
-Disaster recovery strategies?,Backup/restore, pilot light, warm standby, multi-Region active/active; choose per RTO/RPO and cost,aws sap dr
-DR for RDS and DynamoDB?,RDS: cross-Region read replicas or Aurora global DB; DynamoDB: Global Tables,aws sap dr
-Global failover for stateless apps?,Use Route 53 health checks + failover or Global Accelerator; replicate data/session to multi-Region store,aws sap dr
-Route 53 health check behaviors?,HTTP/TCP checks with failover, CloudWatch alarm as health; evaluate child records for failover policies,aws sap dr
-
-How to reduce compute cost predictably?,Use Savings Plans/Reserved Instances for steady-state; Autoscaling with Spot for flexible; Compute Optimizer,aws sap cost
-SP vs RI differences?,Compute SP covers EC2/Fargate/Lambda; EC2 SP covers EC2 only; RIs provide capacity reservations and AZ scope,aws sap cost
-Right-size and rightsave recommendations?,Use AWS Cost Explorer, Compute Optimizer, and Trusted Advisor to identify savings opportunities,aws sap cost
-Data transfer cost optimization?,Use PrivateLink/VPC endpoints to avoid NAT egress; regionalize traffic; CloudFront caching; avoid cross-AZ chatter,aws sap cost
-
-Common migration patterns?,7 Rs (rehost, replatform, repurchase, refactor, retire, retain, relocate); choose based on constraints,aws sap migration
-How to move PB-scale data to AWS?,AWS Snowball (Edge), Snowmobile for EB-scale; DataSync for online NFS/SMB/Obj transfers,aws sap migration
-How to migrate DBs with minimal downtime?,Use AWS DMS with CDC; validate with SCT where needed; consider blue/green cutover,aws sap migration
-
-When choose EKS vs ECS?,EKS for Kubernetes ecosystem/portability; ECS for simpler AWS-native orchestration; both support Fargate,aws sap containers
-How to do service mesh on AWS?,AWS App Mesh for traffic control, observability, and resilience across ECS/EKS/EC2 services,aws sap containers
-Container image security best practices?,Use ECR scan, sign with Notation (Sigstore), IAM least privilege, isolate tasks in Fargate,aws sap containers
-
-How to handle org-wide DNS resolution?,Use Route 53 Resolver inbound/outbound endpoints, shared via RAM; centralized DNS in shared services VPC,aws sap networking
-Centralized egress with inspection?,Egress VPC with GWLB/NGFW, TGW attachments from workload VPCs, route tables controlling flow,aws sap networking
-Private API Gateway pattern?,Private API with VPC endpoint, resource policies; share access via NLB/VPC endpoint across accounts,aws sap serverless
-Multi-AZ NAT design?,One NAT Gateway per AZ, route private subnets to same-AZ NAT; avoid cross-AZ charges and SPOF,aws sap networking
-DX HA reference?,Two DX connections in separate DX locations, LAG, redundant routers, VPN backup; test BGP failover,aws sap networking
-KMS multi-Region keys best practice?,Create MRKs for cross-Region encryption symmetry; manage separately from single-Region keys,aws sap security
-S3 access patterns at scale?,S3 scales automatically; use partition-friendly keys, S3 Inventory, requester pays, S3 Select,aws sap storage
-Global data locality compliance?,Use SCPs to restrict Regions, CloudTrail Lake for audit, Macie/GuardDuty for data/classification monitoring,aws sap governance 
+"Prompt","Answer","Tags"
+"What are the primary goals of an AWS landing zone for large enterprises?","Provide a governed multi-account baseline with standardized identity, networking, logging, security guardrails, and automation so teams can deploy workloads safely and independently.","domain1;governance"
+"Which AWS services compose a Control Tower landing zone?","AWS Organizations, shared accounts (management, audit, log archive), IAM Identity Center, AWS Config, CloudTrail, Service Catalog Account Factory, guardrail SCPs, detective controls, and centralized S3/KMS resources.","domain1;governance"
+"How do you customize Control Tower guardrails beyond built-ins?","Extend with custom SCPs, Control Tower lifecycle hooks via CloudFormation StackSets, AWS Config conformance packs, and AWS Service Catalog products for mandatory resources.","domain1;governance"
+"When would you build a bespoke landing zone instead of using Control Tower?","When you need pre-existing governance frameworks, multi-cloud integration, unsupported regions, custom account vending pipelines, or fine-grained control not yet available in Control Tower.","domain1;governance"
+"How do AWS Organizations OUs help with compliance segregation?","They isolate accounts into hierarchies where SCPs, Config rules, and delegated admins can enforce differing compliance requirements (e.g., PCI, HIPAA) while sharing central services via RAM.","domain1;organizations"
+"What pattern allows auditing teams read-only access across every account?","Create a security audit role in each account via StackSets that trusts the audit account, grant IAM Identity Center group access, and enforce via SCPs that prevent removal of the role or CloudTrail.","domain1;governance"
+"How do you safely delegate service administration (e.g., GuardDuty) in Organizations?","Enable the service in the management account, designate delegated administrator accounts, auto-enroll member accounts, and enforce required policies via SCPs and AWS Config.","domain1;operations"
+"What is the recommended approach to tagging governance at scale?","Use Organizations tag policies to define allowed keys/values, enforce compliance with AWS Config or resource groups, and integrate with IaC pipelines to validate tags pre-deploy.","domain1;tagging"
+"How do you centralize identity for thousands of users across accounts?","Use IAM Identity Center (AWS SSO) sourced from corporate IdP (SAML/OIDC), define permission sets mapped to accounts/OUs, and automate assignments via Identity Center API or Terraform.","domain1;identity"
+"What is an account vending machine (AVM)?","An automated workflow (Control Tower Account Factory or custom solution) that provisions new accounts with baseline guardrails, networking, logging, IAM assignments, and cost controls.","domain1;governance"
+"How do you ensure CloudTrail and Config can’t be disabled by workloads?","Apply SCPs denying cloudtrail:StopLogging/config:StopConfigurationRecorder, enable organization trails/recorders, and monitor via Security Hub/CloudWatch for tampering.","domain1;security"
+"How do you share centralized network services into workload accounts?","Use AWS RAM to share subnets, Transit Gateway attachments, Route 53 resolver rules, or AWS Network Firewall policies from a networking account, enabling workloads to consume infrastructure without ownership.","domain1;networking"
+"When should you use AWS Account Alternate Contacts API?","To programmatically set security, operations, and billing contacts per account so critical notifications reach responsible teams, supporting compliance requirements.","domain1;operations"
+"What is the benefit of AWS Billing Conductor for enterprises?","It lets you define billing accounts, pricing plans, and custom markups/discounts to provide showback/chargeback aligned with internal cost models across OUs.","domain1;cost"
+"How do you implement break-glass access in a management account?","Create a tightly controlled IAM role requiring hardware MFA, limit actions via SCPs, store credentials in a secure vault, monitor usage with CloudTrail, and rotate secrets after use.","domain1;security"
+"How can you restrict usage of unsupported regions?","Attach SCPs that deny actions when aws:RequestedRegion is not in the approved list and back it with Config rules or CloudTrail Lake queries for detective enforcement.","domain1;governance"
+"What approach provides multi-account API rate limiting for governance?","Use CloudFormation StackSets or Systems Manager Automation with throttled concurrency, and rely on EventBridge scheduled rules to distribute enforcement tasks over time.","domain1;operations"
+"How do you consolidate cost and usage data for analytics?","Enable Cost and Usage Reports into a dedicated S3 bucket, query with Athena, aggregate with QuickSight, and share datasets using Lake Formation permissions.","domain1;cost"
+"How to ensure infrastructure standards are met before launch?","Implement CI/CD guardrails using cfn-lint, CloudFormation Guard, Terraform validate, integrate with Service Catalog pipelines, and require approval workflows for production deployments.","domain1;operations"
+"What is the role of AWS Config conformance packs?","They bundle related Config rules and remediation actions, can be deployed via StackSets across accounts/regions, and provide aggregated compliance scores for governance dashboards.","domain1;compliance"
+"How do you maintain least privilege across accounts?","Use permission sets with job-based profiles, enforce tag-based ABAC, regularly run IAM Access Analyzer and Access Advisor, and remove unused roles through automation.","domain1;identity"
+"How do you govern data classification tags?","Establish organization-wide tag taxonomy, enforce via tag policies, leverage Macie/Config to validate placement, and require tagging in infrastructure pipelines.","domain1;governance"
+"What tool surfaces drifts from landing zone baselines?","AWS Control Tower proactive/detective guardrails supplemented by Config conformance packs and Systems Manager Compliance dashboards highlight drifts for remediation.","domain1;operations"
+"How do you enable cost allocation per business unit in shared accounts?","Use cost allocation tags, AWS Budgets, split CUR data by tag or account, and distribute charges via Billing Conductor or custom Athena queries.","domain1;cost"
+"Why deploy shared services in a dedicated account?","To isolate critical infrastructure (DNS, directory, security tooling), simplify permissions, minimize blast radius, and enable centralized management and logging.","domain1;architecture"
+"How do you expose shared services to workload accounts securely?","Use AWS RAM for subnets/endpoints, share Route 53 resolver rules, enforce SG/NACL restrictions, and require resource policies limiting principals to organization IDs.","domain1;networking"
+"How can finance teams access spending data without console access?","Publish CUR datasets to QuickSight dashboards or Athena views, share via QuickSight reader accounts, and restrict direct console access using SCPs and budgets alerts.","domain1;cost"
+"What controls prevent data exfiltration through misconfigured IAM roles?","Use SCPs denying sts:AssumeRole to external accounts unless condition matches aws:PrincipalOrgID, enforce MFA, and monitor CloudTrail for unusual cross-account usage.","domain1;security"
+"How do you align AWS account structure with product teams?","Adopt cell-based OUs per product domain, grant account-level autonomy, share platform services via Control Tower, and enforce guardrails for compliance boundaries.","domain1;organizations"
+"What is the role of AWS Service Catalog in governance?","It provides a curated set of approved infrastructure blueprints, enforces tagging/compliance, supports self-service provisioning, and integrates with Control Tower for account baselines.","domain1;operations"
+"How do you monitor landing zone health?","Use Control Tower dashboard, AWS Health events, CloudWatch metrics from Config/CloudTrail, and Security Hub aggregated findings to detect baseline drift.","domain1;operations"
+"How do you implement budget guardrails per OU?","Create AWS Budgets with action policies or SNS alerts, use cost categories to aggregate OU spend, and integrate with Step Functions to trigger automated remediation (e.g., disable resources).","domain1;cost"
+"Why configure default VPC deletion?","Removing default VPCs discourages ad-hoc deployments without governance; enforce via SCPs and automation to delete default VPC resources on account creation.","domain1;networking"
+"How can you detect shadow IT accounts?","Use AWS Account Management APIs, AWS Config aggregator, or central DNS to identify resources outside the organization; integrate with organizations:DescribeAccount for inventory.","domain1;operations"
+"What strategy ensures consistent CloudWatch log retention?","Deploy StackSets that set log retention policies, enforce via Config custom rules, and run periodic remediation with Systems Manager Automation.","domain1;operations"
+"How do you share AMIs across accounts securely?","Use AMI sharing with organization IDs, encrypt with KMS CMKs shared via grants, and replicate via EC2 Image Builder pipelines.","domain1;compute"
+"How do you implement centralized DNS logging?","Enable Route 53 Resolver query logging to S3/CloudWatch in the DNS account, aggregate with Athena, and enforce via SCPs so workloads cannot disable logging.","domain1;networking"
+"What is the difference between guardrails and detective controls?","Guardrails are preventive SCPs restricting actions; detective controls (Config, Security Hub) alert when resources drift from policy, enabling remediation workflows.","domain1;governance"
+"How do you enforce cross-account backup policies?","Use AWS Backup delegated admin, create organization-wide policies targeting resource types, enforce via vault locks, and share vaults for centralized retention.","domain1;resiliency"
+"What governance considerations exist for data residency?","Restrict regions via SCP, ensure S3 buckets enforce AllowedLocations conditions, maintain separate accounts per jurisdiction, and report residency compliance via Config/Audit Manager.","domain1;compliance"
+"When should you use AWS Global Accelerator instead of Route 53 latency routing?","Choose Global Accelerator when you need static anycast IPs, improved TCP/UDP performance via AWS edge network, fast failover, and health-aware traffic shifting beyond DNS caching limits.","domain2;networking"
+"How do you design a multi-Region active-active web architecture?","Place ALBs in each Region, replicate data using Aurora Global Database or DynamoDB global tables, front with Global Accelerator or latency-based Route 53, handle session affinity via Redis Global Datastore or JWT tokens.","domain2;networking;resiliency"
+"What’s the pattern for centralized egress filtering across many VPCs?","Use a shared services VPC with AWS Network Firewall or Gateway Load Balancer appliances attached via Transit Gateway, route 0.0.0.0/0 from spoke VPCs to the egress VPC, and enforce DNS firewall rules.","domain2;networking;security"
+"How do you segregate traffic domains on Transit Gateway?","Create multiple TGW route tables, associate attachments to the correct table per domain, and use propagation to control reachable CIDRs, enabling hub-and-spoke segmentation.","domain2;networking"
+"When is AWS Cloud WAN preferable to Transit Gateway?","Use Cloud WAN for global SD-WAN style connectivity with policy segments, centralized routing, and integration with third-party SD-WAN providers; TGW suits Region-scoped architectures.","domain2;networking;hybrid"
+"How do you implement hybrid DNS resolution?","Deploy Route 53 Resolver inbound endpoints for on-prem to query AWS private zones, outbound endpoints for AWS workloads to resolve on-prem names, and use conditional forwarding rules shared via RAM.","domain2;networking;hybrid"
+"What combination delivers high availability for Direct Connect?","Use redundant DX connections in different facilities (or LAG), configure BGP with graceful restart, add Site-to-Site VPN as failover, and integrate with Transit Gateway for multi-VPC connectivity.","domain2;networking;resiliency"
+"How do you achieve deterministic outbound IPs for private workloads?","Deploy NAT Gateways or Transit Gateway appliances with Elastic IPs, or use Global Accelerator, ensuring security groups and routing force outbound traffic through the egress path.","domain2;networking"
+"What AWS service simplifies cross-account service-to-service connectivity with auth?","Amazon VPC Lattice provides service networks, built-in auth/authorization, traffic policies, and cross-account/VPC connectivity without managing mesh infrastructure.","domain2;networking;integration"
+"How do you enable zero trust access to internal web apps?","Use AWS Verified Access with policies referencing Identity Center attributes, enforce context-aware checks, integrate with device posture providers, and remove blanket VPN access.","domain2;networking;security"
+"How can you visualize network reachability before deployment?","Run VPC Network Access Analyzer or Reachability Analyzer in pipelines to validate security group, NACL, and route table intent, preventing misconfigurations before launch.","domain2;networking;operations"
+"When do you choose PrivateLink over VPC peering?","Use PrivateLink to expose specific services privately via interface endpoints without sharing full CIDR reachability; choose peering for bidirectional routing between VPCs.","domain2;networking"
+"How do you scale multi-account API ingress securely?","Front workloads with CloudFront or ALB in a shared account, integrate with WAF and Shield, route to services via PrivateLink or VPC Lattice, and enforce central certificates via ACM.","domain2;networking;security"
+"What’s the strategy for IPv6 adoption in AWS?","Enable dual-stack VPC/subnets, configure egress-only internet gateways, ensure security groups allow IPv6, update load balancer listeners, and coordinate with partners for IPv6 connectivity.","domain2;networking"
+"How do you design low-latency metro deployments?","Use AWS Local Zones for compute/storage close to users, connect back to Region via high-bandwidth ENIs, replicate data asynchronously, and manage central services in the Region.","domain2;edge"
+"What ensures multi-Region DNS failover works end-to-end?","Configure Route 53 failover or health-check-based routing, ensure health checks run outside the Region, replicate data/services, and automate recovery actions via Lambda or SSM.","domain2;networking;resiliency"
+"When is AWS Network Firewall preferred over security appliances?","For managed stateful inspection, centralized policy management via Firewall Manager, deep packet inspection, and intrusion prevention integrated with VPC traffic without third-party licensing.","domain2;networking;security"
+"How do you protect against DDoS on global web apps?","Use CloudFront + Shield Advanced, configure Route 53 or Global Accelerator health checks, design multi-Region failover, and apply WAF rules plus rate limiting.","domain2;networking;security"
+"How do you connect AWS workloads to SaaS providers privately?","Establish AWS PrivateLink to the SaaS endpoint service, approve connections, configure security groups, and optionally share the endpoint with other accounts via RAM.","domain2;networking;integration"
+"How can you enforce outbound allowlists for workloads?","Use VPC endpoints with restrictive policies, DNS firewall to control domain-level egress, and AWS Network Firewall rules to permit only approved destinations.","domain2;networking;security"
+"What pattern provides centralized inbound traffic inspection?","Deploy Gateway Load Balancer with third-party firewalls, integrate with ALB/NLB for ingress, and distribute across accounts via GWLB endpoints.","domain2;networking;security"
+"How do you share TGW connectivity between accounts securely?","Use AWS RAM to share TGW, manage attachments per account, enforce route table associations, and apply resource policies to limit attachments to organization principals.","domain2;networking"
+"When should you choose multi-NIC EC2 networking?","For network appliances requiring multiple subnets, advanced routing, or traffic separation; configure ENIs, disable source/dest check, and manage via Linux routing tables.","domain2;networking"
+"How do you implement cross-Region VPC connectivity without the public internet?","Use Transit Gateway peering attachments or Cloud WAN core network edges, which leverage AWS backbone for encrypted communication.","domain2;networking;resiliency"
+"What service helps analyze VPC flow log data at scale?","Use Amazon VPC Flow Logs into CloudWatch Logs or S3, analyze with Athena or QuickSight, and integrate GuardDuty for anomaly detection.","domain2;operations;networking"
+"How do you integrate on-prem SD-WAN appliances with AWS?","Leverage Cloud WAN partner integrations or deploy SD-WAN appliances in VPCs connected to TGW, using BGP over IPSec or DX connections for policy-based routing.","domain2;hybrid;networking"
+"How do you segment traffic between environments in a shared VPC?","Use separate subnets, security group rules, NACLs, AWS Network Firewall policies, and optionally VPC Lattice or service mesh to enforce isolation.","domain2;networking;security"
+"What enables automated certificate renewal for internal services?","AWS Certificate Manager Private CA issues private certs, integrate with ACM-managed services (ALB, API Gateway), or use PCA APIs with automation for custom workloads.","domain2;security;networking"
+"How do you secure traffic between microservices across accounts?","Use mutual TLS via AWS App Mesh, enforce identity with SPIFFE on EKS, or rely on VPC Lattice authentication plus TLS.","domain2;networking;security"
+"What strategy ensures resilient site-to-site VPN connectivity?","Deploy two VPN tunnels per connection, use multiple VGWs or TGW, configure failover scripts, and monitor via CloudWatch for tunnel status.","domain2;networking;resiliency"
+"How can you control bandwidth on hybrid links?","Use AWS Network Manager metrics, configure QoS on routers, and monitor via CloudWatch or third-party network performance monitoring tools.","domain2;networking;operations"
+"When do you employ AWS Direct Connect Gateway?","When you need to share DX connectivity across multiple Regions/VPCs or connect to Transit Gateways in different accounts without full mesh.","domain2;networking;hybrid"
+"How do you implement secure public API endpoints with minimal latency globally?","Use CloudFront with origin shield, integrate with WAF/Shield, terminate TLS at the edge, route to regional API Gateway or ALB, and replicate data across Regions.","domain2;networking;resiliency"
+"What’s the role of AWS Resource Access Manager in networking?","It shares network resources (subnets, TGW attachments, Route 53 endpoints, Network Firewall policies) across accounts with fine-grained permission boundaries.","domain2;networking"
+"How do you perform blue/green DNS cutovers safely?","Pre-create blue environment, use Route 53 weighted records to shift traffic gradually, monitor health checks, and roll back by adjusting weights.","domain2;networking;operations"
+"When should you prefer Graviton-based EC2 instances?","Use Graviton (ARM) instances for workloads that can be recompiled to ARM to gain up to 40% better price/performance, especially for web/app servers, containers, and managed services that already support Graviton.","domain2;compute;cost"
+"How do you design Auto Scaling for unpredictable workloads?","Use dynamic scaling policies based on target tracking (CPU, custom CloudWatch metrics), combine with scheduled actions for known peaks, and ensure warm pools or step scaling for rapid bursts.","domain2;compute;operations"
+"What is the benefit of EC2 Launch Templates over Launch Configurations?","Launch Templates support versioning, multiple instance types, mixed instance policies, tagging on launch, and integration with Spot/Fleet features that launch configurations lack.","domain2;compute"
+"How do you run Spot Instances safely in production?","Use Auto Scaling groups with mixed instance policies, capacity-optimized allocation, minimum On-Demand percentage, lifecycle hooks for draining, and persistent state stored externally (S3, DynamoDB).","domain2;compute;cost"
+"When is AWS Compute Optimizer useful?","It analyzes resource utilization to recommend right-sized EC2, Auto Scaling groups, EBS volumes, Lambda memory, and ECS services to reduce cost or improve performance.","domain2;compute;operations"
+"How do you implement blue/green deployments on EC2?","Use AWS CodeDeploy with blue/green strategy or Elastic Beanstalk blue/green, create new Auto Scaling groups, shift traffic via ALB target group weighting, and automate rollback on health check failure.","domain2;compute;deployment"
+"What service simplifies running scheduled or event-driven jobs on containers?","AWS Batch orchestrates compute environments (EC2 or Fargate) for batch workloads, managing queue priorities, Spot integration, retries, and dependencies.","domain2;compute;containers"
+"How do you accelerate machine image builds?","Use EC2 Image Builder pipelines to automate AMI golden images with testing, versioning, and distribution across Regions/accounts.","domain2;compute;operations"
+"When do you choose AWS App Runner?","For simple container or source-based web apps needing HTTPS, auto scaling, and zero infrastructure management, especially for platform teams offering PaaS-like developer experience.","domain2;compute;containers"
+"How do you secure credentials for EC2 applications?","Use IAM roles for EC2 (instance profiles), access via IMDSv2, avoid long-lived keys, and store secrets in Secrets Manager or Parameter Store with least privilege policies.","domain2;compute;security"
+"What design keeps EC2-based workloads stateless?","Store session state in DynamoDB/ElastiCache, configuration in Parameter Store/AppConfig, assets in S3, and rely on Auto Scaling to add/remove instances without data loss.","domain2;compute;architecture"
+"When should you use Elastic Beanstalk?","For quickly deploying web applications with minimal infrastructure management while retaining control of underlying EC2 resources for customization.","domain2;compute"
+"How do you run containers without managing servers?","Use AWS Fargate with ECS or EKS, which handles provisioning and scaling infrastructure while you define CPU/memory per task or pod.","domain2;containers"
+"What pattern supports multi-tenant ECS clusters?","Use separate namespaces or task groups with IAM task roles, enforce resource quotas, implement service discovery with Cloud Map, and isolate traffic with ALB target groups or App Mesh.","domain2;containers;security"
+"When is EKS the right choice?","Select Amazon EKS when you need full Kubernetes compatibility, ecosystem tooling, managed control plane, and flexibility to run workloads across AWS and on-prem (EKS Anywhere).","domain2;containers"
+"How do you integrate EKS with IAM securely?","Use IAM roles for service accounts (IRSA) for pod-level least privilege, map roles via aws-auth configmap for admins, and enforce RBAC plus network policies.","domain2;containers;security"
+"What is the benefit of App Mesh?","App Mesh provides service mesh capabilities (traffic routing, retries, observability, mtls) for microservices running on ECS, EKS, or EC2, decoupling networking logic from applications.","domain2;containers;networking"
+"How do you run containers at the edge?","Use AWS IoT Greengrass or EKS Anywhere on Outposts/edge servers, or deploy ECS Anywhere for hybrid clusters with consistent management.","domain2;containers;edge"
+"When should you choose Lambda over containers?","Use Lambda for event-driven, short-lived workloads requiring automatic scaling, pay-per-invoke pricing, and minimal operational overhead; prefer containers for long-running or custom runtime needs.","domain2;serverless"
+"How do you control Lambda concurrency?","Set reserved concurrency to guarantee availability and maximum concurrency to throttle spikes, use provisioned concurrency for low-latency starts, and monitor with CloudWatch metrics.","domain2;serverless;operations"
+"What strategies mitigate Lambda cold starts?","Enable provisioned concurrency, keep deployment packages small, reuse execution context for warm starts, use SnapStart for Java, and place functions in same VPC/AZ for cached ENIs.","domain2;serverless;performance"
+"How do you deploy Lambda safely?","Use SAM or CDK pipelines, apply CodeDeploy traffic shifting with canary/linear strategies, monitor CloudWatch alarms, and enable automatic rollback on failure.","domain2;serverless;deployment"
+"When is Step Functions a better choice than writing complex Lambda code?","When orchestrating multi-step workflows with branching, retries, error handling, human approvals, or service integrations requiring state management.","domain2;serverless;integration"
+"How do you design idempotent Lambda handlers?","Use unique request identifiers, conditional writes in DynamoDB, deduplicate messages via SQS FIFO, and guard external calls with retries + backoff.","domain2;serverless;architecture"
+"What service supports long-running serverless tasks?","AWS Step Functions Express workflows or AWS Batch for jobs exceeding Lambda limits, or containerized tasks on Fargate/ECS.","domain2;serverless"
+"How do you integrate Lambda with VPC resources efficiently?","Use VPC-enabled Lambdas with subnets + security groups, rely on shared NAT gateways for egress, and minimize connections by reusing DB connections via RDS Proxy.","domain2;serverless;networking"
+"What is RDS Proxy used for?","It manages database connections for Lambda/ECS, enabling connection pooling, IAM authentication, improved failover handling, and protection against connection storms.","domain2;database;serverless"
+"When do you choose AWS Outposts?","For workloads requiring low-latency access to on-prem systems, data residency mandates, or local processing while still using AWS APIs and managed services on-premises.","domain2;hybrid;compute"
+"How do you deliver compute to disconnected environments?","Use AWS Snowball Edge devices running EC2 instances, Lambda, or S3-compatible storage, syncing with the Region when connectivity returns.","domain2;edge;compute"
+"What service handles orchestrated data science notebooks?","Amazon SageMaker Studio provides managed Jupyter notebooks, experiment tracking, pipelines, and integration with managed training/inference.","domain2;ml;compute"
+"How do you run HPC workloads on AWS?","Use EC2 Hpc6a or C5n instances with Elastic Fabric Adapter, FSx for Lustre for shared storage, AWS ParallelCluster to orchestrate clusters, and Spot for cost efficiency.","domain2;compute;hpc"
+"When should you enable placement groups?","For workloads requiring low-latency, high-throughput networking (cluster PG), distributed fault tolerance (spread PG), or partition-level isolation for large distributed databases.","domain2;compute;performance"
+"How do you secure container registries?","Use ECR with image scanning (enhanced by Inspector), enforce IAM policies and lifecycle rules, sign images with Notation, and replicate registries cross-region for DR.","domain2;containers;security"
+"What is the strategy for multi-account container deployments?","Use CI/CD pipelines that build once, push to central ECR repository replicated cross-region, and deploy via ECS/EKS clusters with cross-account IAM roles.","domain2;containers;operations"
+"How do you provide persistent storage for containers?","Use EFS CSI driver for shared POSIX storage, EBS CSI for block volumes per pod, or FSx for Lustre/ONTAP for specialized workloads.","domain2;containers;storage"
+"When is AWS Proton valuable?","Platform teams can define service/environment templates for ECS, Fargate, or Lambda, giving developers self-service deployments with baked-in security and observability.","domain2;containers;operations"
+"What is the role of EventBridge Scheduler?","It provides managed cron/schedule invocations for Lambda, Step Functions, or API calls, replacing custom scheduling infrastructure.","domain2;serverless;operations"
+"How do you guarantee graceful shutdown of ECS tasks?","Enable container stop timeouts, implement SIGTERM handling, use lifecycle hooks with Auto Scaling to drain connections, and deregister from target groups before termination.","domain2;containers;operations"
+"When do you use AWS Fault Injection Simulator for compute?","To validate resilience of EC2, ECS, EKS, or Lambda workloads by introducing controlled failures (latency, instance termination) and observing recovery procedures.","domain2;resiliency;operations"
+"How do you manage secrets for containers?","Retrieve secrets at runtime from Secrets Manager or Parameter Store via ECS task ENV, EKS secrets CSI driver, or sidecar containers; avoid baking secrets into images.","domain2;containers;security"
+"What is the best practice for container health checks?","Define container-level checks (CMD or HTTP) and combine with ELB target group health checks to ensure tasks are healthy before receiving traffic.","domain2;containers"
+"How do you run windowed streaming workloads?","Use Lambda with batches, Kinesis Data Analytics for sliding windows, or Step Functions with Map State for parallel processing, depending on latency requirements.","domain2;serverless;analytics"
+"When should you use Service Quotas for compute planning?","Track quotas such as EC2 vCPU limits, Lambda concurrency, or Fargate task counts; request increases proactively to avoid deployment failures.","domain2;operations"
+"How do you orchestrate microservices rollouts?","Use feature flags (AppConfig), SQS/EventBridge for async decoupling, canary deployments via CodeDeploy/App Mesh, and monitor with CloudWatch and X-Ray.","domain2;architecture;operations"
+"How do you choose the right S3 storage class lifecycle?","Start with S3 Standard for frequent access, move to Intelligent-Tiering for unpredictable patterns, transition to Standard-IA/One Zone-IA for infrequent access, and Glacier Instant/Deep Archive for archival while respecting minimum storage durations.","domain2;storage"
+"What mechanisms protect S3 data from accidental deletion?","Enable versioning with MFA delete, configure S3 Object Lock in governance or compliance mode, use AWS Backup or cross-account replication, and restrict IAM policies with explicit denies.","domain2;storage;security"
+"How do you design multi-Region S3 writes?","Use S3 Multi-Region Access Points with replication rules, handle replication conflicts with last-writer-wins or application logic, and front with Route 53/CloudFront for global low-latency reads.","domain2;storage;resiliency"
+"When should you enable S3 requester pays?","For datasets where consumers pay transfer costs (e.g., public data sets), enabling requester pays ensures data owners only pay for storage while download costs are borne by requesters.","domain2;storage;cost"
+"How do you monitor sensitive data in S3?","Use Amazon Macie for automatic discovery and classification, integrate findings with Security Hub/EventBridge, and remediate via step functions or SOAR playbooks.","domain2;storage;security"
+"What are best practices for S3 Access Points?","Use S3 Access Points for application-specific policies, limit to VPCs for private access, combine with Object Lambda for response transformation, and manage via Access Point aliases.","domain2;storage;security"
+"How do you enforce encryption in transit and at rest for S3?","Require TLS by enforcing aws:SecureTransport, enable default bucket encryption with SSE-KMS using customer-managed keys, and audit via CloudTrail/Config.","domain2;storage;security"
+"When do you choose EFS over EBS?","EFS is a managed NFS file system for shared access across multiple instances or Lambda, supports elastic throughput; EBS is block storage for single-instance attachment with high IOPS/throughput needs.","domain2;storage"
+"How do you improve EFS performance?","Use provisioned or elastic throughput modes, select General Purpose or Max I/O performance mode, leverage lifecycle policies for infrequent access, and mount in correct AZs with mount targets.","domain2;storage;performance"
+"When should you select FSx for NetApp ONTAP?","For enterprise file workloads requiring multiprotocol (NFS/SMB/iSCSI), advanced data management (snapshots, cloning, deduplication), or integration with existing NetApp tooling.","domain2;storage;hybrid"
+"What is FSx for Lustre used for?","High-performance shared storage for HPC or analytics workloads, offering sub-millisecond latency, high throughput, and integration with S3 for importing/exporting data.","domain2;storage;hpc"
+"How do you replicate EFS across Regions?","Enable EFS replication to designate a destination Region, monitor replication status, and plan failover using DNS updates or automation runbooks.","domain2;storage;resiliency"
+"When should you use AWS DataSync?","For online, high-speed data transfers between on-prem/NAS/S3/EFS/FSx, with built-in scheduling, encryption, throttling, and data integrity checks.","domain2;storage;hybrid"
+"How do you secure EBS snapshots?","Encrypt volumes with KMS CMKs, copy snapshots across Regions/accounts with re-encryption, use snapshot policies via Data Lifecycle Manager, and restrict sharing with IAM policies.","domain2;storage;security"
+"What is AWS Backup vault lock?","Vault lock enforces write-once, read-many retention for backups, preventing deletion or modification outside retention policies (even by root), supporting compliance requirements.","domain2;storage;resiliency"
+"How do you orchestrate database backups centrally?","Use AWS Backup with resource assignments for RDS/Aurora/DynamoDB/EFS/FSx, integrate with Organizations for multi-account policies, and monitor compliance dashboards.","domain2;storage;resiliency"
+"When is AWS Storage Gateway appropriate?","For hybrid scenarios providing file (SMB/NFS), block (iSCSI), or virtual tape access on-premises with data stored in AWS, enabling gradual migration or backup modernization.","domain2;storage;hybrid"
+"How do you enforce least privilege on S3 cross-account access?","Use bucket policies with aws:PrincipalOrgID, S3 Access Points, VPC endpoints with restrictive policies, and IAM roles with condition keys for resource tagging.","domain2;storage;security"
+"What is S3 Batch Operations used for?","To run large-scale object actions (copy, tagging, ACL updates, invoking Lambda) on billions of objects using manifest files and managed parallelization.","domain2;storage;operations"
+"How do you optimize S3 performance for heavy PUT workloads?","Use random prefixes (no longer strictly required but good for partitioning), enable S3 Transfer Acceleration or Global Accelerator, and use multipart uploads for large objects.","domain2;storage;performance"
+"When should you choose DynamoDB over RDS?","For NoSQL workloads requiring single-digit millisecond latency, massive scale, flexible schema, and serverless operations; RDS suits relational workloads needing complex joins/transactions.","domain2;database"
+"How do you enforce DynamoDB data encryption?","Enable KMS customer-managed keys (including multi-Region), use IAM condition keys for table access, and audit via CloudTrail and DynamoDB Streams.","domain2;database;security"
+"What design pattern handles large DynamoDB items?","Store metadata in DynamoDB and offload large blobs to S3 using presigned URLs, maintaining references for retrieval.","domain2;database;architecture"
+"How do you run consistent global reads with DynamoDB?","Use DynamoDB global tables (2019) for multi-Region writes and reads, enable strongly consistent reads in the same Region, and design conflict resolution strategies.","domain2;database;resiliency"
+"When should you use DynamoDB TTL?","To expire time-based items automatically (sessions, cache entries), integrate with Streams for downstream cleanup, and avoid manual deletion tasks.","domain2;database;operations"
+"How do you choose between Aurora MySQL and Aurora PostgreSQL?","Pick based on application compatibility, extension requirements, and ecosystem; Aurora PostgreSQL supports PostGIS, advanced analytics, while Aurora MySQL offers parallel query and backtrack.","domain2;database"
+"What is Aurora Global Database?","A multi-Region deployment with a primary cluster and up to five secondary Regions, replicating with latency <1s, enabling fast failover and local reads.","domain2;database;resiliency"
+"How do you protect RDS databases from compromise?","Use encryption at rest (KMS), enforce TLS, rotate credentials via Secrets Manager, enable IAM auth, audit with CloudTrail/Enhanced Monitoring, and restrict network access.","domain2;database;security"
+"When do you use RDS Proxy?","For connection pooling and resiliency with Lambda/ECS apps, to reduce failover impact and mitigate storms during scaling events.","domain2;database;serverless"
+"How do you implement read scaling for RDS?","Add read replicas (in-region or cross-region), use reader endpoints (Aurora), implement caching layers, and direct read-heavy traffic accordingly.","domain2;database;performance"
+"What problem does Amazon Keyspaces solve?","Provides managed Apache Cassandra-compatible wide-column database with automatic replication, pay-per-request capacity, and serverless operations.","domain2;database"
+"When should you adopt DocumentDB?","For workloads requiring MongoDB compatibility with managed infrastructure, supporting aggregation pipelines, TTL indexes, and auto scaling storage.","domain2;database"
+"How do you design cross-Region disaster recovery for RDS?","Use cross-Region read replicas or Aurora Global Database, replicate secrets, stage infrastructure via CloudFormation, and script failover using Route 53 or custom tooling.","domain2;database;resiliency"
+"What service simplifies schema conversion during migrations?","AWS Schema Conversion Tool automatically converts database schemas and code from Oracle/SQL Server to PostgreSQL/MySQL-compatible engines, flagging manual remediation items.","domain2;migration;database"
+"How do you achieve zero RPO for transactional workloads?","Use synchronous replication (Aurora Multi-AZ DB clusters, RDS Multi-AZ with two readable nodes), ensure quorum-based writes, and plan for high network latency implications.","domain2;database;resiliency"
+"When should you use AWS Lake Formation?","To centralize data lake governance, manage Glue Data Catalog permissions, enforce column/row-level security, and simplify cross-account data sharing.","domain2;analytics;governance"
+"How do you ingest streaming data at scale?","Use Kinesis Data Streams or Amazon MSK for durable ingestion, optionally integrate Kinesis Data Firehose for delivery to S3/Redshift/OpenSearch, and scale via shard partitioning.","domain2;analytics;streaming"
+"What is the best practice for partitioning data in S3 for Athena?","Partition on frequently filtered columns (e.g., date, region), use Glue crawlers or terraform to register partitions, and avoid small files by batching data (Parquet/ORC).","domain2;analytics;performance"
+"When do you choose Glue ETL jobs versus Glue Studio or Glue DataBrew?","Glue ETL (Spark) handles big data transformations programmatically; Glue Studio offers visual job authoring; DataBrew supports analyst-led, no-code data preparation.","domain2;analytics"
+"How do you implement Change Data Capture (CDC) into a data lake?","Use Database Migration Service to stream changes into Kinesis or S3, process with Lambda/Glue, and catalog in Glue Data Catalog for downstream analytics.","domain2;analytics;integration"
+"What technique optimizes Athena query cost?","Compress data (Parquet), partition tables, project only required columns, enable workgroup query limits, and use result reuse for repeated queries.","domain2;analytics;cost"
+"When should you use Redshift Spectrum?","When Redshift queries need to join data in the cluster with data stored in S3 without loading, enabling separation of compute and storage for lakehouse patterns.","domain2;analytics"
+"How do RA3 Redshift nodes differ from DC2?","RA3 nodes separate storage and compute via Redshift Managed Storage, support data sharing and AQUA acceleration, making them ideal for variable workloads; DC2 uses local SSD tied to node size.","domain2;analytics;cost"
+"What provides near real-time analytics without managing infrastructure?","Amazon Kinesis Data Analytics (Flink-based) or Managed Service for Apache Flink processes streaming data in SQL/Java, auto-scaling and managing checkpoints.","domain2;analytics;streaming"
+"How do you integrate BI dashboards securely?","Use Amazon QuickSight with row-level security, SPICE in-memory cache, embedded dashboards via IAM Identity Center or federated SSO, and VPC connectivity for private data sources.","domain2;analytics;security"
+"When is Amazon EMR appropriate?","For customizable big data frameworks (Spark, Hadoop, Presto) requiring fine-grained control, bootstrap actions, EMRFS, and integration with on-prem HDFS or custom AMIs.","domain2;analytics;compute"
+"How do you optimize EMR cost?","Use Spot Instances for task nodes, auto scaling clusters, instance fleets, release clusters when idle, and leverage EBS-optimized storage or EMR Serverless for workloads.","domain2;analytics;cost"
+"What is EMR Serverless?","A serverless runtime for Spark and Hive jobs that automatically provisions compute, scaling per job without managing clusters; priced per vCPU-second, GB-second.","domain2;analytics;serverless"
+"How do you handle schema evolution in streaming pipelines?","Use Glue Schema Registry (managed with EventBridge/Kinesis), enforce compatibility, version schemas, and enable producers/consumers to handle changes gracefully.","domain2;analytics;integration"
+"When should you use OpenSearch Service?","For log analytics, full-text search, observability dashboards, or application search with managed Elasticsearch-compatible clusters, integrated with Kinesis Firehose and CloudWatch.","domain2;analytics;operations"
+"How do you deliver observability data into a data lake?","Stream CloudWatch Logs/metrics via Kinesis Firehose to S3, catalog with Glue, and analyze using Athena or QuickSight; optionally integrate with OpenSearch for dashboards.","domain2;analytics;operations"
+"What is AWS Glue Data Catalog's role?","It centralizes metadata for S3/Redshift/RDS tables, supports schema discovery via crawlers, and integrates with Athena, EMR, Redshift Spectrum, and Lake Formation.","domain2;analytics;governance"
+"How do you ensure data lineage and governance?","Use AWS Glue Data Catalog with classifiers, track transformations via Glue jobs/Studio, integrate with AWS DataBrew profiles, and maintain metadata in Lake Formation tags.","domain2;analytics;governance"
+"When should you choose Amazon Managed Streaming for Apache Kafka?","For workloads requiring Kafka APIs, consumer lag tracking, exactly-once semantics, or existing Kafka-based ecosystems, reducing operational overhead versus self-managed clusters.","domain2;analytics;streaming"
+"How do you share curated datasets across accounts?","Use Lake Formation LF-Tag permissions or cross-account data shares, grant access via Data Catalog resource links, and monitor with AWS CloudTrail/Audit Manager.","domain2;analytics;governance"
+"What is the architecture for near real-time dashboards?","Ingest with Kinesis/MSK, process with Kinesis Data Analytics or Lambda, store in DynamoDB/ElastiCache for low-latency reads, and render via API Gateway or AppSync.","domain2;analytics;architecture"
+"How do you schedule and orchestrate analytics workflows?","Use AWS Step Functions or Managed Workflows for Apache Airflow (MWAA) for dependency management, integrate Glue/EMR jobs, and monitor via CloudWatch/CloudTrail.","domain2;analytics;operations"
+"When do you use AWS Data Exchange?","To subscribe to third-party datasets or share proprietary data, controlling entitlements, usage logs, and integration with S3/Snowflake/Redshift.","domain2;analytics"
+"How do you handle data quality monitoring?","Use Deequ or Glue DataBrew for quality checks, integrate anomalies with CloudWatch alarms or EventBridge, and enforce via pipeline gates.","domain2;analytics;operations"
+"What is the role of AWS Clean Rooms?","Enables privacy-preserving analytics across multiple parties without sharing raw data, using SQL queries with cryptographic privacy controls.","domain2;analytics;security"
+"How do you support machine learning feature storage?","Use SageMaker Feature Store with offline (S3 + Glue) and online (low-latency) stores, maintain feature lineage, and secure via IAM/Lake Formation.","domain2;analytics;ml"
+"When should you use Amazon AppFlow?","For SaaS-to-AWS data transfers with built-in transformations, filtering, scheduling, and private connectivity via PrivateLink where available.","domain2;integration;analytics"
+"How do you secure Athena queries?","Require TLS, enforce IAM policies, use workgroup IAM controls, encrypt query results in S3 with KMS, and enable CloudTrail logging for query history.","domain2;analytics;security"
+"What is AWS Glue Interactive Sessions?","A serverless Spark environment to run notebooks (Jupyter, AWS Glue Studio) with on-demand clusters for data engineers needing iterative development.","domain2;analytics;compute"
+"How do you reduce Redshift query contention?","Use workload management (WLM) queues, concurrency scaling, short query acceleration, and materialized views to balance workloads.","domain2;analytics;performance"
+"What pattern enables event-driven analytics pipelines?","Use EventBridge to trigger Glue jobs or Step Functions when data lands in S3, run transformations, and update catalogs, enabling near real-time analytics.","domain2;analytics;integration"
+"How do you enforce organization-wide MFA for console access?","Use IAM Identity Center with IdP MFA policies, enforce via conditional access, and apply IAM policies/SCPs that deny sts:AssumeRole without MFA for sensitive roles.","domain2;security;identity"
+"What is the purpose of IAM permission boundaries?","They set the maximum permissions a principal can delegate or assume, enabling delegated administration while preventing privilege escalation.","domain2;security;identity"
+"When should you use AWS CloudHSM with KMS?","When regulatory requirements demand dedicated single-tenant HSMs, integrate CloudHSM as a custom key store for KMS to manage CMKs backed by your HSM cluster.","domain2;security;compliance"
+"How do you manage multi-Region key encryption?","Use multi-Region KMS keys for synchronous replication with same key ID across Regions, facilitating cross-region replication services like S3 CRR and DynamoDB global tables.","domain2;security;resiliency"
+"What services form the core threat detection stack?","Enable GuardDuty for threat intel, Inspector for vulnerability management, Macie for data discovery, Security Hub for aggregation, and Detective for investigation.","domain2;security;operations"
+"How do you automate GuardDuty response?","Route findings via EventBridge to Lambda/Systems Manager Automation runbooks that isolate instances, revoke credentials, or adjust security groups.","domain2;security;operations"
+"When do you adopt AWS WAF Bot Control?","Protect web apps from automated bots, scraping, or credential stuffing by applying managed rule groups from WAF Bot Control on CloudFront, ALB, or API Gateway.","domain2;security;networking"
+"How do you implement just-in-time access?","Use IAM Identity Center permission sets with limited duration, integrate approval workflows via Service Catalog/AppFabric, or build Systems Manager Change Manager flows for short-lived role sessions.","domain2;security;identity"
+"What protects against cross-account role hijacking?","Use external IDs for third-party access, restrict sts:AssumeRole via aws:PrincipalOrgID, monitor CloudTrail for unusual assumption events, and apply Access Analyzer.","domain2;security;identity"
+"When should you use IAM Access Analyzer?","For validating IAM policies/resource-based policies, identifying unintended public or cross-account access, and integrating automated checks in CI/CD pipelines.","domain2;security;identity"
+"How do you manage secrets rotation?","Use AWS Secrets Manager with rotation Lambda functions, integrate with RDS/Redshift, or Parameter Store SecureString with custom automation; enforce rotation schedules via Config.","domain2;security"
+"What is Nitro Enclaves used for?","Provides isolated compute environments attached to EC2 Nitro instances for processing highly sensitive data, protecting secrets even from the host OS.","domain2;security;compute"
+"How do you secure API Gateway endpoints?","Use IAM auth, Cognito authorizers, Lambda/custom authorizers, integrate WAF, enable throttling/usage plans, and require TLS with mutual auth if needed.","domain2;security;integration"
+"What is AWS Verified Permissions?","A fine-grained authorization service based on Cedar policy language, enabling centralized ABAC for applications beyond AWS infrastructure.","domain2;security;identity"
+"How do you implement data loss prevention for email/SaaS?","Integrate Macie findings, leverage AppFabric or third-party CASB, enforce DLP policies at identity provider, and route events through Security Hub.","domain2;security;operations"
+"When do you enable AWS Shield Advanced?","For mission-critical internet-facing applications needing enhanced DDoS protection, cost protection, and access to DDoS Response Team support.","domain2;security;networking"
+"How do you secure network boundaries in hybrid environments?","Use Network Firewall, firewall appliances via GWLB, enforce NACL/security groups, apply routing segmentation with TGW, and monitor with VPC Traffic Mirroring.","domain2;security;networking"
+"What is AWS Certificate Manager Private CA for?","To issue and manage private TLS certificates across accounts and services, providing centralized PKI with automatic renewal and integration with ACM-managed services.","domain2;security;networking"
+"How do you audit administrator activity?","Enable CloudTrail organization trails, CloudTrail Lake for queries, AWS Config snapshots, record session manager logs, and analyze using Athena or SIEM integrations.","domain2;security;operations"
+"When should you encrypt traffic over Direct Connect?","When compliance requires it or traffic is sensitive; use MACsec on supported ports or overlay IPsec VPN over DX connections.","domain2;security;networking"
+"How do you achieve policy-as-code for security?","Use tools like HashiCorp Sentinel, Open Policy Agent, or AWS CloudFormation Guard integrated into pipelines to validate security controls before deployment.","domain2;security;governance"
+"What is the process for handling privileged break-glass access?","Maintain restricted IAM roles requiring hardware MFA, store credentials securely, log and alert every assumption, and rotate secrets after use.","domain2;security;operations"
+"How do you secure cross-account KMS key usage?","Grant key policies with least privilege, use grants for specific principals, monitor via CloudTrail, and set key deletion windows with alarms.","domain2;security"
+"When is AWS Identity Center identity store appropriate?","For small/medium orgs without external IdP, Identity Center provides user/group management, MFA, and SSO across accounts without third-party federation.","domain2;security;identity"
+"How do you integrate external IdP with AWS?","Use SAML/OIDC federation, provision permission sets via Identity Center, map IdP attributes to session tags for ABAC, and automate provisioning via SCIM.","domain2;security;identity"
+"What is AWS Config used for in security compliance?","Tracks configuration history, evaluates resources with managed/custom rules (e.g., restricted-ssh), integrates with conformance packs, and triggers remediation.","domain2;security;compliance"
+"How do you protect SQS queues from unauthorized access?","Enable SSE with KMS CMKs, restrict queue policies to specific principals, enforce TLS (https endpoints), and monitor via CloudTrail and CloudWatch metrics.","domain2;security;integration"
+"When should you use AWS Audit Manager?","To automate evidence collection for compliance frameworks (CIS, SOC, PCI), mapping data sources like CloudTrail, Config, and create auditor-ready reports.","domain2;security;compliance"
+"How do you detect anomalous IAM behavior?","Use IAM Access Analyzer, CloudTrail insights, GuardDuty IAM finding types, and Amazon Detective for graph-based investigations of unusual API calls.","domain2;security;operations"
+"What is the purpose of VPC Traffic Mirroring?","Captures network traffic for deep packet inspection, troubleshooting, or intrusion detection, streaming copies to monitoring appliances or tools.","domain2;security;networking"
+"How do you enforce device posture for access?","Integrate Verified Access with device trust providers, enforce conditional policies, and deny access if device posture fails checks.","domain2;security;identity"
+"When should you use AWS Network Firewall with Rule Groups?","For managed stateful filtering with reusable Suricata rule groups, integrating with Firewall Manager to push consistent policies across VPCs.","domain2;security;networking"
+"How do you secure container workloads on EKS?","Use IAM roles for service accounts, enable Kubernetes RBAC, apply network policies (Calico), use ECR scanning, enforce admission controllers (OPA Gatekeeper/Kyverno).","domain2;security;containers"
+"What is the role of AWS Security Hub delegated admin?","Aggregates security findings from accounts/Regions, applies standards (CIS, PCI), enables centralized suppression/response workflows.","domain2;security;operations"
+"How do you protect data in transit for RDS?","Enforce TLS via parameter groups, require SSL, rotate certificates, and use security groups to limit inbound hosts.","domain2;security;database"
+"When should you use PrivateLink for security services?","To expose services (e.g., logging, secrets) privately to other accounts/VPCs without transiting the public internet, controlling access via endpoint policies.","domain2;security;networking"
+"How do you implement centralized logging for security analytics?","Aggregate CloudTrail, VPC Flow Logs, and application logs into S3/OpenSearch via Kinesis Firehose, maintain immutable storage with Object Lock, and analyze with Athena/SIEM.","domain2;security;operations"
+"What is Amazon Detective ideal for?","Investigating relationships between IAM entities, network flows, and CloudTrail events to determine root cause of security findings.","domain2;security;operations"
+"How do you secure EC2 instance metadata?","Require IMDSv2 (session-oriented tokens), disable IMDSv1, and restrict EC2 roles to least privilege.","domain2;security;compute"
+"When do you use AWS Resource Access Manager for security tooling?","To share security services (Firewall Manager policies, RAM-managed Resolver rules) across accounts while retaining centralized governance.","domain2;security;governance"
+"How do you validate security controls continuously?","Use AWS Config for compliance, Security Hub for control posture, run automated penetration tests via third-party tools, and schedule FIS chaos/security experiments.","domain2;security;operations"
+"What approach manages customer-managed CMK lifecycle?","Rotate annually (automatic or manual), monitor with CloudWatch metrics, schedule deletion with 7-30 day waiting period, and enable key policies with least privilege.","domain2;security"
+"How do you centralize operational metrics across accounts?","Use CloudWatch cross-account observability or metric streams into a monitoring account, aggregate logs via Kinesis Firehose into OpenSearch/S3, and standardize alerting through SNS/Incident Manager.","domain2;operations;observability"
+"What is the role of AWS Systems Manager Incident Manager?","It provides incident response plans, on-call rotations, runbooks, and post-incident analytics integrated with CloudWatch alarms and Security Hub findings.","domain2;operations"
+"How do you enforce configuration drift detection?","Use AWS Config rules, CloudFormation drift detection, and pipelines that reapply templates or trigger rollback when drift is detected.","domain2;operations;governance"
+"When should you use AWS Resilience Hub?","To assess workload architectures against RPO/RTO targets, simulate failure scenarios, receive remediation recommendations, and integrate with Fault Injection Simulator.","domain2;operations;resiliency"
+"How do you plan disaster recovery strategies?","Map business requirements to DR patterns (backup-restore, pilot light, warm standby, multi-site active-active), choose supporting AWS services, automate failover, and test regularly.","domain2;operations;resiliency"
+"What is the purpose of AWS Fault Injection Simulator?","It runs chaos engineering experiments (latency, instance termination, AZ failure) to validate resilience and incident response automation.","domain2;operations;resiliency"
+"How do you capture end-to-end tracing?","Instrument applications with AWS X-Ray or OpenTelemetry, propagate trace headers through ALB/API Gateway/EventBridge, export to a central account, and integrate with CloudWatch ServiceLens.","domain2;operations;observability"
+"When is CloudWatch Synthetics useful?","To monitor application endpoints with canaries simulating user behavior, measuring availability/latency, and catching errors before customers do.","domain2;operations;observability"
+"How do you implement infrastructure testing in pipelines?","Run unit tests (cfn-lint, taskcat), integration tests in isolated stacks, use LocalStack or SAM local for serverless mocks, and require approvals via CodePipeline/CodeBuild.","domain2;operations;governance"
+"What is the approach for log retention compliance?","Define retention policies per log group via IaC, automate with Systems Manager scripts, archive to S3/Glacier, and validate via Config rules.","domain2;operations;compliance"
+"How do you monitor Kubernetes workloads?","Use CloudWatch Container Insights, Prometheus/Grafana via Amazon Managed Prometheus & Grafana, collect logs with Fluent Bit to CloudWatch/OpenSearch, and integrate with X-Ray for tracing.","domain2;operations;containers"
+"When should you use AWS Glue Data Quality?","To create custom data quality rules integrated with Glue pipelines, generating score metrics and alerts for data lake ingestion jobs.","domain2;operations;analytics"
+"How do you automate patch management?","Use Systems Manager Patch Manager with patch baselines, maintenance windows, compliance dashboards, and integrate with Inspector findings.","domain2;operations;security"
+"What ensures safe configuration rollouts?","Use AWS AppConfig for feature flags/config data, deploy with validators, enable deployment strategies (canary/linear), and monitor CloudWatch alarms.","domain2;operations;architecture"
+"How do you reduce MTTR for serverless workloads?","Instrument with X-Ray, CloudWatch logs insights, use structured logging (JSON), enable Lambda insights metrics, and correlate with tracing IDs.","domain2;operations;serverless"
+"What is AWS Well-Architected Tool used for?","Conduct workload reviews against the six pillars, document risks, track improvements, and integrate with improvement plans.","domain2;operations;governance"
+"How do you manage runbooks programmatically?","Store runbooks in Systems Manager Automation documents or Step Functions, trigger via EventBridge, and version control them in CodeCommit/GitHub.","domain2;operations"
+"When do you use Amazon DevOps Guru?","To automatically analyze CloudWatch metrics/logs for anomalies, providing insights and recommendations for operational issues.","domain2;operations;observability"
+"How do you detect cost anomalies proactively?","Enable AWS Cost Anomaly Detection, configure monitors per service/linked account, route alerts via SNS/Chatbot, and investigate with Cost Explorer.","domain2;operations;cost"
+"What strategy ensures consistent tagging enforcement?","Adopt tag policies, use Config custom rules to detect missing tags, apply Service Catalog / IaC templates forcing tags, and remediate automatically.","domain2;operations;governance"
+"How do you manage concurrency of maintenance operations?","Leverage Systems Manager Change Calendar and Change Manager to schedule operations, enforce approvals, and avoid conflicts during critical windows.","domain2;operations"
+"What is AWS Proton's operational benefit?","It provides platform teams standardized pipelines with observability baked in, ensuring deployments automatically include logging, monitoring, and compliance controls.","domain2;operations;compute"
+"How do you maintain compliance evidence?","Use AWS Audit Manager, aggregate Config/Security Hub data, store evidence in S3 with Object Lock, and produce audit-ready reports.","domain2;operations;compliance"
+"When should you deploy CloudWatch metric streams?","To push real-time metrics to partners or custom monitoring tools (Kinesis Data Firehose, OpenSearch, Datadog) without polling APIs.","domain2;operations;observability"
+"How do you test failover regularly?","Automate failover drills with Route 53 scripts, load balancer weight shifts, and runbook execution, documenting results in Resilience Hub or Incident Manager.","domain2;operations;resiliency"
+"What is the purpose of AWS Config aggregators?","Aggregate Config data across accounts and Regions for centralized compliance reporting and multi-account queries.","domain2;operations;governance"
+"How do you enable feature-level observability?","Emit business KPIs via CloudWatch EMF, correlate with technical metrics, and dashboard them together to understand impact of changes.","domain2;operations;observability"
+"What ensures safe rollback of infrastructure changes?","Use CloudFormation change sets, maintain versioned IaC templates, deploy via blue/green stacks, and keep automated backups/snapshots for stateful components.","domain2;operations;governance"
+"How do you manage operational access in production?","Adopt Systems Manager Session Manager for shell access (logged), disable direct SSH, enforce IAM least privilege with temporary credentials, and monitor commands via CloudTrail.","domain2;operations;security"
+"When do you rely on AWS Organizations service control policies for operations?","To prevent actions such as disabling logging, altering guardrails, or creating unapproved resources, ensuring operations stay within governance boundaries.","domain2;operations;governance"
+"How do you prioritize operational alerts?","Implement multi-tier alerting (critical vs warning), use EventBridge to route alerts to Incident Manager or ChatOps, and align alerts with SLOs/SLIs.","domain2;operations"
+"What phases comprise the AWS migration journey?","Assess (Migration Readiness Assessment), Mobilize (landing zone, skills, tooling), and Migrate & Modernize (execute waves, optimize).","domain3;migration"
+"How do you prioritize applications for migration waves?","Assess business value vs complexity, group by dependencies, use Migration Portfolio Assessment (MPA) or Migration Evaluator to estimate TCO/effort.","domain3;migration;planning"
+"When should you use AWS Application Migration Service (MGN)?","For lift-and-shift server migrations with minimal downtime, supporting continuous block-level replication, test cutovers, and automation runbooks.","domain3;migration;compute"
+"How do you replatform legacy Windows workloads?","Use MGN for migration, upgrade to newer Windows versions, leverage AWS Launch Wizard or Elastic Beanstalk for .NET, and integrate with FSx for Windows or Managed AD.","domain3;migration;windows"
+"What is the strategy for database migration with minimal downtime?","Use AWS DMS with CDC (ongoing replication), pre-provision target schema via SCT, run validation, and perform controlled cutover during low-traffic window.","domain3;migration;database"
+"When should you rehost vs replatform vs refactor?","Rehost for speed, replatform to leverage managed services (RDS, ECS) with minimal code change, and refactor to adopt cloud-native architectures for agility and cost benefits.","domain3;migration;strategy"
+"How do you migrate Oracle to Aurora PostgreSQL?","Analyze with SCT for schema conversion, convert PL/SQL to PL/pgSQL where needed, replicate data via DMS, test extensively, and plan cutover with minimal downtime.","domain3;migration;database"
+"What is the benefit of Mainframe Modernization service?","It supports automated refactoring (Blu Age) or replatforming (Micro Focus) of COBOL workloads, providing integrated pipelines, testing, and runtime environments on AWS.","domain3;migration;mainframe"
+"How do you migrate VMware workloads?","Use VMware Cloud on AWS for rapid lift-and-shift retaining vSphere tooling, or use MGN for conversion to EC2 while redesigning for native services.","domain3;migration;hybrid"
+"When is AWS Snow Family required for migration?","For petabyte-scale data transfers, disconnected environments, or strict data residency where online transfer is impractical; use Snowball Edge or Snowmobile.","domain3;migration;hybrid"
+"How do you modernize messaging systems?","Bridge on-prem brokers using Amazon MQ, gradually shift producers/consumers to SQS/SNS or EventBridge, and decommission legacy middleware as adoption progresses.","domain3;migration;integration"
+"What tool helps analyze Windows and SQL Server readiness?","AWS Optimization and Licensing Assessment (AWS OLA) and Migration Evaluator assess current usage, licensing, and right-sizing recommendations.","domain3;migration;planning"
+"How do you migrate file servers to AWS?","Use DataSync to EFS or FSx for Windows/ONTAP, preserve permissions via SMB/NFS, cut over during maintenance windows, and update client mappings.","domain3;migration;storage"
+"When should you containerize workloads during migration?","When you aim to improve portability and scalability, using App2Container or ECS/EKS as part of modernization rather than pure lift-and-shift.","domain3;migration;containers"
+"How do you migrate analytics pipelines?","Rebuild ETL using Glue/Athena/EMR, replicate data via DMS or Snowball to S3, adopt lakehouse architecture, and retire on-prem data warehouses (e.g., Teradata -> Redshift).","domain3;migration;analytics"
+"What is the process for SAP on AWS migration?","Use AWS Launch Wizard/SAP Rapid Migration, choose appropriate EC2 HANA-certified instances, leverage AWS Backint Agent, and design high availability via pacemaker clusters.","domain3;migration;sap"
+"How do you minimize downtime for web application cutover?","Run parallel environments, use Route 53 weighted records for canary, synchronize data via DMS or replication, and finalize cutover during off-peak hours.","domain3;migration;resiliency"
+"When do you adopt serverless modernization patterns?","After initial migration, refactor services to Lambda/API Gateway/EventBridge to reduce operations, using strangler patterns to incrementally replace monolith components.","domain3;migration;modernization"
+"How do you evaluate migration success metrics?","Track KPIs such as reduced TCO, improved availability, deployment frequency, performance metrics, and compliance posture post-migration.","domain3;migration;operations"
+"What is the role of Migration Hub?","Provides a central dashboard to track migrations (MGN, DMS, partner tools), integrates with strategy recommendations, and maps apps to migration status.","domain3;migration;operations"
+"How do you handle license management during migrations?","Use BYOL with License Manager or adopt AWS provided licenses (license included), ensure compliance via License Manager tracking, and consider license conversion programs.","domain3;migration;cost"
+"When should you use AWS App2Container?","To containerize Java/.NET web applications with minimal code changes, generating ECS/Kubernetes deployment artifacts.","domain3;migration;containers"
+"How do you handle large dataset replication without downtime?","Use DMS with parallel full load + CDC, or storage replication (EBS snapshots, Snowball initial seeding), then switch traffic after synchronization.","domain3;migration;storage"
+"What governance is needed for migration waves?","Define change control, freeze windows, security reviews, performance baselines, and runbooks for each wave, ensuring stakeholder alignment.","domain3;migration;governance"
+"How do you modernize authentication during migration?","Adopt Cognito or Identity Center, federate with corporate IdP, implement OIDC/SAML integration, and phase out legacy directory dependencies.","domain3;migration;security"
+"When is AWS AppConfig part of modernization?","To decouple configuration from code, enabling feature flags and safe rollouts as you refactor applications post-migration.","domain3;migration;operations"
+"How do you migrate big data clusters?","Recreate workloads using EMR or managed services (Glue), transfer data via Snowball/DataSync, and test workloads (Spark/Hive) in the new environment.","domain3;migration;analytics"
+"What is the value of CloudEndure Disaster Recovery?","Provides continuous block-level replication for DR scenarios, enabling pilot light or warm standby setups while planning full migration.","domain3;migration;resiliency"
+"How do you decompose monoliths after lift-and-shift?","Identify bounded contexts, extract services behind API Gateway or ALB, use strangler pattern, and shift state to managed data stores.","domain3;migration;modernization"
+"When should you use AWS Step Functions in migration?","To orchestrate complex migration tasks, run data validation, coordinate approvals, and integrate with change management systems.","domain3;migration;operations"
+"How do you ensure security baselines during migration?","Implement landing zone guardrails before migration, use automated checks (Config/Security Hub), and run vulnerability scans pre- and post-cutover.","domain3;migration;security"
+"What is the approach for testing migrated workloads?","Run functional, performance, and security tests in staging, use synthetic traffic (CloudWatch Synthetics), and validate data integrity with DMS validation tools.","domain3;migration;operations"
+"How do you integrate cost management post-migration?","Tag workloads, establish budgets and anomaly detection, compare actual spend against migration business case, and optimize with Compute Optimizer/Rightsizing.","domain3;migration;cost"
+"When is hybrid connectivity necessary during migration?","Maintain VPN/DX connections for phased migrations, data synchronization, or workloads needing on-prem dependencies until decommissioning.","domain3;migration;hybrid"
+"How do you retire on-prem assets after migration?","Execute decommission plan, update CMDB, transfer ownership, sanitize data, and close contracts/licensing to realize cost savings.","domain3;migration;operations"
+"How do you implement showback/chargeback on AWS?","Use AWS Billing Conductor or Cost Categories with allocation rules, tag resources per business unit, and publish CUR-based dashboards via QuickSight.","domain4;cost;governance"
+"When should you purchase Savings Plans?","After analyzing steady-state compute usage with Cost Explorer/Compute Optimizer, commit to 1- or 3-year Savings Plans (Compute or EC2 Instance) to reduce on-demand costs.","domain4;cost"
+"How do you decide between Savings Plans and Reserved Instances?","Savings Plans offer flexibility across instance families/regions (Compute SP) while RIs provide capacity reservations and instance family specificity; choose based on flexibility vs discount needs.","domain4;cost"
+"What tools monitor commitment utilization?","Use Cost Explorer's Savings Plans & RI utilization reports, set Budgets with utilization thresholds, and automate notifications via SNS/Chatbot.","domain4;cost;operations"
+"How do you manage Spot usage effectively?","Track Spot coverage via Cost Explorer, set up Spot instance interruption budgets, diversify instance pools, and use Instance Scheduler or automation to pause workloads when Spot unavailable.","domain4;cost;compute"
+"When is it appropriate to use AWS Instance Scheduler?","To automatically start/stop EC2/RDS resources on schedules (e.g., dev/test), reducing idle cost while respecting maintenance windows.","domain4;cost;operations"
+"How do you optimize data transfer expenses?","Architect with VPC endpoints/PrivateLink to avoid NAT/IGW charges, use CloudFront caching, replicate assets closer to users, and monitor via VPC Flow Logs & Cost Explorer usage types.","domain4;cost;networking"
+"What cost levers exist for S3?","Implement lifecycle policies, Intelligent-Tiering, compression, object consolidation, and evaluate access patterns to choose cost-effective classes.","domain4;cost;storage"
+"How do you control Lambda costs?","Optimize function duration/memory, use asynchronous batching where possible, limit concurrency, and monitor via Cost Explorer grouped by service.","domain4;cost;serverless"
+"When should you use Compute Optimizer recommendations?","Continually right-size EC2, Auto Scaling groups, EBS volumes, and Lambda memory to match actual utilization, feeding adjustments into IaC pipelines.","domain4;cost;operations"
+"How do you govern cost anomalies?","Enable AWS Cost Anomaly Detection, define monitors for services/accounts, send alerts to financial owners, and investigate root cause using Cost Explorer filters.","domain4;cost;operations"
+"What are cost considerations for multi-Region architectures?","Account for data transfer (inter-Region, replication), idle standby resources, cross-Region services (Global Accelerator, Route 53), and evaluate active-active vs active-passive trade-offs.","domain4;cost;resiliency"
+"How do you budget for shared services?","Tag shared resources, allocate via cost categories or split charges proportionally, and set OU/account budgets that include shared costs using CUR insights.","domain4;cost;governance"
+"When is AWS Budgets Actions useful?","To automatically execute actions (e.g., restrict IAM permissions, stop resources, notify) when budget thresholds are breached.","domain4;cost;operations"
+"How do you measure unit economics on AWS?","Define cost per business metric (e.g., cost per transaction/user), tag workloads accordingly, and build QuickSight dashboards combining CUR with application KPIs.","domain4;cost;operations"
+"What is the strategy for data lifecycle cost optimization?","Apply retention policies, tier logs to Glacier/Deep Archive, purge redundant replicas, and ensure regulatory requirements justify storage duration.","domain4;cost;storage"
+"How do you reduce EBS cost?","Right-size volumes, switch to gp3 with provisioned IOPS, use snapshots with Data Lifecycle Manager, and delete unused snapshots.","domain4;cost;storage"
+"When should you evaluate managed services for cost?","Compare total cost of ownership including operations (patching, scaling), licensing, and reliability benefits versus self-managed equivalents.","domain4;cost;architecture"
+"How do you optimize container cost?","Use Fargate Spot for tolerant workloads, right-size task CPU/memory, pack containers efficiently with bin packing strategies, and auto scale based on metrics.","domain4;cost;containers"
+"What cost controls apply to data analytics?","Use per-query limits in Athena, manage Redshift concurrency scaling, pause/resume Redshift Serverless, and enforce EMR auto-termination.","domain4;cost;analytics"
+"How do you track savings initiatives?","Maintain FinOps backlog, quantify realized vs forecasted savings, and report progress via dashboards to stakeholders.","domain4;cost;operations"
+"When is consolidated billing beneficial?","It aggregates usage across accounts to earn volume discounts and Savings Plan sharing, simplifying chargeback via CUR.","domain4;cost;governance"
+"How do you plan cost guardrails for experimentation accounts?","Set budgets, automate alerts, restrict service usage with SCPs, and employ Instance Scheduler to shut down resources outside work hours.","domain4;cost;governance"
+"What is AWS Compute Optimizer enhanced infrastructure metrics?","A feature providing detailed metrics for better recommendations, requiring additional CloudWatch fees but improving right-sizing accuracy.","domain4;cost;operations"
+"How should you approach long scenario questions?","Identify key requirements (availability, data residency, RPO/RTO, compliance), eliminate options that miss constraints, and choose the simplest solution that meets all needs.","exam"
+"What is the tie-breaker when multiple answers seem valid?","Favor architectures using managed services, aligning with AWS best practices, and satisfying business constraints with minimal operational overhead.","exam"
+"How do you manage time during the SAP exam?","Budget roughly 1.5 minutes per question, flag tricky ones, complete a first pass quickly, then revisit flagged questions with remaining time.","exam"
+"Why is understanding service limits crucial for the exam?","Many distractors ignore limits (e.g., API Gateway payload size, Lambda timeout), so knowing limits helps eliminate infeasible answers.","exam"
+"How do you study architecture trade-offs effectively?","Compare pros/cons of similar services (ALB vs NLB vs Gateway LB, RDS vs Aurora vs DynamoDB) and align them to scenario requirements.","exam"
+"What resources reinforce exam readiness?","Use AWS whitepapers (Well-Architected, Security, DR), service FAQs, re:Invent sessions, and sample questions to internalize design patterns.","exam"
+"How should you treat multi-account questions?","Default to landing zone best practices: Control Tower, Organizations, SCPs, centralized logging, shared services, and cross-account IAM via Identity Center.","exam"
+"What exam pitfall relates to cost vs resiliency?","Avoid over-engineering; select the architecture that meets RPO/RTO while noting cost implications and justifying managed service choices.","exam"
+"How do you prepare for calculations or throughput questions?","Review key metrics (Kinesis shard limits, DynamoDB capacity units, RDS IOPS) and practice quick math for scaling formulas.","exam"
+"Why review AWS service SLAs?","Understanding availability guarantees helps answer high-availability design questions and evaluate active-active vs active-passive trade-offs.","exam"
+"How do you factor sustainability on the exam?","Prefer serverless/managed services, auto scaling, Graviton, and efficient storage classes when sustainability is mentioned in requirements.","exam"
+"What is the value of Well-Architected pillars in exam scenarios?","They guide decision-making around operational excellence, security, reliability, performance efficiency, cost, and sustainability to evaluate answers.","exam"
+"How should you handle unfamiliar services in questions?","Focus on requirements; if an option introduces an unknown service but fits the scenario, rely on elimination and best-practice intuition.","exam"
+"Why is post-exam review important?","Document knowledge gaps, revisit topics, and reinforce concepts for real-world application beyond certification.","exam"
+"QUESTION BANK: Centralized logging for hundreds of accounts.
+Which option best satisfies the requirement that all accounts deliver immutable audit logs to a security account while preventing workloads from disabling logging?
+A. Enable CloudTrail in each account with an S3 bucket in that account. Use AWS Backup to copy logs to the security account.
+B. Create an organization trail storing logs in the security account S3 bucket with Object Lock, use KMS CMK from security account, and attach an SCP denying cloudtrail:StopLogging.
+C. Configure CloudTrail to CloudWatch Logs in each account and subscribe to a central Kinesis stream in the security account.
+D. Stream CloudTrail to EventBridge and write to DynamoDB global tables for retention.","Correct: B. Organization trails ensure every member account delivers to the centralized S3 bucket; Object Lock prevents tampering and SCPs keep logging enabled.
+Why not A: S3 buckets per account increase management complexity and workloads could still disable trails locally.
+Why not C: CloudWatch log subscriptions per account scale poorly and do not provide immutable storage by default.
+Why not D: EventBridge targets and DynamoDB are not designed for long-term, immutable log retention.","question-bank;governance;logging"
+"QUESTION BANK: Multi-account networking and inspection.
+You must centralize ingress/egress inspection for 200 VPCs across multiple OUs while minimizing operational overhead.
+A. Create full-mesh VPC peering and deploy firewall appliances in each VPC.
+B. Deploy a centralized AWS Network Firewall in a dedicated egress VPC connected via Transit Gateway, share route tables, and manage policies with Firewall Manager.
+C. Use VPC Lattice to route all traffic through a centralized service running iptables.
+D. Configure NAT instances in each VPC with custom iptables rules.","Correct: B. TGW + Network Firewall centralizes inspection with managed rules and Firewall Manager policy distribution.
+Why not A: Full-mesh peering does not scale and distributed firewalls are operationally heavy.
+Why not C: VPC Lattice targets service-to-service, not blanket ingress/egress inspection.
+Why not D: NAT instances per VPC increase management overhead and are not highly available by default.","question-bank;networking;security"
+"QUESTION BANK: High availability database design.
+A payments platform requires <1 min RPO and <1 min RTO across two Regions.
+A. RDS Multi-AZ with automated backups and cross-Region read replica.
+B. Aurora Global Database with managed replication and planned failover runbook.
+C. DynamoDB on-demand tables with global secondary indexes.
+D. Self-managed MySQL on EC2 with asynchronous replication.","Correct: B. Aurora Global Database meets sub-minute RPO/RTO, purpose-built for cross-Region resiliency.
+Why not A: Cross-Region read replicas are asynchronous, risking >1 minute data loss and longer failover.
+Why not C: DynamoDB could work but would require application rewrite; question implies relational workload.
+Why not D: Self-managed MySQL cannot guarantee the SLA without significant custom engineering.","question-bank;database;resiliency"
+"QUESTION BANK: Serverless API with strict latency.
+You run a latency-sensitive API on Lambda, globally accessible, with unpredictable spikes. How do you ensure consistent performance?
+A. Add more provisioned concurrency and front with API Gateway regional endpoints behind Global Accelerator.
+B. Increase Lambda memory and rely on CloudFront caching.
+C. Move to ECS Fargate to avoid cold starts entirely.
+D. Place Lambda in a VPC with provisioned concurrency disabled to reuse ENIs.","Correct: A. Provisioned concurrency + Global Accelerator ensures warm capacity and low-latency routing.
+Why not B: Memory tuning helps but does not eliminate cold starts or global latency on its own.
+Why not C: Fargate may work but increases ops overhead; question focuses on improving Lambda.
+Why not D: Disabling provisioned concurrency reintroduces cold starts; VPC attachments add startup latency.","question-bank;serverless;performance"
+"QUESTION BANK: Data lake governance.
+You must allow analytics teams in multiple accounts controlled access to curated S3 datasets without copying data.
+A. Share the S3 bucket via bucket ACLs and provide IAM user access keys.
+B. Enable Lake Formation cross-account sharing using LF-Tags and grant principals access through the Data Catalog.
+C. Distribute daily CSV exports to each account via S3 Batch Operations.
+D. Use DataSync to copy datasets into each account nightly.","Correct: B. Lake Formation cross-account shares enforce fine-grained permissions without data duplication.
+Why not A: Bucket ACLs are coarse and bypass governance best practices.
+Why not C: CSV exports duplicate data and complicate governance.
+Why not D: Copying data increases cost, delays access, and risks divergence.","question-bank;analytics;governance"
+"QUESTION BANK: Hybrid connectivity resilience.
+An enterprise needs resilient connectivity between on-prem data centers and AWS for SAP workloads.
+A. One Direct Connect with VPN failover in the same colocation.
+B. Two Direct Connect connections in separate facilities using LAG plus redundant VPNs into Transit Gateway.
+C. IPSec VPN only with BGP.
+D. GRE tunnels over the internet with static routing.","Correct: B. Dual DX in separate sites with VPN backup and TGW provides high availability.
+Why not A: Single facility is a potential single point of failure.
+Why not C: VPN alone may not meet bandwidth/latency requirements.
+Why not D: GRE over the internet lacks encryption and resilience.","question-bank;networking;hybrid"
+"QUESTION BANK: Multi-tenant SaaS isolation.
+You operate a SaaS platform on DynamoDB/EKS serving regulated customers needing tenant isolation.
+A. Use a single DynamoDB table with tenant ID partition key and IAM condition keys to enforce access; isolate compute namespaces per tenant.
+B. Create a DynamoDB table per tenant and run one EKS cluster per tenant.
+C. Store all tenant data in S3 with signed URLs and no additional controls.
+D. Use a single account for all tenants without tagging.","Correct: A. Multi-tenant DynamoDB with ABAC policies and namespace isolation balances scale and compliance.
+Why not B: Managing thousands of tables/clusters is operationally heavy and costly.
+Why not C: Lacks fine-grained access and query capabilities.
+Why not D: No isolation or governance mechanism.","question-bank;architecture;security"
+"QUESTION BANK: Security incident automation.
+Requirement: automatically quarantine EC2 instances flagged by GuardDuty for crypto-mining.
+A. Enable GuardDuty and manually respond via console.
+B. Use EventBridge rules on GuardDuty findings to invoke SSM Automation documents that remove instance from ELB, detach IAM roles, and isolate SGs.
+C. Configure AWS Config rules to delete instances immediately.
+D. Send SNS notification to administrators for follow-up.","Correct: B. EventBridge + SSM Automation provides automated, auditable incident response.
+Why not A: Manual remediation is slow and error-prone.
+Why not C: Deleting instances may destroy evidence and disrupt services; better to isolate.
+Why not D: Notifications alone do not satisfy automation requirement.","question-bank;security;operations"
+"QUESTION BANK: Cost optimization challenge.
+Analytics team runs EMR clusters 24/7 though workloads are nightly. How do you cut costs without rewriting jobs?
+A. Switch to EMR Serverless with on-demand jobs triggered nightly.
+B. Purchase 3-year All Upfront RIs for current cluster nodes.
+C. Move to self-managed Hadoop on EC2.
+D. Use larger instances to finish jobs faster.","Correct: A. EMR Serverless or scheduled transient clusters align compute with workload schedule.
+Why not B: Lock-in cost despite idle time.
+Why not C: Increases operational burden.
+Why not D: Larger instances still idle most of the day.","question-bank;analytics;cost"
+"QUESTION BANK: Application modernization.
+A monolithic application was lifted to EC2 but still experiences deployment risk. Which option best supports gradual modernization and deployment safety?
+A. Implement blue/green EC2 deployments with ALB weighted target groups while progressively extracting services into Lambda/API Gateway.
+B. Scale up the EC2 instance size and rely on snapshots before deployment.
+C. Move the app back on-premises until refactor complete.
+D. Use a single EC2 instance with manual rsync deployments.","Correct: A. Blue/green plus strangler pattern reduces downtime and enables incremental modernization.
+Why not B: Scaling hardware doesn’t address deployment risk or modernization.
+Why not C: Reverting to on-prem stalls modernization and loses cloud benefits.
+Why not D: Single instance is fragile and manual deployments risky.","question-bank;migration;operations"
+"QUESTION BANK: Edge strategy.
+A media company requires sub-10ms latency for user interactions in specific metro areas while leveraging AWS services centrally.
+A. Deploy workloads solely in a central Region and rely on CloudFront caching.
+B. Use AWS Local Zones for compute near metros, connect to the Region for databases, and front with Global Accelerator.
+C. Use Outposts racks in each metro and run a full landing zone locally.
+D. Place EC2 instances in the nearest available AZ and hope latency is acceptable.","Correct: B. Local Zones provide low-latency compute with centralized management and GA improves routing.
+Why not A: Central Region alone may exceed latency requirements despite caching.
+Why not C: Outposts may be overkill and costly for each metro when Local Zones suffice.
+Why not D: No guarantee of meeting sub-10ms latency.","question-bank;edge;networking"
+"QUESTION BANK: Compliance evidence automation.
+Need auditable evidence for PCI across all accounts with minimal manual effort.
+A. Export CloudTrail logs quarterly and email spreadsheets.
+B. Use AWS Audit Manager with the PCI framework, integrate Config and Security Hub data sources, and store evidence in S3 with Object Lock.
+C. Maintain a wiki page that engineers update after changes.
+D. Hire an external auditor to gather evidence manually every year.","Correct: B. Audit Manager automates evidence collection and integrates with compliance services.
+Why not A: Manual exports are error-prone and lack traceability.
+Why not C: Wiki updates are unreliable and fail audits.
+Why not D: Manual yearly efforts miss continuous compliance.","question-bank;compliance;operations"
+"QUESTION BANK: Data exfiltration control.
+Requirement: Prevent private subnet workloads from sending data to unauthorized internet endpoints while still accessing S3 and approved APIs.
+A. Route all traffic through NAT Gateway and rely on IAM roles.
+B. Use VPC endpoints for S3/API Gateway, disable internet-bound routes, apply DNS Firewall and Network Firewall allowlists.
+C. Attach internet gateways to private subnets but block with NACLs.
+D. Use S3 public buckets and CloudFront to host artifacts.","Correct: B. Private connectivity via endpoints plus firewall policies enforces strict egress control without public internet access.
+Why not A: NAT alone cannot enforce destination restrictions.
+Why not C: Internet gateway to private subnets violates design and still risks leakage.
+Why not D: Public buckets contradict the requirement.","question-bank;security;networking"

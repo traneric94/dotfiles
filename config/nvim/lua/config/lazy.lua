@@ -26,7 +26,6 @@ require("lazy").setup({
   {
     "nvim-tree/nvim-tree.lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    lazy = false,
     config = function()
       require("config.plugins.nvim-tree")
     end,
@@ -118,6 +117,7 @@ require("lazy").setup({
   },
   {
     "neovim/nvim-lspconfig",
+    event = { "BufReadPre", "BufNewFile" },
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",

@@ -113,27 +113,41 @@ install_tpm() {
 
 install_tpm
 
-install_go_tools() {
-  if ! command -v go >/dev/null 2>&1; then
-    echo "Go not installed; skipping go tool bootstrap."
+/usr/bin/defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false || true
+/usr/bin/defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false || true
+
+install_ruby() {
+  if ! command -v rbenv >/dev/null 2>&1; then
+    echo "rbenv not installed; skipping Ruby installation."
     return
   fi
 
-  local tools=(
-    "golang.org/x/tools/cmd/goimports@latest"
-    "github.com/daixiang0/gci@latest"
-  )
+  eval "$(rbenv init - bash)"
 
-  for tool in "${tools[@]}"; do
-    echo "Installing ${tool}..."
-    GO111MODULE=on go install "$tool" >/dev/null 2>&1 || true
-  done
+  local ruby_version="3.3.7"
+  if rbenv versions --bare | grep -Fxq "$ruby_version"; then
+    echo "Ruby $ruby_version already installed via rbenv."
+  else
+    echo "Installing Ruby $ruby_version via rbenv..."
+    if rbenv install "$ruby_version"; then
+      echo "Ruby $ruby_version installed successfully."
+    else
+      echo "Failed to install Ruby $ruby_version."
+      return
+    fi
+  fi
+
+  local current_global
+  current_global="$(rbenv global 2>/dev/null || true)"
+  if [ "$current_global" != "$ruby_version" ]; then
+    rbenv global "$ruby_version"
+    echo "Set global Ruby version to $ruby_version."
+  fi
+
+  rbenv rehash
 }
 
-install_go_tools
-
-/usr/bin/defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false || true
-/usr/bin/defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false || true
+install_ruby
 
 echo ""
 echo "✅ Installation complete!"

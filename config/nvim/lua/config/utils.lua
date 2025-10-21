@@ -13,8 +13,20 @@ function M.go_format()
     return
   end
 
-  local file = vim.fn.shellescape(vim.fn.expand("%"))
-  local result = vim.fn.system(M.go_bin_path() .. "gofmt -w " .. file .. " 2>&1")
+  local file = vim.fn.expand("%:p")
+  local gofmt = vim.fn.exepath("gofmt")
+  if gofmt == "" then
+    local fallback = M.go_bin_path() .. "gofmt"
+    if vim.fn.filereadable(fallback) == 1 then
+      gofmt = fallback
+    else
+      vim.notify("Go format failed: gofmt not found on PATH", vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  local cmd = string.format("%s -w %s 2>&1", vim.fn.shellescape(gofmt), vim.fn.shellescape(file))
+  local result = vim.fn.system(cmd)
 
   if vim.v.shell_error ~= 0 then
     vim.notify("Go format failed: " .. result, vim.log.levels.ERROR)
@@ -26,34 +38,35 @@ end
 function M.toggle_test_file()
   local file = vim.fn.expand("%:p")
   local ext = vim.fn.expand("%:e")
+  local transforms
 
-  local patterns = {
-    rb = {
-      { "_spec%.rb$", ".rb", "/spec/", "/lib/" },
-      { "%.rb$", "_spec.rb", "/lib/", "/spec/" },
-    },
-    go = {
-      { "_test%.go$", ".go" },
-      { "%.go$", "_test.go" },
-    },
-    ["ts|tsx|js|jsx"] = {
-      { "%.test%.", "." },
-      { "%.(ts|tsx|js|jsx)$", ".test.%1" },
-    },
-  }
+  if ext == "rb" then
+    transforms = {
+      { pattern = "_spec%.rb$", replace = ".rb", from_dir = "/spec/", to_dir = "/lib/" },
+      { pattern = "%.rb$", replace = "_spec.rb", from_dir = "/lib/", to_dir = "/spec/" },
+    }
+  elseif ext == "go" then
+    transforms = {
+      { pattern = "_test%.go$", replace = ".go" },
+      { pattern = "%.go$", replace = "_test.go" },
+    }
+  elseif vim.tbl_contains({ "ts", "tsx", "js", "jsx" }, ext) then
+    transforms = {
+      { pattern = ("%.test%." .. ext .. "$"), replace = ("." .. ext) },
+      { pattern = ("%." .. ext .. "$"), replace = (".test." .. ext) },
+    }
+  end
 
-  for pattern_ext, transforms in pairs(patterns) do
-    if ext:match(pattern_ext) then
-      for _, transform in ipairs(transforms) do
-        if file:match(transform[1]) then
-          local target = file:gsub(transform[1], transform[2])
-          if transform[3] and transform[4] then
-            target = target:gsub(transform[3], transform[4])
-          end
-          vim.cmd("edit " .. vim.fn.fnameescape(target))
-          vim.notify("Toggled to: " .. vim.fn.fnamemodify(target, ":t"), vim.log.levels.INFO)
-          return
+  if transforms then
+    for _, transform in ipairs(transforms) do
+      if file:match(transform.pattern) then
+        local target = file:gsub(transform.pattern, transform.replace)
+        if transform.from_dir and transform.to_dir then
+          target = target:gsub(transform.from_dir, transform.to_dir)
         end
+        vim.cmd("edit " .. vim.fn.fnameescape(target))
+        vim.notify("Toggled to: " .. vim.fn.fnamemodify(target, ":t"), vim.log.levels.INFO)
+        return
       end
     end
   end
@@ -87,38 +100,46 @@ function M.open_pull_request()
 end
 
 function M.fold_imports()
+  local ft = vim.bo.filetype
   local patterns = {
     go = "^%s*import%s*%(",
-    ["typescriptreact|typescript|javascript|javascriptreact"] = "^%s*import%s+.*from",
     ruby = "^%s*require",
     python = "^%s*(import|from)%s",
   }
+  local ts_filetypes = {
+    typescriptreact = true,
+    typescript = true,
+    javascript = true,
+    javascriptreact = true,
+  }
 
-  local ft = vim.bo.filetype
+  local pattern = patterns[ft]
+  if not pattern and ts_filetypes[ft] then
+    pattern = "^%s*import%s+.*from"
+  end
+
+  if not pattern then
+    return
+  end
+
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
-  for ft_pattern, pattern in pairs(patterns) do
-    if ft:match(ft_pattern) then
-      local start_line = nil
-      for idx, line in ipairs(lines) do
-        if line:match(pattern) then
-          start_line = start_line or idx
-        elseif start_line and line:match("^%s*$") then
-          -- still part of import block
-        elseif start_line then
-          if idx > start_line then
-            vim.cmd(string.format("%d,%dfold", start_line, idx - 1))
-          end
-          start_line = nil
-        end
+  local start_line = nil
+  for idx, line in ipairs(lines) do
+    if line:match(pattern) then
+      start_line = start_line or idx
+    elseif start_line and line:match("^%s*$") then
+      -- still part of import block
+    elseif start_line then
+      if idx > start_line then
+        vim.cmd(string.format("%d,%dfold", start_line, idx - 1))
       end
-
-      if start_line then
-        vim.cmd(string.format("%d,%dfold", start_line, #lines))
-      end
-
-      break
+      start_line = nil
     end
+  end
+
+  if start_line then
+    vim.cmd(string.format("%d,%dfold", start_line, #lines))
   end
 end
 

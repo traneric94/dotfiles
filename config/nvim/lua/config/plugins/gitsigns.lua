@@ -12,8 +12,8 @@ gitsigns.setup({
     changedelete = { text = "~" },
     untracked = { text = "┆" },
   },
-  attach_to_untracked = true,
-  current_line_blame = true,
+  attach_to_untracked = false,
+  current_line_blame = false,
   current_line_blame_opts = {
     virt_text = true,
     virt_text_pos = "eol",
@@ -21,6 +21,11 @@ gitsigns.setup({
     ignore_whitespace = false,
   },
   current_line_blame_formatter = "<author>, <author_time:%Y-%m-%d> - <summary>",
+  watch_gitdir = {
+    interval = 1000,
+    follow_files = true,
+  },
+  max_file_length = 20000,
   preview_config = {
     border = "single",
     style = "minimal",

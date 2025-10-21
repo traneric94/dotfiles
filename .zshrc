@@ -122,6 +122,9 @@ elif [ -d "/usr/local/opt/php@7.4/bin" ]; then
 fi
 
 export PATH="/usr/sbin:$PATH"
+export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
+
+BAT_CMD="$(command -v bat 2>/dev/null || printf 'bat')"
 
 ### Quality of Life Aliases
 # ==============================================================================
@@ -129,11 +132,12 @@ alias vim=nvim
 alias cat=bat
 if command -v zoxide >/dev/null 2>&1; then
   alias cd='z'
+else
+  alias z='cd'
 fi
 alias mkdir='mkdir -p'  # Create parent directories as needed
 alias c='clear'          # Clear terminal screen
 alias reload='source ~/.zshrc'  # Reload ZSH Configuration
-alias fman="compgen -c | fzf | xargs man"
 alias ssh-target='echo "eric.tran@$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk "{print \$2}")"'  # Print SSH target with current IP
 
 # ==============================================================================
@@ -177,6 +181,14 @@ alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
 # Custom Functions
 # ==============================================================================
 
+# Fuzzy man page picker
+fman() {
+  command -v fzf >/dev/null 2>&1 || { echo "fzf is required for fman" >&2; return 1; }
+  local selection
+  selection=$(printf '%s\n' ${(k)commands} | sort -u | fzf --prompt='man> ' --height=70% --ansi) || return 1
+  [[ -n "$selection" ]] && man "$selection"
+}
+
 # Auto-create .ruby-version from Gemfile when entering Ruby projects
 auto_ruby_version() {
   if [[ -f "Gemfile" && ! -f ".ruby-version" ]]; then
@@ -206,12 +218,13 @@ go() {
 # Ripgrep + fzf interactive search with syntax highlighting
 # Usage: rgf "search_term"
 function rgf() {
+  local bat_cmd="${BAT_CMD:-bat}"
   rg --line-number --no-heading --color=always --with-filename "$1" | \
   awk -F: -v OFS=: '{printf "%-50s %4s: %s\n", $1, $2, substr($0, index($0, $3))}' | \
   fzf --ansi \
       --delimiter : \
       --nth 1,2 \
-      --preview 'FILE=$(echo {} | awk "{print \$1}" | sed "s/[[:space:]]*$//"); LINE=$(echo {} | awk "{print \$2}" | tr -d ":"); /opt/homebrew/bin/bat --color=always --style=numbers --highlight-line $LINE "$FILE"' \
+      --preview "FILE=\$(printf '%s\n' {} | awk '{print \$1}' | sed 's/[[:space:]]*$//'); LINE=\$(printf '%s\n' {} | awk '{print \$2}' | tr -d ':'); ${bat_cmd} --color=always --style=numbers --highlight-line \$LINE \"\$FILE\"" \
       --preview-window up:60% \
       --layout=reverse \
       --info=inline
@@ -220,9 +233,11 @@ function rgf() {
 # Function to find and open files using zoxide and fzf
 # Usage: search_with_zoxdie [search_term] or nzo [search_term]
 function search_with_zoxdie() {
+    local bat_cmd="${BAT_CMD:-bat}"
+    local preview_cmd="${bat_cmd} --color=always -n --line-range :500 {+2..}"
     if [ -z "$1" ]; then
         # Use fd with fzf to select & open a file when no args are provided
-        file="$(fd --type f --strip-cwd-prefix -I -H -E .git -E .git-crypt -E .cache -E .backup | xargs -I {} eza --icons=always --color=always {} | fzf --height=70% --ansi --preview='/opt/homebrew/bin//opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')"
+        file=$(fd --type f --strip-cwd-prefix -I -H -E .git -E .git-crypt -E .cache -E .backup | xargs -I {} eza --icons=always --color=always {} | fzf --height=70% --ansi --preview "$preview_cmd")
         if [ -n "$file" ]; then
             # Extract the actual filename (everything after the icon and space)
             actual_file=$(echo "$file" | sed 's/^[^ ]* //')
@@ -230,14 +245,14 @@ function search_with_zoxdie() {
         fi
     else
         # Handle when an argument is provided - only search within current directory and subdirectories
-        lines=$({ fd --type f -I -H -E .git -E .git-crypt -E .cache -E .backup -E .vscode "$1" .; zoxide query -l | while read -r dir; do if [ -d "$dir" ]; then case "$dir" in "$(pwd)"*) rel_dir="${dir#$(pwd)/}"; if [ "$rel_dir" != "$dir" ]; then fd --type f -I -H -E .git -E .git-crypt -E .cache -E .backup -E .vscode "$1" "$dir" | sed "s|^$dir/|$rel_dir/|" 2>/dev/null; fi ;; esac; fi; done; } | sort -u | xargs -I {} eza --icons=always --color=always {} | fzf --no-sort --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')
+        lines=$({ fd --type f -I -H -E .git -E .git-crypt -E .cache -E .backup -E .vscode "$1" .; zoxide query -l | while read -r dir; do if [ -d "$dir" ]; then case "$dir" in "$(pwd)"*) rel_dir="${dir#$(pwd)/}"; if [ "$rel_dir" != "$dir" ]; then fd --type f -I -H -E .git -E .git-crypt -E .cache -E .backup -E .vscode "$1" "$dir" | sed "s|^$dir/|$rel_dir/|" 2>/dev/null; fi ;; esac; fi; done; } | sort -u | xargs -I {} eza --icons=always --color=always {} | fzf --no-sort --height=70% --ansi --preview "$preview_cmd")
         line_count="$(echo "$lines" | wc -l | xargs)"
 
         if [ -n "$lines" ] && [ "$line_count" -eq 1 ]; then
             actual_file=$(echo "$lines" | sed 's/^[^ ]* //')
             nvim "$actual_file"
         elif [ -n "$lines" ]; then
-            file=$(echo "$lines" | fzf --query="$1" --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')
+            file=$(echo "$lines" | fzf --query="$1" --height=70% --ansi --preview "$preview_cmd")
             if [ -n "$file" ]; then
                 actual_file=$(echo "$file" | sed 's/^[^ ]* //')
                 nvim "$actual_file"
@@ -253,20 +268,22 @@ alias nzo='search_with_zoxdie'
 
 # Bypass version that shows ALL files (including ignored)
 function search_with_zoxdie_bypass() {
+    local bat_cmd="${BAT_CMD:-bat}"
+    local preview_cmd="${bat_cmd} --color=always -n --line-range :500 {+2..}"
     if [ -z "$1" ]; then
-        file="$(fd --type f --strip-cwd-prefix --no-ignore -H | xargs -I {} eza --icons=always --color=always {} | fzf --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')"
+        file=$(fd --type f --strip-cwd-prefix --no-ignore -H | xargs -I {} eza --icons=always --color=always {} | fzf --height=70% --ansi --preview "$preview_cmd")
         if [ -n "$file" ]; then
             actual_file=$(echo "$file" | sed 's/^[^ ]* //')
             nvim "$actual_file"
         fi
     else
-        lines=$({ fd --type f --no-ignore -H "$1" .; zoxide query -l | while read -r dir; do if [ -d "$dir" ]; then case "$dir" in "$(pwd)"*) rel_dir="${dir#$(pwd)/}"; if [ "$rel_dir" != "$dir" ]; then fd --type f --no-ignore -H "$1" "$dir" | sed "s|^$dir/|$rel_dir/|" 2>/dev/null; fi ;; esac; fi; done; } | sort -u | xargs -I {} eza --icons=always --color=always {} | fzf --no-sort --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')
+        lines=$({ fd --type f --no-ignore -H "$1" .; zoxide query -l | while read -r dir; do if [ -d "$dir" ]; then case "$dir" in "$(pwd)"*) rel_dir="${dir#$(pwd)/}"; if [ "$rel_dir" != "$dir" ]; then fd --type f --no-ignore -H "$1" "$dir" | sed "s|^$dir/|$rel_dir/|" 2>/dev/null; fi ;; esac; fi; done; } | sort -u | xargs -I {} eza --icons=always --color=always {} | fzf --no-sort --height=70% --ansi --preview "$preview_cmd")
         line_count="$(echo "$lines" | wc -l | xargs)"
         if [ -n "$lines" ] && [ "$line_count" -eq 1 ]; then
             actual_file=$(echo "$lines" | sed 's/^[^ ]* //')
             nvim "$actual_file"
         elif [ -n "$lines" ]; then
-            file=$(echo "$lines" | fzf --query="$1" --height=70% --ansi --preview='/opt/homebrew/bin/bat -n --color=always --line-range :500 {+2..}')
+            file=$(echo "$lines" | fzf --query="$1" --height=70% --ansi --preview "$preview_cmd")
             if [ -n "$file" ]; then
                 actual_file=$(echo "$file" | sed 's/^[^ ]* //')
                 nvim "$actual_file"
@@ -287,11 +304,6 @@ if command -v pyenv >/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
-# Smart directory jumping (zoxide)
-if command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init zsh)"
-fi
-
 # Ruby version management (rbenv)
 if command -v rbenv >/dev/null 2>&1; then
   eval "$(rbenv init - zsh)"
@@ -305,6 +317,9 @@ fi
 
 # Interactive-only enhancements
 if [[ -t 1 ]]; then
+  if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh)"
+  fi
   [[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
   [[ -f /opt/homebrew/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh ]] && source /opt/homebrew/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
   [[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -335,11 +350,10 @@ export FZF_DEFAULT_OPTS="--height 50% --layout=default --border \
 --bind=ctrl-u:preview-up,ctrl-d:preview-down,ctrl-b:preview-page-up,ctrl-f:preview-page-down"
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200' --preview-window=right:60%:wrap"
 
-export FZF_TMUX_OPTS=" -p90%, 70% "
+export FZF_TMUX_OPTS="-p 90%,70%"
 
 # Set FZF previews
-export FZF_CTRL_T_OPTS="--preview '/opt/homebrew/bin/bat --color=always -n --line-range :500 {}'"
-export FZF_ATC_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
+export FZF_CTRL_T_OPTS="--preview '${BAT_CMD} --color=always -n --line-range :500 {}'"
 
 # Remove broken list-expand binding to allow fzf-git Ctrl+G prefix to work
 if [[ -t 1 ]]; then
@@ -359,3 +373,4 @@ precmd () {
 
 # Hook auto Ruby version detection into directory changes
 precmd_functions+=(auto_ruby_version)
+export PATH="/opt/homebrew/opt/ruby@3.3/bin:$PATH"

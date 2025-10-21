@@ -21,10 +21,17 @@ local function telescope(builtin, opts)
   return function()
     local ok, builtin_module = pcall(require, "telescope.builtin")
     if not ok then
-      vim.notify("Telescope is not available", vim.log.levels.ERROR)
-      return
+      local lazy_ok, lazy = pcall(require, "lazy")
+      if lazy_ok then
+        lazy.load({ plugins = { "telescope.nvim" } })
+        ok, builtin_module = pcall(require, "telescope.builtin")
+      end
     end
-    builtin_module[builtin](opts or {})
+    if ok and builtin_module[builtin] then
+      builtin_module[builtin](opts or {})
+    else
+      vim.notify("Telescope is not available", vim.log.levels.ERROR)
+    end
   end
 end
 
@@ -138,7 +145,7 @@ map("n", "<leader>ta", utils.toggle_test_file, "Toggle test file")
 map("n", "<leader>ve", function()
   vim.cmd("edit ~/.config/nvim/init.lua")
 end, "Edit Neovim config")
-map("n", "<leader>vr", function()
+map("n", "<leader>r", function()
   vim.cmd("source ~/.config/nvim/init.lua")
   vim.notify("Config reloaded!", vim.log.levels.INFO)
 end, "Reload Neovim config")
@@ -186,6 +193,7 @@ if wk_ok then
       g = { name = "+git" },
       h = { name = "+harpoon" },
       l = { name = "+lsp" },
+      r = "Reload config",
       q = { name = "+quickfix" },
       s = { name = "+search" },
       t = { name = "+test" },

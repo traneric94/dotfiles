@@ -128,6 +128,8 @@ capabilities.textDocument.foldingRange = {
   lineFoldingOnly = true,
 }
 
+local tools = require("config.tools")
+
 local function telescope_or(method, telescope_opts, fallback)
   return function(opts)
     local ok, builtin = pcall(require, "telescope.builtin")
@@ -250,29 +252,11 @@ if not mason_lsp_ok then
   return
 end
 
-local servers = {
-  "gopls",
-  "lua_ls",
-  "pyright",
-  "ts_ls",
-  "rust_analyzer",
-  "ruby_lsp",
-  "jsonls",
-  "yamlls",
-  "html",
-  "cssls",
-  "dockerls",
-  "intelephense",
-}
+local servers = tools.servers
 
 mason_lspconfig.setup({
   ensure_installed = servers,
 })
-
-local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
-if not lspconfig_ok then
-  return
-end
 
 local server_settings = {
   lua_ls = function()
@@ -315,11 +299,9 @@ local server_settings = {
   end,
 }
 
-for _, server in ipairs(servers) do
-  local ok, lsp = pcall(function()
-    return lspconfig[server]
-  end)
+local configured_servers = {}
 
+for _, server in ipairs(servers) do
   local opts = {
     on_attach = on_attach,
     capabilities = vim.deepcopy(capabilities),
@@ -330,9 +312,14 @@ for _, server in ipairs(servers) do
     opts = vim.tbl_deep_extend("force", opts, server_opts or {})
   end
 
-  if not ok or not lsp then
-    vim.notify(string.format("lspconfig: server '%s' is not available", server), vim.log.levels.WARN)
+  local ok, err = pcall(vim.lsp.config, server, opts)
+  if not ok then
+    vim.notify(string.format("vim.lsp: unable to configure server '%s': %s", server, err), vim.log.levels.WARN)
   else
-    lsp.setup(opts)
+    table.insert(configured_servers, server)
   end
+end
+
+if #configured_servers > 0 then
+  vim.lsp.enable(configured_servers)
 end

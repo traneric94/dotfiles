@@ -20,18 +20,10 @@ local wk_ok, wk = pcall(require, "which-key")
 local function telescope(builtin, opts)
   return function()
     local ok, builtin_module = pcall(require, "telescope.builtin")
-    if not ok then
-      local lazy_ok, lazy = pcall(require, "lazy")
-      if lazy_ok then
-        lazy.load({ plugins = { "telescope.nvim" } })
-        ok, builtin_module = pcall(require, "telescope.builtin")
-      end
+    if not ok or not builtin_module[builtin] then
+      return
     end
-    if ok and builtin_module[builtin] then
-      builtin_module[builtin](opts or {})
-    else
-      vim.notify("Telescope is not available", vim.log.levels.ERROR)
-    end
+    builtin_module[builtin](opts or {})
   end
 end
 
@@ -39,8 +31,6 @@ local function with_nvim_tree(callback)
   local ok, api = pcall(require, "nvim-tree.api")
   if ok then
     callback(api)
-  else
-    vim.notify("nvim-tree is not available", vim.log.levels.ERROR)
   end
 end
 
@@ -118,8 +108,6 @@ map("n", "<leader>gl", function()
   local ok, gitsigns = pcall(require, "gitsigns")
   if ok then
     gitsigns.toggle_current_line_blame()
-  else
-    vim.notify("gitsigns is not available", vim.log.levels.ERROR)
   end
 end, "Toggle line blame")
 map("n", "<leader>gp", utils.open_pull_request, "Open PR for line")
@@ -155,16 +143,12 @@ map("n", "<leader>ha", function()
   local ok, harpoon = pcall(require, "harpoon.mark")
   if ok then
     harpoon.add_file()
-  else
-    vim.notify("harpoon is not available", vim.log.levels.ERROR)
   end
 end, "Add file to Harpoon")
 map("n", "<leader>hh", function()
   local ok, ui = pcall(require, "harpoon.ui")
   if ok then
     ui.toggle_quick_menu()
-  else
-    vim.notify("harpoon is not available", vim.log.levels.ERROR)
   end
 end, "Harpoon menu")
 for i = 1, 4 do
@@ -172,8 +156,6 @@ for i = 1, 4 do
     local ok, ui = pcall(require, "harpoon.ui")
     if ok then
       ui.nav_file(i)
-    else
-      vim.notify("harpoon is not available", vim.log.levels.ERROR)
     end
   end, string.format("Harpoon file %d", i))
 end

@@ -1,117 +1,104 @@
-local cmp_ok, cmp = pcall(require, "cmp")
-local luasnip
-local cmp_autopairs
-local wk_ok, wk = pcall(require, "which-key")
+local cmp = require("cmp")
+local luasnip = require("luasnip")
+local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+local wk = require("which-key")
 
-if cmp_ok then
-  local luasnip_ok
-  luasnip_ok, luasnip = pcall(require, "luasnip")
-  if luasnip_ok then
-    require("luasnip.loaders.from_vscode").lazy_load()
-  end
+require("luasnip.loaders.from_vscode").lazy_load()
 
-  local autopairs_ok
-  autopairs_ok, cmp_autopairs = pcall(require, "nvim-autopairs.completion.cmp")
+cmp.setup({
+  snippet = {
+    expand = function(args)
+      luasnip.lsp_expand(args.body)
+    end,
+  },
+  mapping = cmp.mapping.preset.insert({
+    ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+    ["<C-f>"] = cmp.mapping.scroll_docs(4),
+    ["<C-Space>"] = cmp.mapping.complete(),
+    ["<C-e>"] = cmp.mapping.abort(),
+    ["<CR>"] = cmp.mapping.confirm({ select = true }),
+    ["<Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif luasnip.expand_or_jumpable() then
+        luasnip.expand_or_jump()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+    ["<S-Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      elseif luasnip.jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+  }),
+  formatting = {
+    format = function(_, item)
+      local icons = {
+        Text = "",
+        Method = "",
+        Function = "",
+        Constructor = "",
+        Field = "ﰠ",
+        Variable = "",
+        Class = "ﴯ",
+        Interface = "",
+        Module = "",
+        Property = "ﰠ",
+        Unit = "塞",
+        Value = "",
+        Enum = "",
+        Keyword = "",
+        Snippet = "",
+        Color = "",
+        File = "",
+        Reference = "",
+        Folder = "",
+        EnumMember = "",
+        Constant = "",
+        Struct = "פּ",
+        Event = "",
+        Operator = "",
+        TypeParameter = "",
+      }
+      item.kind = string.format("%s %s", icons[item.kind] or "", item.kind)
+      return item
+    end,
+  },
+  sources = cmp.config.sources({
+    { name = "copilot" },
+    { name = "nvim_lsp" },
+    { name = "luasnip" },
+  }, {
+    { name = "buffer" },
+    { name = "path" },
+  }),
+  experimental = {
+    ghost_text = true,
+  },
+})
 
-  cmp.setup({
-    snippet = {
-      expand = function(args)
-        if luasnip and luasnip.lsp_expand then
-          luasnip.lsp_expand(args.body)
-        end
-      end,
-    },
-    mapping = cmp.mapping.preset.insert({
-      ["<C-b>"] = cmp.mapping.scroll_docs(-4),
-      ["<C-f>"] = cmp.mapping.scroll_docs(4),
-      ["<C-Space>"] = cmp.mapping.complete(),
-      ["<C-e>"] = cmp.mapping.abort(),
-      ["<CR>"] = cmp.mapping.confirm({ select = true }),
-      ["<Tab>"] = cmp.mapping(function(fallback)
-        if cmp.visible() then
-          cmp.select_next_item()
-        elseif luasnip and luasnip.expand_or_jumpable and luasnip.expand_or_jumpable() then
-          luasnip.expand_or_jump()
-        else
-          fallback()
-        end
-      end, { "i", "s" }),
-      ["<S-Tab>"] = cmp.mapping(function(fallback)
-        if cmp.visible() then
-          cmp.select_prev_item()
-        elseif luasnip and luasnip.jumpable and luasnip.jumpable(-1) then
-          luasnip.jump(-1)
-        else
-          fallback()
-        end
-      end, { "i", "s" }),
-    }),
-    formatting = {
-      format = function(_, item)
-        local icons = {
-          Text = "",
-          Method = "",
-          Function = "",
-          Constructor = "",
-          Field = "ﰠ",
-          Variable = "",
-          Class = "ﴯ",
-          Interface = "",
-          Module = "",
-          Property = "ﰠ",
-          Unit = "塞",
-          Value = "",
-          Enum = "",
-          Keyword = "",
-          Snippet = "",
-          Color = "",
-          File = "",
-          Reference = "",
-          Folder = "",
-          EnumMember = "",
-          Constant = "",
-          Struct = "פּ",
-          Event = "",
-          Operator = "",
-          TypeParameter = "",
-        }
-        item.kind = string.format("%s %s", icons[item.kind] or "", item.kind)
-        return item
-      end,
-    },
-    sources = cmp.config.sources({
-      { name = "copilot" },
-      { name = "nvim_lsp" },
-      { name = "luasnip" },
-    }, {
-      { name = "buffer" },
-      { name = "path" },
-    }),
-    experimental = {
-      ghost_text = true,
-    },
-  })
+cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 
-  if autopairs_ok then
-    cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
-  end
+cmp.setup.cmdline("/", {
+  mapping = cmp.mapping.preset.cmdline(),
+  sources = {
+    { name = "buffer" },
+  },
+})
 
-  cmp.setup.cmdline("/", {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-      { name = "buffer" },
-    },
-  })
-
-  cmp.setup.cmdline(":", {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-      { name = "path" },
-    }, {
-      { name = "cmdline" },
-    }),
-  })
-end
+cmp.setup.cmdline(":", {
+  mapping = cmp.mapping.preset.cmdline(),
+  sources = cmp.config.sources({
+    { name = "path" },
+  }, {
+    { name = "cmdline" },
+  }),
+})
 
 vim.diagnostic.config({
   float = { border = "rounded" },
@@ -119,10 +106,8 @@ vim.diagnostic.config({
 })
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-local cmp_cap_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
-if cmp_cap_ok then
-  capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
-end
+local cmp_nvim_lsp = require("cmp_nvim_lsp")
+capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
 capabilities.textDocument.foldingRange = {
   dynamicRegistration = false,
   lineFoldingOnly = true,
@@ -133,14 +118,6 @@ local tools = require("config.tools")
 local function telescope_or(method, telescope_opts, fallback)
   return function(opts)
     local ok, builtin = pcall(require, "telescope.builtin")
-    if not ok then
-      local lazy_ok, lazy = pcall(require, "lazy")
-      if lazy_ok then
-        lazy.load({ plugins = { "telescope.nvim" } })
-        ok, builtin = pcall(require, "telescope.builtin")
-      end
-    end
-
     if ok and builtin[method] then
       local merged_opts = vim.tbl_deep_extend(
         "force",
@@ -166,20 +143,20 @@ local on_attach = function(client, bufnr)
     vim.keymap.set(mode, lhs, rhs, base_opts)
   end
 
-  local implementations = telescope_or("lsp_implementations", { reuse_win = true }, function(opts)
-    vim.lsp.buf.implementation(opts)
+  local implementations = telescope_or("lsp_implementations", { reuse_win = true }, function(call_opts)
+    vim.lsp.buf.implementation(call_opts)
   end)
 
-  local references = telescope_or("lsp_references", { show_line = false }, function(opts)
-    vim.lsp.buf.references(opts)
+  local references = telescope_or("lsp_references", { show_line = false }, function(call_opts)
+    vim.lsp.buf.references(call_opts)
   end)
 
-  local type_definitions = telescope_or("lsp_type_definitions", { reuse_win = true }, function(opts)
-    vim.lsp.buf.type_definition(opts)
+  local type_definitions = telescope_or("lsp_type_definitions", { reuse_win = true }, function(call_opts)
+    vim.lsp.buf.type_definition(call_opts)
   end)
 
-  local definitions = telescope_or("lsp_definitions", { reuse_win = true }, function(opts)
-    vim.lsp.buf.definition(opts)
+  local definitions = telescope_or("lsp_definitions", { reuse_win = true }, function(call_opts)
+    vim.lsp.buf.definition(call_opts)
   end)
 
   map("n", "gd", definitions, "Goto definition")
@@ -218,7 +195,7 @@ local on_attach = function(client, bufnr)
     })
   end
 
-  if wk_ok and wk.add then
+  if wk.add then
     wk.add({
       { "<leader>l", group = "lsp", buffer = bufnr },
       { "<leader>la", desc = "Code action", buffer = bufnr },
@@ -227,7 +204,7 @@ local on_attach = function(client, bufnr)
       { "<leader>lr", desc = "Rename symbol", buffer = bufnr },
       { "<leader>ls", desc = "Signature help", buffer = bufnr },
     })
-  elseif wk_ok then
+  else
     wk.register({
       ["<leader>l"] = {
         name = "+lsp",
@@ -241,16 +218,19 @@ local on_attach = function(client, bufnr)
   end
 end
 
-local mason_ok, mason = pcall(require, "mason")
-if not mason_ok then
-  return
+local function ensure_mason()
+  local mason = require("mason")
+  if not vim.g.__mason_setup_complete then
+    mason.setup({
+      max_concurrent_installers = 1,
+    })
+    vim.g.__mason_setup_complete = true
+  end
 end
-mason.setup()
 
-local mason_lsp_ok, mason_lspconfig = pcall(require, "mason-lspconfig")
-if not mason_lsp_ok then
-  return
-end
+ensure_mason()
+
+local mason_lspconfig = require("mason-lspconfig")
 
 local servers = tools.servers
 
@@ -312,12 +292,8 @@ for _, server in ipairs(servers) do
     opts = vim.tbl_deep_extend("force", opts, server_opts or {})
   end
 
-  local ok, err = pcall(vim.lsp.config, server, opts)
-  if not ok then
-    vim.notify(string.format("vim.lsp: unable to configure server '%s': %s", server, err), vim.log.levels.WARN)
-  else
-    table.insert(configured_servers, server)
-  end
+  vim.lsp.config(server, opts)
+  table.insert(configured_servers, server)
 end
 
 if #configured_servers > 0 then

@@ -1,38 +1,38 @@
-local dap_ok, dap = pcall(require, "dap")
-if not dap_ok then
-  return
-end
-
+local dap = require("dap")
 local tools = require("config.tools")
 
-local mason_dap_ok, mason_dap = pcall(require, "mason-nvim-dap")
-if mason_dap_ok then
-  mason_dap.setup({
-    ensure_installed = tools.dap_list(),
-    automatic_installation = false,
-  })
+local function ensure_mason()
+  local mason = require("mason")
+  if not vim.g.__mason_setup_complete then
+    mason.setup({
+      max_concurrent_installers = 1,
+    })
+    vim.g.__mason_setup_complete = true
+  end
 end
 
-local dapui_ok, dapui = pcall(require, "dapui")
-if dapui_ok then
-  dapui.setup({})
-end
+ensure_mason()
 
-local vt_ok, dap_virtual_text = pcall(require, "nvim-dap-virtual-text")
-if vt_ok then
-  dap_virtual_text.setup()
-end
+local mason_dap = require("mason-nvim-dap")
+mason_dap.setup({
+  ensure_installed = tools.dap_list(),
+  automatic_installation = false,
+})
 
-if dapui_ok then
-  dap.listeners.after.event_initialized["dapui_config"] = function()
-    dapui.open()
-  end
-  dap.listeners.before.event_terminated["dapui_config"] = function()
-    dapui.close()
-  end
-  dap.listeners.before.event_exited["dapui_config"] = function()
-    dapui.close()
-  end
+local dapui = require("dapui")
+dapui.setup({})
+
+local dap_virtual_text = require("nvim-dap-virtual-text")
+dap_virtual_text.setup()
+
+dap.listeners.after.event_initialized["dapui_config"] = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated["dapui_config"] = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited["dapui_config"] = function()
+  dapui.close()
 end
 
 local map = function(lhs, rhs, desc)
@@ -52,7 +52,5 @@ map("<leader>dk", function()
   end
 end, "Debug: terminate")
 map("<leader>du", function()
-  if dapui_ok then
-    dapui.toggle({})
-  end
+  dapui.toggle({})
 end, "Debug: toggle UI")

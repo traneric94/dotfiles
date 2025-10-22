@@ -1,14 +1,7 @@
-local status_ok, copilot = pcall(require, "copilot")
-if not status_ok then
-  return
-end
-
+local copilot = require("copilot")
 copilot.setup({
   suggestion = { enabled = false },
   panel = { enabled = false },
 })
 
-local cmp_status, copilot_cmp = pcall(require, "copilot_cmp")
-if cmp_status then
-  copilot_cmp.setup()
-end
+require("copilot_cmp").setup()

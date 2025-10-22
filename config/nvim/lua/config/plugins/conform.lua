@@ -1,8 +1,4 @@
-local ok, conform = pcall(require, "conform")
-if not ok then
-  return
-end
-
+local conform = require("conform")
 local tools = require("config.tools")
 
 conform.setup({

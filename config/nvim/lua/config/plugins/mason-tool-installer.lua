@@ -1,18 +1,20 @@
-local ok, mason_tool_installer = pcall(require, "mason-tool-installer")
-if not ok then
-  return
-end
-
+local mason_tool_installer = require("mason-tool-installer")
 local tools = require("config.tools")
 
-local mason_ok, mason = pcall(require, "mason")
-if mason_ok and not mason.has_setup then
-  mason.setup()
+local function ensure_mason()
+  local mason = require("mason")
+  if not vim.g.__mason_setup_complete then
+    mason.setup({
+      max_concurrent_installers = 1,
+    })
+    vim.g.__mason_setup_complete = true
+  end
 end
+
+ensure_mason()
 
 mason_tool_installer.setup({
   ensure_installed = tools.tooling_install_list(),
-  run_on_start = true,
-  start_delay = 1000,
+  run_on_start = false,
   auto_update = false,
 })

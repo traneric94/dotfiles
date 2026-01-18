@@ -122,6 +122,7 @@ rshift - 1 : if pgrep -xq "alacritty"; then osascript -e 'tell application "Alac
 rshift - n : if pgrep "Notion" > /dev/null; then osascript -e 'tell application "Notion" to activate'; else open -na "/Applications/Notion.app"; fi
 rshift - z : if pgrep "zoom.us" > /dev/null; then osascript -e 'tell application "zoom.us" to activate'; else open -na "/Applications/zoom.us.app"; fi
 rshift - m : open -na "/Applications/SDM.app"
+rshift - d : open -na "/Applications/Discord.app"
 rshift - p : open -na "/Applications/1Password.app"
 rshift - g : if pgrep "Google Chrome" > /dev/null; then osascript -e 'tell application "Google Chrome" to activate'; else open -na "/Applications/Google Chrome.app"; fi
 rshift - f : osascript -e 'tell application "Firefox" to activate' -e 'tell application "System Events" to tell process "Firefox" to if (count of windows) = 0 then keystroke "n" using command down'

@@ -6,6 +6,7 @@ local wk = require("which-key")
 require("luasnip.loaders.from_vscode").lazy_load()
 
 cmp.setup({
+  enabled = false,
   snippet = {
     expand = function(args)
       luasnip.lsp_expand(args.body)
@@ -83,22 +84,6 @@ cmp.setup({
 })
 
 cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
-
-cmp.setup.cmdline("/", {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = {
-    { name = "buffer" },
-  },
-})
-
-cmp.setup.cmdline(":", {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = cmp.config.sources({
-    { name = "path" },
-  }, {
-    { name = "cmdline" },
-  }),
-})
 
 vim.diagnostic.config({
   float = { border = "rounded" },

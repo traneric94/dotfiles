@@ -133,6 +133,12 @@ bindings = [
 [general]
 working_directory = "/Users/eric/codebase"
 
+[bell]
+animation = "EaseOutExpo"
+duration = 100
+color = "#89b4fa"
+command = { program = "afplay", args = ["/System/Library/Sounds/Glass.aiff"] }
+
 [terminal]
 
 [terminal.shell]

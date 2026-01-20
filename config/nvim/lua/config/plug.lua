@@ -32,6 +32,7 @@ plug("Plug 'nvim-telescope/telescope.nvim'")
 if vim.fn.executable("make") == 1 then
   plug("Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }")
 end
+plug("Plug 'nvim-telescope/telescope-frecency.nvim'")
 plug("Plug 'ThePrimeagen/harpoon'")
 plug("Plug 'vim-test/vim-test'")
 plug("Plug 'tpope/vim-fugitive'")

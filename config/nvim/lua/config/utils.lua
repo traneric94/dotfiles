@@ -123,6 +123,8 @@ function M.fold_imports()
   end
 
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local saved_fdm = vim.wo.foldmethod
+  vim.wo.foldmethod = "manual"
 
   local start_line = nil
   for idx, line in ipairs(lines) do
@@ -141,6 +143,8 @@ function M.fold_imports()
   if start_line then
     vim.cmd(string.format("%d,%dfold", start_line, #lines))
   end
+
+  vim.wo.foldmethod = saved_fdm
 end
 
 function M.clear_quickfix()

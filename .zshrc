@@ -130,11 +130,6 @@ BAT_CMD="$(command -v bat 2>/dev/null || printf 'bat')"
 # ==============================================================================
 alias vim=nvim
 alias cat=bat
-if command -v zoxide >/dev/null 2>&1; then
-  alias cd='z'
-else
-  alias z='cd'
-fi
 alias mkdir='mkdir -p'  # Create parent directories as needed
 alias c='clear'          # Clear terminal screen
 alias reload='source ~/.zshrc'  # Reload ZSH Configuration

@@ -55,11 +55,7 @@ opt.previewheight = 12
 opt.completeopt = { "menu", "menuone", "preview", "noselect" }
 opt.grepprg = "rg --vimgrep --smart-case"
 opt.grepformat = { "%f:%l:%c:%m" }
-opt.foldenable = true
-opt.foldlevel = 2
-opt.foldmethod = "expr"
-opt.foldexpr = "nvim_treesitter#foldexpr()"
-opt.foldcolumn = "1"
+opt.foldenable = false
 
 g.python3_host_prog = vim.fn.exepath("python3")
 g.go_bin_path = vim.fn.expand("$HOME/go/bin/")

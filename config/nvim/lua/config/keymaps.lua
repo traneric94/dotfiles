@@ -71,7 +71,13 @@ map("n", "<leader>ef", function()
 end, "Reveal file in explorer")
 
 -- Telescope / search -----------------------------------------------------------
-map("n", "<leader>ff", telescope("find_files"), "Find files")
+map("n", "<leader>ff", function()
+  local ok = pcall(require("telescope").extensions.frecency.frecency)
+  if not ok then
+    telescope("find_files")()
+  end
+end, "Find files (frecency)")
+map("n", "<leader>fF", telescope("find_files"), "Find files (all)")
 map("n", "<leader>fg", telescope("live_grep"), "Live grep")
 map("n", "<leader>fb", telescope("buffers"), "Find buffers")
 map("n", "<leader>fh", telescope("help_tags"), "Help tags")
@@ -121,13 +127,19 @@ map("n", "[q", "<cmd>cprev<CR>", "Previous quickfix item")
 map("n", "<leader>ql", "<cmd>lopen<CR>", "Open location list")
 map("n", "<leader>qL", "<cmd>lclose<CR>", "Close location list")
 
+-- Toggle ----------------------------------------------------------------------
+map("n", "<leader>tc", function()
+  vim.g.cmp_enabled = not vim.g.cmp_enabled
+  vim.notify(string.format("Completion %s", vim.g.cmp_enabled and "enabled" or "disabled"))
+end, "Toggle completion")
+
 -- Testing ----------------------------------------------------------------------
 map("n", "<leader>tn", "<cmd>TestNearest<CR>", "Test nearest")
-map("n", "<leader>tf", "<cmd>TestFile<CR>", "Test file")
+map("n", "<leader>tt", utils.toggle_test_file, "Toggle test file")
 map("n", "<leader>ts", "<cmd>TestSuite<CR>", "Test suite")
 map("n", "<leader>tl", "<cmd>TestLast<CR>", "Test last")
 map("n", "<leader>tv", "<cmd>TestVisit<CR>", "Test visit")
-map("n", "<leader>ta", utils.toggle_test_file, "Toggle test file")
+map("n", "<leader>tf", "<cmd>TestFile<CR>", "Test file")
 
 -- Neovim config ----------------------------------------------------------------
 map("n", "<leader>ve", function()
@@ -164,7 +176,7 @@ end
 map("n", "[d", vim.diagnostic.goto_prev, "Previous diagnostic")
 map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
 map("n", "<leader>ld", vim.diagnostic.open_float, "Line diagnostics")
-map("n", "<leader>lq", vim.diagnostic.setloclist, "Diagnostics to location list")
+map("n", "<leader>lq", vim.diagnostic.setqflist, "Diagnostics to quickfix")
 
 if wk_ok then
   wk.register({

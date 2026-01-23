@@ -97,6 +97,8 @@ map("n", "<leader>q", "<cmd>confirm q<CR>", "Quit window")
 map("n", "<leader>Q", "<cmd>confirm qa<CR>", "Quit Neovim")
 map("n", "<leader>sc", "<cmd>nohlsearch<CR>", "Clear search highlight")
 
+map("n", "<leader>tt", "<cmd>terminal<CR>", "Terminal buffer")
+
 -- Clipboard --------------------------------------------------------------------
 map({ "n", "v" }, "<leader>y", '"+y', "Yank to system clipboard")
 map({ "n", "v" }, "<leader>p", '"+p', "Paste from system clipboard")

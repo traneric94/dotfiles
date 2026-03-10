@@ -125,6 +125,6 @@ rshift - z : if pgrep "zoom.us" > /dev/null; then osascript -e 'tell application
 rshift - m : if pgrep "SDM" > /dev/null; then osascript -e 'tell application "SDM" to activate'; else open -na "/Applications/SDM.app"; fi
 rshift - d : if pgrep "Discord" > /dev/null; then osascript -e 'tell application "Discord" to activate'; else open -na "/Applications/Discord.app"; fi
 rshift - p : if pgrep "1Password" > /dev/null; then osascript -e 'tell application "1Password" to activate'; else open -na "/Applications/1Password.app"; fi
-rshift - g : if pgrep "Google Chrome" > /dev/null; then osascript -e 'tell application "Google Chrome" to activate'; else open -na "/Applications/Google Chrome.app"; fi
+rshift - 2 : if pgrep "Google Chrome" > /dev/null; then osascript -e 'tell application "Google Chrome" to activate'; else open -na "/Applications/Google Chrome.app"; fi
 rshift - r : if pgrep "Rectangle" > /dev/null; then osascript -e 'tell application "Rectangle" to activate'; else open -na "/Applications/Rectangle.app"; fi
 rshift - f : osascript -e 'tell application "Firefox" to activate' -e 'tell application "System Events" to tell process "Firefox" to if (count of windows) = 0 then keystroke "n" using command down'

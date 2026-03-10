@@ -202,6 +202,17 @@ local on_attach = function(client, bufnr)
 	end
 end
 
+vim.api.nvim_create_autocmd("LspAttach", {
+	callback = function(args)
+		local bufname = vim.api.nvim_buf_get_name(args.buf)
+		if bufname:match("^fugitive://") or bufname:match("^gitsigns://") then
+			vim.schedule(function()
+				vim.lsp.buf_detach_client(args.buf, args.data.client_id)
+			end)
+		end
+	end,
+})
+
 local function ensure_mason()
 	local mason = require("mason")
 	if not vim.g.__mason_setup_complete then

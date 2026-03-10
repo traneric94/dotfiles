@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); case \"$FILE\" in *.go) go fmt \"$FILE\" 2>/dev/null ;; *.rb) bundle exec rubocop -a \"$FILE\" --no-color 2>/dev/null || true ;; *.ts|*.tsx) PROJ=$(realpath \"$FILE\"); while [ \"$PROJ\" != \"/\" ] && [ ! -f \"$PROJ/package.json\" ]; do PROJ=$(dirname \"$PROJ\"); done; [ -f \"$PROJ/package.json\" ] && cd \"$PROJ\" && yarn eslint --fix \"$FILE\" 2>/dev/null || true ;; esac"
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); case \"$FILE\" in *.go) go fmt \"$FILE\" 2>/dev/null ;; *.rb) RBENV_ROOT=\"${RBENV_ROOT:-$HOME/.rbenv}\"; export PATH=\"$RBENV_ROOT/shims:$RBENV_ROOT/bin:$PATH\"; DIR=$(dirname \"$FILE\"); cd \"$DIR\" && while [ \"$PWD\" != \"/\" ] && [ ! -f Gemfile ]; do cd ..; done; [ -f Gemfile ] && bundle exec rubocop -a \"$FILE\" --no-color 2>/dev/null || true ;; *.ts|*.tsx) PROJ=$(realpath \"$FILE\"); while [ \"$PROJ\" != \"/\" ] && [ ! -f \"$PROJ/package.json\" ]; do PROJ=$(dirname \"$PROJ\"); done; [ -f \"$PROJ/package.json\" ] && cd \"$PROJ\" && yarn eslint --fix \"$FILE\" 2>/dev/null || true ;; esac"
           }
         ]
       }

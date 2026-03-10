@@ -69,6 +69,16 @@
     ]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/eric.tran/codebase/dotfiles/config/claude/hooks/route.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",

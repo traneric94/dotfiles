@@ -26,6 +26,8 @@ brew "zsh-vi-mode"
 brew "thefuck"
 brew "gnupg"
 brew "gh"
+brew "jq"
+brew "terminal-notifier"
 brew "lazygit"
 brew "reattach-to-user-namespace"
 

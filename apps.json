@@ -1,0 +1,93 @@
+[
+  {
+    "id": "slack",
+    "hotkey": "s",
+    "darwin_app": "Slack",
+    "brew_cask": "slack",
+    "winget_id": "SlackTechnologies.Slack",
+    "win_exe": "slack.exe",
+    "win_title": "Slack"
+  },
+  {
+    "id": "alacritty",
+    "hotkey": "1",
+    "darwin_app": "Alacritty",
+    "brew_cask": "alacritty",
+    "winget_id": "Alacritty.Alacritty",
+    "win_exe": "alacritty.exe",
+    "win_title": "Alacritty"
+  },
+  {
+    "id": "spotify",
+    "hotkey": "o",
+    "darwin_app": "Spotify",
+    "brew_cask": "spotify",
+    "winget_id": "Spotify.Spotify",
+    "win_exe": "spotify.exe",
+    "win_title": "Spotify"
+  },
+  {
+    "id": "notion",
+    "hotkey": "n",
+    "darwin_app": "Notion",
+    "brew_cask": "notion",
+    "winget_id": "Notion.Notion",
+    "win_exe": "notion.exe",
+    "win_title": "Notion"
+  },
+  {
+    "id": "zoom",
+    "hotkey": "z",
+    "darwin_app": "zoom.us",
+    "brew_cask": "zoom",
+    "winget_id": "Zoom.Zoom",
+    "win_exe": "zoom.exe",
+    "win_title": "Zoom"
+  },
+  {
+    "id": "discord",
+    "hotkey": "d",
+    "darwin_app": "Discord",
+    "brew_cask": "discord",
+    "winget_id": "Discord.Discord",
+    "win_exe": "discord.exe",
+    "win_title": "Discord"
+  },
+  {
+    "id": "1password",
+    "hotkey": "p",
+    "darwin_app": "1Password",
+    "brew_cask": "1password",
+    "winget_id": "AgileBits.1Password",
+    "win_exe": "1Password.exe",
+    "win_title": "1Password"
+  },
+  {
+    "id": "chrome",
+    "hotkey": "2",
+    "darwin_app": "Google Chrome",
+    "brew_cask": "google-chrome",
+    "winget_id": "Google.Chrome",
+    "win_exe": "chrome.exe",
+    "win_title": "Google Chrome"
+  },
+  {
+    "id": "firefox",
+    "hotkey": "f",
+    "darwin_app": "Firefox",
+    "brew_cask": "firefox",
+    "winget_id": "Mozilla.Firefox",
+    "win_exe": "firefox.exe",
+    "win_title": "Mozilla Firefox"
+  },
+  {
+    "id": "sdm",
+    "hotkey": "m",
+    "darwin_app": "SDM",
+    "brew_cask": null,
+    "winget_id": null,
+    "win_exe": null,
+    "win_title": "SDM",
+    "optional": true
+  }
+]

@@ -1,6 +1,5 @@
-# Homebrew Bundle
-
-tap "koekeishiya/formulae"
+# Shared — works on macOS and Linux Homebrew.
+# GUI apps with hotkeys are managed via apps.json + install.sh, not here.
 
 brew "git"
 brew "node"
@@ -12,7 +11,6 @@ brew "bat"
 brew "eza"
 brew "fd"
 brew "fzf"
-brew "koekeishiya/formulae/skhd"
 brew "neovim"
 brew "pyenv"
 brew "rbenv"
@@ -27,22 +25,4 @@ brew "thefuck"
 brew "gnupg"
 brew "gh"
 brew "jq"
-brew "terminal-notifier"
 brew "lazygit"
-brew "reattach-to-user-namespace"
-
-cask "google-chrome"
-cask "firefox"
-cask "1password-cli"
-cask "notion-calendar" # Formerly Cron calendar app
-cask "zoom"
-cask "slack"
-cask "1password"
-cask "raycast"
-cask "rectangle" # Replaces the unmaintained Spectacle
-cask "visual-studio-code"
-cask "postman"
-cask "spotify"
-cask "alacritty"
-cask "font-hack-nerd-font"
-# cask "authy" # Deprecated desktop app; uncomment only if you still want it 

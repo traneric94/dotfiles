@@ -1,0 +1,16 @@
+# macOS-only packages and casks.
+# GUI apps with hotkeys (slack, chrome, etc.) live in apps.json — install.sh handles those.
+
+tap "koekeishiya/formulae"
+
+brew "koekeishiya/formulae/skhd"
+brew "terminal-notifier"
+brew "reattach-to-user-namespace"
+
+cask "1password-cli"
+cask "notion-calendar"
+cask "raycast"
+cask "rectangle"
+cask "visual-studio-code"
+cask "postman"
+cask "font-hack-nerd-font"

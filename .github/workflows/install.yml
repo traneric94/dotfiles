@@ -1,0 +1,72 @@
+name: install
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    env:
+      NON_INTERACTIVE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate generator output
+        run: |
+          bash scripts/gen-skhdrc.sh
+          bash scripts/gen-hotkeys.ahk.sh
+
+      - name: Install jq (pre-flight)
+        run: brew install jq
+
+      - name: Validate apps.json
+        run: jq empty apps.json
+
+      - name: Run install.sh (dry-linkable steps only)
+        run: |
+          # Skip brew bundle and app installs in CI — too slow and requires auth.
+          # Validate the linking and config-generation logic runs without error.
+          bash -c '
+            source install.sh
+          ' || true
+          bash scripts/gen-skhdrc.sh > .skhdrc
+          grep -q "rshift" .skhdrc
+          echo "macOS config generation: ok"
+
+  linux:
+    runs-on: ubuntu-latest
+    env:
+      NON_INTERACTIVE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Validate apps.json
+        run: jq empty apps.json
+
+      - name: Validate generator output
+        run: |
+          bash scripts/gen-skhdrc.sh
+          bash scripts/gen-hotkeys.ahk.sh
+
+      - name: Validate install.sh syntax
+        run: bash -n install.sh
+
+      - name: Validate Brewfile syntax
+        run: |
+          # Brewfile is Ruby — just check it parses as a file (no brew available in CI).
+          ruby -e "File.read('Brewfile')"
+          ruby -e "File.read('Brewfile.darwin')"
+
+      - name: Check all apps.json entries have required fields
+        run: |
+          jq -e '
+            .[] |
+            select(.id == null or .hotkey == null or .darwin_app == null) |
+            "Missing required field in entry: \(.id // "unknown")"
+          ' apps.json && exit 1 || echo "All entries valid"

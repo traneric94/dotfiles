@@ -11,3 +11,6 @@
 .vscode/
 *.log
 *.tmp 
+
+# Generated at install time — machine-specific Windows startup launcher
+hotkeys.vbs

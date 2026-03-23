@@ -200,24 +200,6 @@ link_configs() {
   fi
 }
 
-# ── oh-my-zsh ─────────────────────────────────────────────────────────────────
-
-ensure_oh_my_zsh() {
-  local target="$HOME/.oh-my-zsh"
-
-  if [[ -d "$target" ]]; then
-    echo "oh-my-zsh already installed at $target"
-    return
-  fi
-
-  echo "Installing oh-my-zsh..."
-  if git clone --depth 1 https://github.com/ohmyzsh/ohmyzsh.git "$target"; then
-    echo "oh-my-zsh installed"
-  else
-    echo "Failed to install oh-my-zsh. Install manually from https://ohmyz.sh/"
-  fi
-}
-
 # ── TPM (Tmux Plugin Manager) ─────────────────────────────────────────────────
 
 install_tpm() {
@@ -279,7 +261,6 @@ install_packages
 install_apps
 generate_configs
 link_configs
-ensure_oh_my_zsh
 install_tpm
 install_ruby
 

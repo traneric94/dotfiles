@@ -6,8 +6,15 @@
 # Ensure Go binaries are available (for gopls, etc.)
 [[ ":$PATH:" != *":$HOME/go/bin:"* ]] && export PATH="$HOME/go/bin:$PATH"
 
-# Add Homebrew to PATH (if not already present)
-[[ ":$PATH:" != *":/opt/homebrew/bin:"* ]] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+# Bootstrap Homebrew — detect install location across macOS ARM, macOS Intel, and Linux.
+for _bp in /opt/homebrew /home/linuxbrew/.linuxbrew /usr/local; do
+  if [[ -x "$_bp/bin/brew" ]]; then
+    [[ ":$PATH:" != *":$_bp/bin:"* ]] && export PATH="$_bp/bin:$_bp/sbin:$PATH"
+    BREW_PREFIX="$_bp"
+    break
+  fi
+done
+unset _bp
 
 # add custom, local installations to PATH
 #PATH=/usr/local/bin:/usr/local/sbin:"$PATH"
@@ -17,10 +24,6 @@
 #export GOPATH=/Users/erictran/codebase/golang
 # export PATH=~/Library/Python/2.7/bin:$PATH
 
-# Path to your oh-my-zsh installation.
-ZSH_DISABLE_COMPFIX=true
-export ZSH="$HOME/.oh-my-zsh"
-
 # Determine dotfiles directory for sourcing helper scripts
 if [[ -z "${DOTFILES_DIR:-}" ]]; then
   DOTFILES_DIR="$HOME/dotfiles"
@@ -29,22 +32,16 @@ if [[ -z "${DOTFILES_DIR:-}" ]]; then
   fi
 fi
 
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time oh-my-zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="robbyrussell"
+# ── Completions ────────────────────────────────────────────────────────────────
+autoload -Uz compinit && compinit
 
-# Which plugins would you like to load?
-# Standard plugins can be found in $ZSH/plugins/
-# Custom plugins may be added to $ZSH_CUSTOM/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
-
-if [[ -f "$ZSH/oh-my-zsh.sh" ]]; then
-  source "$ZSH/oh-my-zsh.sh"
-fi
+# ── Prompt (robbyrussell-style, pure zsh) ─────────────────────────────────────
+autoload -Uz vcs_info
+zstyle ':vcs_info:git:*' formats '%F{cyan}(%b)%f '
+zstyle ':vcs_info:git:*' actionformats '%F{yellow}(%b|%a)%f '
+precmd_functions+=(vcs_info)
+setopt prompt_subst
+PROMPT='%(?:%F{green}%B➜%b%f :%F{red}%B➜%b%f ) %F{cyan}%1~%f ${vcs_info_msg_0_}'
 
 # User configuration
 
@@ -81,13 +78,6 @@ setopt HIST_BEEP                 # Beep when accessing nonexistent history.# Pre
 
 alias awsume=". awsume"
 
-alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
-if command -v thefuck >/dev/null 2>&1; then
-  if __thefuck_alias=$(thefuck --alias 2>/dev/null); then
-    eval "$__thefuck_alias"
-  fi
-  unset __thefuck_alias
-fi
 
 # functions
 function aoc() {
@@ -114,12 +104,7 @@ function test() {
 # Source external function definitions
 [ -f "$HOME/.config/zsh/functions" ] && source "$HOME/.config/zsh/functions"
 
-# Prefer Homebrew (ARM) PHP if available; otherwise fallback to Intel path
-if [ -d "/opt/homebrew/opt/php@7.4/bin" ]; then
-  export PATH="/opt/homebrew/opt/php@7.4/bin:/opt/homebrew/opt/php@7.4/sbin:$PATH"
-elif [ -d "/usr/local/opt/php@7.4/bin" ]; then
-  export PATH="/usr/local/opt/php@7.4/bin:/usr/local/opt/php@7.4/sbin:$PATH"
-fi
+[[ -n "${BREW_PREFIX:-}" && -d "$BREW_PREFIX/opt/php@7.4/bin" ]] && export PATH="$BREW_PREFIX/opt/php@7.4/bin:$BREW_PREFIX/opt/php@7.4/sbin:$PATH"
 
 export PATH="/usr/sbin:$PATH"
 export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
@@ -133,7 +118,7 @@ alias cat=bat
 alias mkdir='mkdir -p'  # Create parent directories as needed
 alias c='clear'          # Clear terminal screen
 alias reload='source ~/.zshrc'  # Reload ZSH Configuration
-alias ssh-target='echo "eric.tran@$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk "{print \$2}")"'  # Print SSH target with current IP
+alias ssh-target='echo "eric.tran@$(_local_ip)"'
 
 # ==============================================================================
 # File System Aliases (using eza)
@@ -170,11 +155,31 @@ alias ge='git clean -fd'
 alias gm='git mergetool'
 alias gb="git for-each-ref --format='%(color:cyan)%(authordate:format:%m/%d/%Y %I:%M %p)    %(align:25,left)%(color:yellow)%(authorname)%(end) %(color:reset)%(refname:strip=3)' --sort=authordate refs/remotes"
 alias hlog='git log --date-order --all --graph --format="%C(green)%h %Creset%C(yellow)%an%Creset %C(blue bold)%ar%Creset %C(red bold)%d%Creset %s"'
-alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy"
+alias gitb="git branch | grep '^\*' | cut -d' ' -f2 | _clipboard"
 
 # ==============================================================================
 # Custom Functions
 # ==============================================================================
+
+# Cross-platform clipboard write
+_clipboard() {
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    pbcopy
+  elif grep -qi microsoft /proc/version 2>/dev/null; then
+    clip.exe
+  else
+    xclip -selection clipboard 2>/dev/null || xsel --clipboard --input 2>/dev/null
+  fi
+}
+
+# Local IP address (cross-platform)
+_local_ip() {
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null
+  else
+    ip -4 addr show scope global | awk '/inet/{print $2}' | cut -d/ -f1 | head -1
+  fi
+}
 
 # Fuzzy man page picker
 fman() {
@@ -294,9 +299,9 @@ alias nzo-all='search_with_zoxdie_bypass'
 export PATH="$PATH:$HOME/.local/bin"
 
 export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+export PATH="$PYENV_ROOT/bin:$PATH"
 if command -v pyenv >/dev/null 2>&1; then
-  eval "$(pyenv init -)"
+  eval "$(pyenv init - zsh)"
 fi
 
 # Ruby version management (rbenv)
@@ -315,9 +320,9 @@ if [[ -t 1 ]]; then
   if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh)"
   fi
-  [[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-  [[ -f /opt/homebrew/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh ]] && source /opt/homebrew/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-  [[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+  [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh" ]] && source "$BREW_PREFIX/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh"
+  [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
   # zsh-vi-mode hook to load fzf-git after vi-mode initializes
   function zvm_after_init() {
@@ -330,12 +335,12 @@ if [[ -t 1 ]]; then
   bindkey '^I' autosuggest-accept
 
   if command -v fzf >/dev/null 2>&1; then
-    eval "$(/opt/homebrew/bin/fzf --zsh 2>/dev/null)"
+    [[ -n "${BREW_PREFIX:-}" ]] && eval "$($BREW_PREFIX/bin/fzf --zsh 2>/dev/null)"
   fi
 fi
-export FZF_DEFAULT_COMMAND="/opt/homebrew/bin/fd --hidden --strip-cwd-prefix --exclude .git"
+export FZF_DEFAULT_COMMAND="${BREW_PREFIX:-/opt/homebrew}/bin/fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND="/opt/homebrew/bin/fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+export FZF_ALT_C_COMMAND="${BREW_PREFIX:-/opt/homebrew}/bin/fd --type=d --hidden --strip-cwd-prefix --exclude .git"
 
 # Catppuccin Mocha theme for FZF
 export FZF_DEFAULT_OPTS="--height 50% --layout=default --border \
@@ -343,7 +348,7 @@ export FZF_DEFAULT_OPTS="--height 50% --layout=default --border \
 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6ac,pointer:#f5e0dc \
 --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6ac,hl+:#f38ba8 \
 --bind=ctrl-u:preview-up,ctrl-d:preview-down,ctrl-b:preview-page-up,ctrl-f:preview-page-down"
-export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200' --preview-window=right:60%:wrap"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200' --preview-window=right:60%:wrap"
 
 export FZF_TMUX_OPTS="-p 90%,70%"
 
@@ -355,7 +360,6 @@ if [[ -t 1 ]]; then
   bindkey -r "^G"
 fi
 
-set rtp+=/opt/homebrew/opt/fzf
 export GPG_TTY=$(tty)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 export MAX_THINKING_TOKENS=2048
@@ -368,4 +372,4 @@ precmd () {
 
 # Hook auto Ruby version detection into directory changes
 precmd_functions+=(auto_ruby_version)
-export PATH="/opt/homebrew/opt/ruby@3.3/bin:$PATH"
+[[ -n "${BREW_PREFIX:-}" && -d "$BREW_PREFIX/opt/ruby@3.3/bin" ]] && export PATH="$BREW_PREFIX/opt/ruby@3.3/bin:$PATH"

@@ -87,7 +87,6 @@ map({ "n", "v" }, "<Space>", "<Nop>", "Leader key placeholder")
 map("v", "<BS>", "x", "Delete selection")
 
 -- Mode transitions -------------------------------------------------------------
-map("i", "jk", "<Esc>", "Escape insert")
 map("i", "kj", "<Esc>", "Escape insert")
 
 -- Core actions -----------------------------------------------------------------

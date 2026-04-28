@@ -8,6 +8,7 @@ brew "terminal-notifier"
 brew "reattach-to-user-namespace"
 
 cask "1password-cli"
+cask "ghostty"
 cask "notion-calendar"
 cask "raycast"
 cask "rectangle"

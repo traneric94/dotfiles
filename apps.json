@@ -9,13 +9,14 @@
     "win_title": "Slack"
   },
   {
-    "id": "alacritty",
+    "id": "ghostty",
     "hotkey": "1",
-    "darwin_app": "Alacritty",
-    "brew_cask": "alacritty",
-    "winget_id": "Alacritty.Alacritty",
-    "win_exe": "alacritty.exe",
-    "win_title": "Alacritty"
+    "darwin_app": "Ghostty",
+    "brew_cask": "ghostty",
+    "winget_id": null,
+    "win_exe": null,
+    "win_title": null,
+    "optional": true
   },
   {
     "id": "spotify",

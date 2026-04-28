@@ -174,9 +174,9 @@ link_configs() {
     ".zprofile:$HOME/.zprofile"
     ".bash_profile:$HOME/.bash_profile"
     "tmux.conf:$HOME/.tmux.conf"
-    "alacritty.toml:$HOME/.config/alacritty/alacritty.toml"
     "config/nvim:$HOME/.config/nvim"
     "config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
+    "config/claude/settings.local.json:$HOME/.claude/settings.local.json"
   )
 
   # .skhdrc is macOS-only; hotkeys.ahk is generated and run directly from the repo dir.

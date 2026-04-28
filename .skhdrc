@@ -118,7 +118,7 @@
 # brew install and then yabai --install-service JFC
 # Application Shortcuts
 rshift - s : if pgrep "Slack" > /dev/null; then osascript -e 'tell application "Slack" to activate'; else open -na "/Applications/Slack.app"; fi
-rshift - 1 : if pgrep -xq "alacritty"; then osascript -e 'tell application "Alacritty" to activate'; else open -a "/Applications/Alacritty.app"; fi
+rshift - 1 : if pgrep -xq "ghostty"; then osascript -e 'tell application "Ghostty" to activate'; else open -a "/Applications/Ghostty.app"; fi
 rshift - o : if pgrep "Spotify" > /dev/null; then osascript -e 'tell application "Spotify" to activate'; else open -na "/Applications/Spotify.app"; fi
 rshift - n : if pgrep "Notion" > /dev/null; then osascript -e 'tell application "Notion" to activate'; else open -na "/Applications/Notion.app"; fi
 rshift - z : if pgrep "zoom.us" > /dev/null; then osascript -e 'tell application "zoom.us" to activate'; else open -na "/Applications/zoom.us.app"; fi

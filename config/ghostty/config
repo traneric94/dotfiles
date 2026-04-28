@@ -1,0 +1,40 @@
+# Ghostty configuration
+# Ported from alacritty.toml — Catppuccin Mocha, Hack Nerd Font, transparent
+
+# Font
+font-family = "Hack Nerd Font Mono"
+font-size = 14
+
+# Theme — built-in
+theme = "Catppuccin Mocha"
+
+# Window
+background-opacity = 0.80
+background-blur-radius = 20
+macos-titlebar-style = transparent
+window-save-state = always
+window-inherit-working-directory = true
+
+# Scrollback
+scrollback-limit = 10000000
+
+# Shell — auto-injected for zsh
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+
+# macOS Option key — forwards as Alt/Meta to terminal apps (tmux, nvim)
+# Replaces the per-key `chars = "\u001b..."` bindings from alacritty
+macos-option-as-alt = true
+
+# Bell — visual only, no audio
+bell-features = no-system,no-audio,attention,title
+
+# Cursor
+cursor-style = block
+cursor-style-blink = false
+
+# Working directory
+working-directory = /Users/eric.tran/codebase
+
+# Keybinds — Cmd+C/V, Cmd+T/N/W, Cmd+/-/0 are all default in Ghostty
+# Vi-mode toggle equivalent: Ghostty has scrollback search via cmd+f

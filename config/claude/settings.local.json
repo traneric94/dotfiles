@@ -47,7 +47,20 @@
       "mcp__github__merge_pull_request",
       "WebFetch(domain:circleci.com)",
       "WebFetch(domain:app.circleci.com)",
-      "WebFetch(domain:code.claude.com)"
+      "WebFetch(domain:code.claude.com)",
+      "Skill(update-config)",
+      "mcp__plugin_gigabrain_gigabrain__query",
+      "mcp__plugin_gigabrain_gigabrain__status",
+      "WebFetch(domain:chime.sourcegraph.com)",
+      "mcp__atlassian__getConfluencePage",
+      "mcp__atlassian__searchConfluenceUsingCql",
+      "mcp__atlassian__createConfluencePage",
+      "mcp__atlassian__updateConfluencePage",
+      "mcp__atlassian__searchAtlassian",
+      "mcp__atlassian__fetchAtlassian",
+      "mcp__datadog-mcp__search_datadog_metrics",
+      "mcp__datadog-mcp__get_datadog_metric_context",
+      "mcp__atlassian__getConfluenceSpaces"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -62,6 +75,7 @@
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
       "/Users/eric.tran/.config",
+      "/Users/eric.tran/codebase/dotfiles",
       "/tmp"
     ]
   },
@@ -72,6 +86,14 @@
           {
             "type": "command",
             "command": "bash /Users/eric.tran/codebase/dotfiles/config/claude/hooks/route.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/eric.tran/codebase/dotfiles/config/claude/hooks/capture-corrections.py"
           }
         ]
       }

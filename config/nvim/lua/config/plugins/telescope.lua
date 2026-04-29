@@ -27,7 +27,7 @@ telescope.setup({
   extensions = {
     frecency = {
       auto_validate = true,
-      show_unindexed = false,
+      show_unindexed = true,
     },
   },
 })

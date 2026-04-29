@@ -81,17 +81,12 @@ alias awsume=". awsume"
 
 # functions
 function aoc() {
-  touch ~/codebase/aoc/2021/day_${1}.py
-  touch ~/codebase/aoc/2021/day_${1}_input.txt
+  local year="${AOC_YEAR:-$(date +%Y)}"
+  mkdir -p "$HOME/codebase/aoc/$year"
+  touch "$HOME/codebase/aoc/$year/day_${1}.py"
+  touch "$HOME/codebase/aoc/$year/day_${1}_input.txt"
   if [ -z "${AOC_SESSION:-}" ]; then echo "Set AOC_SESSION env var with your Advent of Code session cookie." >&2; return 1; fi
-  curl -b "session=${AOC_SESSION}" "https://adventofcode.com/2021/day/${1}/input" > "$HOME/codebase/aoc/2021/day_${1}_input.txt"
-}
-
-function test() {
-  if [ $1 == "hi" ];
-  then echo "what";
-  else echo "ahh";
-  fi
+  curl -b "session=${AOC_SESSION}" "https://adventofcode.com/${year}/day/${1}/input" > "$HOME/codebase/aoc/$year/day_${1}_input.txt"
 }
 
 # longer aws sessions
@@ -119,6 +114,7 @@ alias mkdir='mkdir -p'  # Create parent directories as needed
 alias c='clear'          # Clear terminal screen
 alias reload='source ~/.zshrc'  # Reload ZSH Configuration
 alias ssh-target='echo "eric.tran@$(_local_ip)"'
+alias sb='nvim "$(ls -t /tmp/ghostty-* 2>/dev/null | head -1)"'  # Open most recent ghostty scrollback dump in nvim
 
 # ==============================================================================
 # File System Aliases (using eza)
@@ -149,8 +145,6 @@ alias gf='git fetch origin'
 alias gp='git push origin HEAD:refs/for/develop'
 alias gr='git rebase'
 alias grc='git rebase --continue'
-alias grd='git rebase origin/develop-stable'
-alias gfr='git fetch origin; git rebase origin/develop-stable'
 alias ge='git clean -fd'
 alias gm='git mergetool'
 alias gb="git for-each-ref --format='%(color:cyan)%(authordate:format:%m/%d/%Y %I:%M %p)    %(align:25,left)%(color:yellow)%(authorname)%(end) %(color:reset)%(refname:strip=3)' --sort=authordate refs/remotes"
@@ -362,8 +356,6 @@ fi
 
 export GPG_TTY=$(tty)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
-export MAX_THINKING_TOKENS=2048
-export CLAUDE_CODE_MAX_OUTPUT_TOKENS=8192
 
 # OSC 7 sequence to report current directory to terminal
 precmd () {

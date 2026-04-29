@@ -4,6 +4,7 @@
 .zprofile.chime
 .bash_profile.chime
 .vimrc.chime
+config/claude/hooks/route.local.sh
 
 # OS/IDE/editor junk
 .DS_Store

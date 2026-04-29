@@ -38,3 +38,9 @@ working-directory = /Users/eric.tran/codebase
 
 # Keybinds — Cmd+C/V, Cmd+T/N/W, Cmd+/-/0 are all default in Ghostty
 # Vi-mode toggle equivalent: Ghostty has scrollback search via cmd+f
+
+# Dump terminal output to a temp file and paste the path into the prompt.
+# Pair with the `sb` zsh alias: opens the most recent dump in nvim.
+keybind = cmd+shift+j=write_scrollback_file:paste
+keybind = cmd+shift+s=write_screen_file:paste
+keybind = cmd+shift+u=write_selection_file:paste

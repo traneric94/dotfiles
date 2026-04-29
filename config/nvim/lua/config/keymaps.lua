@@ -17,6 +17,21 @@ end
 
 local wk_ok, wk = pcall(require, "which-key")
 
+-- Resolve the current buffer's project root by walking up for known markers.
+-- Falls back to the global cwd when none are found (e.g. /tmp scratch files).
+local PROJECT_MARKERS = {
+  ".git",
+  "go.mod",
+  "package.json",
+  "Gemfile",
+  "pyproject.toml",
+  "Cargo.toml",
+}
+
+local function project_root()
+  return vim.fs.root(0, PROJECT_MARKERS) or vim.fn.getcwd()
+end
+
 local function telescope(builtin, opts)
   return function()
     local ok, builtin_module = pcall(require, "telescope.builtin")
@@ -24,6 +39,39 @@ local function telescope(builtin, opts)
       return
     end
     builtin_module[builtin](opts or {})
+  end
+end
+
+-- Like telescope() but resolves cwd to the project root at call time so each
+-- invocation scopes to whichever repo the current buffer lives in.
+local function telescope_project(builtin, extra_opts)
+  return function()
+    local ok, builtin_module = pcall(require, "telescope.builtin")
+    if not ok or not builtin_module[builtin] then
+      return
+    end
+    local opts = vim.tbl_extend("force", extra_opts or {}, { cwd = project_root() })
+    builtin_module[builtin](opts)
+  end
+end
+
+local function telescope_frecency()
+  local ok, t = pcall(require, "telescope")
+  if not ok or not t.extensions.frecency then
+    return
+  end
+  t.extensions.frecency.frecency({ cwd = project_root() })
+end
+
+-- Lazy DAP action: resolves at call time so `dap` plugin failure doesn't
+-- error on nvim startup, only on the keypress.
+local function dap_action(fn)
+  return function()
+    local ok, dap = pcall(require, "dap")
+    if not ok then
+      return
+    end
+    fn(dap)
   end
 end
 
@@ -71,20 +119,18 @@ map("n", "<leader>ef", function()
 end, "Reveal file in explorer")
 
 -- Telescope / search -----------------------------------------------------------
-map("n", "<leader>ff", function()
-  local ok = pcall(require("telescope").extensions.frecency.frecency)
-  if not ok then
-    telescope("find_files")()
-  end
-end, "Find files (frecency)")
-map("n", "<leader>fF", telescope("find_files"), "Find files (all)")
-map("n", "<leader>fg", telescope("live_grep"), "Live grep")
+-- Project-scoped pickers resolve to the buffer's nearest project root so they
+-- always search the right repo, regardless of nvim's global cwd.
+map("n", "<leader>ff", telescope_project("find_files"), "Find files (project root)")
+map("n", "<leader>fF", telescope("find_files"), "Find files (cwd, escape hatch)")
+map("n", "<leader>fg", telescope_project("live_grep"), "Live grep (project root)")
+map("n", "<leader>fr", telescope_frecency, "Frecency (opened files, project root)")
 map("n", "<leader>fb", telescope("buffers"), "Find buffers")
 map("n", "<leader>fh", telescope("help_tags"), "Help tags")
-map("n", "<leader>fr", telescope("oldfiles"), "Recent files")
+map("n", "<leader>fo", telescope("oldfiles"), "Recent files (oldfiles)")
 map("n", "<leader>fs", telescope("git_status"), "Git status")
 map("n", "<leader>fc", telescope("git_commits"), "Git commits")
-map("n", "<leader>fw", telescope("grep_string"), "Search word under cursor")
+map("n", "<leader>fw", telescope_project("grep_string"), "Search word under cursor (project root)")
 map("n", "<leader>fd", telescope("diagnostics"), "Diagnostics picker")
 map("n", "<leader>/", telescope("current_buffer_fuzzy_find"), "Search in buffer")
 map("n", "<leader>sr", telescope("resume"), "Resume last picker")
@@ -132,6 +178,26 @@ map("n", "<leader>tc", function()
   vim.g.cmp_enabled = not vim.g.cmp_enabled
   vim.notify(string.format("Completion %s", vim.g.cmp_enabled and "enabled" or "disabled"))
 end, "Toggle completion")
+
+-- Debug (DAP) ------------------------------------------------------------------
+map("n", "<leader>db", dap_action(function(dap) dap.toggle_breakpoint() end), "Debug: toggle breakpoint")
+map("n", "<leader>dc", dap_action(function(dap) dap.continue() end), "Debug: continue")
+map("n", "<leader>di", dap_action(function(dap) dap.step_into() end), "Debug: step into")
+map("n", "<leader>do", dap_action(function(dap) dap.step_over() end), "Debug: step over")
+map("n", "<leader>dO", dap_action(function(dap) dap.step_out() end), "Debug: step out")
+map("n", "<leader>dr", dap_action(function(dap) dap.repl.open() end), "Debug: open REPL")
+map("n", "<leader>dl", dap_action(function(dap) dap.run_last() end), "Debug: run last")
+map("n", "<leader>dk", dap_action(function(dap)
+  if dap.session() then
+    dap.terminate()
+  end
+end), "Debug: terminate")
+map("n", "<leader>du", function()
+  local ok, dapui = pcall(require, "dapui")
+  if ok then
+    dapui.toggle({})
+  end
+end, "Debug: toggle UI")
 
 -- Testing ----------------------------------------------------------------------
 map("n", "<leader>tn", "<cmd>TestNearest<CR>", "Test nearest")
@@ -182,6 +248,7 @@ if wk_ok then
   wk.register({
     ["<leader>"] = {
       b = { name = "+buffers" },
+      d = { name = "+debug" },
       e = { name = "+explorer" },
       f = { name = "+find" },
       g = { name = "+git" },

@@ -35,22 +35,6 @@ dap.listeners.before.event_exited["dapui_config"] = function()
   dapui.close()
 end
 
-local map = function(lhs, rhs, desc)
-  vim.keymap.set("n", lhs, rhs, { desc = desc })
-end
-
-map("<leader>db", dap.toggle_breakpoint, "Debug: toggle breakpoint")
-map("<leader>dc", dap.continue, "Debug: continue")
-map("<leader>di", dap.step_into, "Debug: step into")
-map("<leader>do", dap.step_over, "Debug: step over")
-map("<leader>dO", dap.step_out, "Debug: step out")
-map("<leader>dr", dap.repl.open, "Debug: open REPL")
-map("<leader>dl", dap.run_last, "Debug: run last")
-map("<leader>dk", function()
-  if dap.session() then
-    dap.terminate()
-  end
-end, "Debug: terminate")
-map("<leader>du", function()
-  dapui.toggle({})
-end, "Debug: toggle UI")
+-- Debug keymaps live in config/keymaps.lua under "-- Debug (DAP)" so all
+-- bindings are centralized. The handlers there pcall(require, "dap") to stay
+-- safe if the plugin isn't loaded.

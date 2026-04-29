@@ -9,8 +9,8 @@ telescope.setup({
         ["<C-k>"] = actions.move_selection_previous,
         ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
         ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
-        ["<C-u>"] = actions.preview_scrolling_up,
-        ["<C-d>"] = actions.preview_scrolling_down,
+        ["<C-f>"] = actions.preview_scrolling_up,
+        ["<C-b>"] = actions.preview_scrolling_down,
         ["<C-x>"] = actions.select_horizontal,
         ["<C-v>"] = actions.select_vertical,
         ["<C-t>"] = actions.select_tab,
@@ -27,7 +27,8 @@ telescope.setup({
   extensions = {
     frecency = {
       auto_validate = true,
-      show_unindexed = true,
+      show_unindexed = false,
+      default_workspace = "CWD",
     },
   },
 })

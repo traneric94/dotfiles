@@ -11,18 +11,17 @@ A simple, prompt-safe dotfile installer for macOS.
 - You will be prompted before replacing any existing files.
 - Files are symlinked from this repo into your home directory.
 - Entries inside `.config` (if present) are linked individually into `~/.config`.
-- Homebrew is required. If installed, the script will:
-  - `brew update` and `brew tap koekeishiya/formulae`
-  - Use the included `Brewfile` via `brew bundle` to install formulae and casks
+- Homebrew is installed if missing. The script then uses the included Brewfiles
+  with `brew bundle` and installs hotkey-managed GUI apps from `apps.json`.
 
 ## Notes
 
 - Strict mode is enabled (`set -euo pipefail`) so the script fails fast on errors, undefined variables, and pipeline failures.
 - VS Code press-and-hold is disabled for both Stable and Insiders.
-- `skhd` will be restarted if installed.
+- `.skhdrc` is generated from `apps.json` on macOS.
 
 
 ## Undo
 
 - Since links replace targets only after you confirm, you can cancel to keep existing files.
-- To remove a link later, delete it from your home directory and re-run the script if needed. 
+- To remove a link later, delete it from your home directory and re-run the script if needed.

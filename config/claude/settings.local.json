@@ -74,8 +74,8 @@
     "ask": [],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
-      "/Users/eric.tran/.config",
-      "/Users/eric.tran/codebase/dotfiles",
+      "~/.config",
+      "~/dotfiles",
       "/tmp"
     ]
   },
@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/eric.tran/codebase/dotfiles/config/claude/hooks/route.sh"
+            "command": "bash ~/.claude/hooks/route.sh"
           }
         ]
       },
@@ -93,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /Users/eric.tran/codebase/dotfiles/config/claude/hooks/capture-corrections.py"
+            "command": "python3 ~/.claude/hooks/capture-corrections.py"
           }
         ]
       }

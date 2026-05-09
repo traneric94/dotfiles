@@ -8,6 +8,16 @@ M.go_bin_path = function()
   return path
 end
 
+function M.ensure_mason()
+  local mason = require("mason")
+  if not vim.g.__mason_setup_complete then
+    mason.setup({
+      max_concurrent_installers = 1,
+    })
+    vim.g.__mason_setup_complete = true
+  end
+end
+
 function M.go_format()
   if vim.bo.filetype ~= "go" then
     return

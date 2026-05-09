@@ -1,17 +1,8 @@
 local dap = require("dap")
 local tools = require("config.tools")
+local utils = require("config.utils")
 
-local function ensure_mason()
-  local mason = require("mason")
-  if not vim.g.__mason_setup_complete then
-    mason.setup({
-      max_concurrent_installers = 1,
-    })
-    vim.g.__mason_setup_complete = true
-  end
-end
-
-ensure_mason()
+utils.ensure_mason()
 
 local mason_dap = require("mason-nvim-dap")
 mason_dap.setup({

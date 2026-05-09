@@ -31,6 +31,15 @@ if [[ -z "${DOTFILES_DIR:-}" ]]; then
     DOTFILES_DIR="${${(%):-%N}:a:h}"
   fi
 fi
+export DOTFILES_DIR
+
+_add_precmd_once() {
+  local fn="$1"
+  local idx="${precmd_functions[(Ie)$fn]:-0}"
+  if (( idx == 0 )); then
+    precmd_functions+=("$fn")
+  fi
+}
 
 # ── Completions ────────────────────────────────────────────────────────────────
 autoload -Uz compinit && compinit
@@ -39,7 +48,7 @@ autoload -Uz compinit && compinit
 autoload -Uz vcs_info
 zstyle ':vcs_info:git:*' formats '%F{cyan}(%b)%f '
 zstyle ':vcs_info:git:*' actionformats '%F{yellow}(%b|%a)%f '
-precmd_functions+=(vcs_info)
+_add_precmd_once vcs_info
 setopt prompt_subst
 PROMPT='%(?:%F{green}%B➜%b%f :%F{red}%B➜%b%f ) %F{cyan}%1~%f ${vcs_info_msg_0_}'
 
@@ -65,7 +74,8 @@ setopt HIST_IGNORE_SPACE         # Don't record an entry starting with a space.
 setopt HIST_SAVE_NO_DUPS         # Don't write duplicate entries in the history file.
 setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording entry.
 setopt HIST_VERIFY               # Don't execute immediately upon history expansion.
-setopt HIST_BEEP                 # Beep when accessing nonexistent history.# Preferred editor for local and remote sessions
+setopt HIST_BEEP                 # Beep when accessing nonexistent history.
+# Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
 #   export EDITOR='vim'
 # else
@@ -105,6 +115,7 @@ export PATH="/usr/sbin:$PATH"
 export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 
 BAT_CMD="$(command -v bat 2>/dev/null || printf 'bat')"
+FD_CMD="$(command -v fd 2>/dev/null || printf 'fd')"
 
 ### Quality of Life Aliases
 # ==============================================================================
@@ -332,9 +343,9 @@ if [[ -t 1 ]]; then
     [[ -n "${BREW_PREFIX:-}" ]] && eval "$($BREW_PREFIX/bin/fzf --zsh 2>/dev/null)"
   fi
 fi
-export FZF_DEFAULT_COMMAND="${BREW_PREFIX:-/opt/homebrew}/bin/fd --hidden --strip-cwd-prefix --exclude .git"
+export FZF_DEFAULT_COMMAND="${FD_CMD} --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND="${BREW_PREFIX:-/opt/homebrew}/bin/fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+export FZF_ALT_C_COMMAND="${FD_CMD} --type=d --hidden --strip-cwd-prefix --exclude .git"
 
 # Catppuccin Mocha theme for FZF
 export FZF_DEFAULT_OPTS="--height 50% --layout=default --border \
@@ -358,10 +369,11 @@ export GPG_TTY=$(tty)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 
 # OSC 7 sequence to report current directory to terminal
-precmd () {
+_osc7_precmd() {
   printf "\e]7;file://%s%s\e\\" "$HOSTNAME" "$PWD"
 }
+_add_precmd_once _osc7_precmd
 
 # Hook auto Ruby version detection into directory changes
-precmd_functions+=(auto_ruby_version)
+_add_precmd_once auto_ruby_version
 [[ -n "${BREW_PREFIX:-}" && -d "$BREW_PREFIX/opt/ruby@3.3/bin" ]] && export PATH="$BREW_PREFIX/opt/ruby@3.3/bin:$PATH"

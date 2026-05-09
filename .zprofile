@@ -17,7 +17,3 @@ fi
 if [ -f "$HOME/.zprofile.chime" ]; then
   source "$HOME/.zprofile.chime"
 fi
-
-eval "$(/opt/homebrew/bin/brew shellenv)"
-
-eval "$(/opt/homebrew/bin/brew shellenv)"

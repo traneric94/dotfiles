@@ -17,9 +17,9 @@ CORRECTION_RE = re.compile(
     re.IGNORECASE,
 )
 
-CODEBASE_ROOT = '/Users/eric.tran/codebase'
+CODEBASE_ROOT = os.path.expanduser(os.environ.get('CODEBASE_ROOT', '~/codebase'))
 GLOBAL_MD = os.path.expanduser('~/.claude/CLAUDE.md')
-CODEBASE_MD = f'{CODEBASE_ROOT}/CLAUDE.md'
+CODEBASE_MD = os.path.join(CODEBASE_ROOT, 'CLAUDE.md')
 
 
 def read_recent_messages(transcript_path, n=6):

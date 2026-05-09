@@ -106,13 +106,27 @@ install_apps() {
 
   if [[ "$OS" == "Darwin" ]]; then
     echo "Installing GUI apps via Homebrew Cask..."
-    jq -r '.[] | select(.brew_cask != null) | .brew_cask' "$MANIFEST" | while read -r cask; do
+    local -a already_casks=()
+    local -a installed_casks=()
+
+    while IFS= read -r cask; do
       if brew list --cask "$cask" >/dev/null 2>&1; then
-        echo "Already installed: $cask"
+        already_casks+=("$cask")
       else
-        brew install --cask "$cask" || echo "Warning: failed to install cask $cask"
+        if brew install --cask "$cask"; then
+          installed_casks+=("$cask")
+        else
+          echo "Warning: failed to install cask $cask"
+        fi
       fi
-    done
+    done < <(jq -r '.[] | select(.brew_cask != null) | .brew_cask' "$MANIFEST")
+
+    if ((${#already_casks[@]} > 0)); then
+      echo "Already installed casks: ${already_casks[*]}"
+    fi
+    if ((${#installed_casks[@]} > 0)); then
+      echo "Installed casks: ${installed_casks[*]}"
+    fi
 
   elif [[ "$IS_WSL" == "true" ]]; then
     echo "Installing GUI apps via winget..."
@@ -174,9 +188,10 @@ link_configs() {
     ".zprofile:$HOME/.zprofile"
     ".bash_profile:$HOME/.bash_profile"
     "tmux.conf:$HOME/.tmux.conf"
-    "config/nvim:$HOME/.config/nvim"
     "config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
     "config/claude/settings.local.json:$HOME/.claude/settings.local.json"
+    "config/claude/hooks:$HOME/.claude/hooks"
+    "config/claude/skills:$HOME/.claude/skills"
   )
 
   # .skhdrc is macOS-only; hotkeys.ahk is generated and run directly from the repo dir.
@@ -195,6 +210,9 @@ link_configs() {
     while IFS= read -r -d '' entry; do
       local base_name
       base_name="$(basename "$entry")"
+      if [[ "$base_name" == "claude" ]]; then
+        continue
+      fi
       link_item "$entry" "$HOME/.config/$base_name"
     done < <(find "$SCRIPT_DIR/config" -mindepth 1 -maxdepth 1 -print0)
   fi

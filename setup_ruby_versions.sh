@@ -6,6 +6,7 @@
 set -euo pipefail
 
 echo "🔍 Finding Ruby projects and setting .ruby-version files..."
+CODEBASE_ROOT="${CODEBASE_ROOT:-$HOME/codebase}"
 
 # Find all directories with Gemfiles
 while IFS= read -r -d '' gemfile; do
@@ -59,7 +60,7 @@ while IFS= read -r -d '' gemfile; do
     echo "  ℹ️  No ruby version specified in Gemfile"
   fi
 
-done < <(find "$HOME/codebase" -name "Gemfile" -not -path "*/plugged/*" -not -path "*/.git/*" -print0)
+done < <(find "$CODEBASE_ROOT" -name "Gemfile" -not -path "*/plugged/*" -not -path "*/.git/*" -print0)
 
 echo "✨ Done! Ruby versions have been set for all projects."
 echo ""

@@ -33,9 +33,6 @@ bell-features = no-system,no-audio,attention,title
 cursor-style = block
 cursor-style-blink = false
 
-# Working directory
-working-directory = /Users/eric.tran/codebase
-
 # Keybinds — Cmd+C/V, Cmd+T/N/W, Cmd+/-/0 are all default in Ghostty
 # Vi-mode toggle equivalent: Ghostty has scrollback search via cmd+f
 

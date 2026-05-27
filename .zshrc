@@ -120,6 +120,14 @@ FD_CMD="$(command -v fd 2>/dev/null || printf 'fd')"
 ### Quality of Life Aliases
 # ==============================================================================
 alias vim=nvim
+rawvim() {
+  local raw_vimrc="${DOTFILES_DIR:-$HOME/dotfiles}/config/vim/raw.vim"
+  if [[ ! -f "$raw_vimrc" ]]; then
+    raw_vimrc="$HOME/.vimrc.raw"
+  fi
+  command vim -Nu "$raw_vimrc" "$@"
+}
+alias rv=rawvim
 alias cat=bat
 alias mkdir='mkdir -p'  # Create parent directories as needed
 alias c='clear'          # Clear terminal screen

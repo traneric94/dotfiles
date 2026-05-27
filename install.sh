@@ -187,6 +187,7 @@ link_configs() {
     ".zshenv:$HOME/.zshenv"
     ".zprofile:$HOME/.zprofile"
     ".bash_profile:$HOME/.bash_profile"
+    "config/vim/raw.vim:$HOME/.vimrc.raw"
     "tmux.conf:$HOME/.tmux.conf"
     "config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
     "config/claude/settings.local.json:$HOME/.claude/settings.local.json"

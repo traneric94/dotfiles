@@ -20,6 +20,16 @@ A simple, prompt-safe dotfile installer for macOS.
 - VS Code press-and-hold is disabled for both Stable and Insiders.
 - `.skhdrc` is generated from `apps.json` on macOS.
 
+## Raw Vim Training
+
+Use `rawvim` or `rv` to launch Vim with `config/vim/raw.vim`.
+
+- No Neovim config is loaded.
+- Project search uses `:Rg`, `:copen`, `:cnext`, and `:cprevious`.
+- Tags use `:Tags`, `<C-]>`, and `<C-t>`.
+- File browsing uses netrw with `:Explore` or `<leader>e`.
+- Buffers use `:ls`, `:buffer`, and `<C-^>`.
+- Tests/builds go through `:make` and the quickfix list.
 
 ## Undo
 

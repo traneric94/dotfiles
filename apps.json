@@ -12,6 +12,7 @@
     "id": "ghostty",
     "hotkey": "1",
     "darwin_app": "Ghostty",
+    "darwin_process": "ghostty",
     "brew_cask": "ghostty",
     "winget_id": null,
     "win_exe": null,
@@ -76,10 +77,20 @@
     "id": "firefox",
     "hotkey": "f",
     "darwin_app": "Firefox",
+    "darwin_ensure_window": true,
     "brew_cask": "firefox",
     "winget_id": "Mozilla.Firefox",
     "win_exe": "firefox.exe",
     "win_title": "Mozilla Firefox"
+  },
+  {
+    "id": "rectangle",
+    "hotkey": "r",
+    "darwin_app": "Rectangle",
+    "brew_cask": "rectangle",
+    "winget_id": null,
+    "win_exe": null,
+    "win_title": null
   },
   {
     "id": "sdm",

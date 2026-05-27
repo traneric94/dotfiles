@@ -12,4 +12,20 @@ cat <<'HEADER'
 # To change bindings, edit apps.json and re-run install.sh.
 HEADER
 
-jq -r '.[] | "rshift - \(.hotkey) : open -a \"\(.darwin_app)\""' "$MANIFEST"
+jq -r '
+  .[]
+  | select(.darwin_app != null)
+  | [
+      .hotkey,
+      .darwin_app,
+      (.darwin_process // .darwin_app),
+      (.darwin_ensure_window // false)
+    ]
+  | @tsv
+' "$MANIFEST" | while IFS=$'\t' read -r hotkey app process ensure_window; do
+  if [[ "$ensure_window" == "true" ]]; then
+    printf "rshift - %s : osascript -e 'tell application \"%s\" to activate' -e 'tell application \"System Events\" to tell process \"%s\" to if (count of windows) = 0 then keystroke \"n\" using command down'\n" "$hotkey" "$app" "$process"
+  else
+    printf "rshift - %s : if pgrep \"%s\" > /dev/null; then osascript -e 'tell application \"%s\" to activate'; else open -a \"%s\"; fi\n" "$hotkey" "$process" "$app" "$app"
+  fi
+done

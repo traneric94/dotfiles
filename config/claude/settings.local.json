@@ -60,7 +60,14 @@
       "mcp__atlassian__fetchAtlassian",
       "mcp__datadog-mcp__search_datadog_metrics",
       "mcp__datadog-mcp__get_datadog_metric_context",
-      "mcp__atlassian__getConfluenceSpaces"
+      "mcp__atlassian__getConfluenceSpaces",
+      "mcp__datadog-mcp__analyze_datadog_logs",
+      "mcp__datadog-mcp__search_datadog_logs",
+      "mcp__datadog-mcp__get_datadog_metric",
+      "mcp__datadog-mcp__search_datadog_events",
+      "mcp__glean__search",
+      "mcp__datadog-mcp__search_datadog_monitors",
+      "mcp__glean__read_document"
     ],
     "deny": [
       "Bash(rm -rf:*)",

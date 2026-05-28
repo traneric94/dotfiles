@@ -11,6 +11,9 @@ cmp.setup({
 	enabled = function()
 		return vim.g.cmp_enabled
 	end,
+	completion = {
+		autocomplete = false,
+	},
 	snippet = {
 		expand = function(args)
 			luasnip.lsp_expand(args.body)
@@ -83,7 +86,7 @@ cmp.setup({
 		{ name = "path" },
 	}),
 	experimental = {
-		ghost_text = true,
+		ghost_text = false,
 	},
 })
 

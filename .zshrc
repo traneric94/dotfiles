@@ -1,28 +1,21 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
-#PATH=/usr/bin:/bin:/usr/sbin:/sbin
-#export PATH
-
-# Ensure Go binaries are available (for gopls, etc.)
+# Go binaries (for gopls, etc.)
 [[ ":$PATH:" != *":$HOME/go/bin:"* ]] && export PATH="$HOME/go/bin:$PATH"
 
-# Bootstrap Homebrew — detect install location across macOS ARM, macOS Intel, and Linux.
-for _bp in /opt/homebrew /home/linuxbrew/.linuxbrew /usr/local; do
-  if [[ -x "$_bp/bin/brew" ]]; then
-    [[ ":$PATH:" != *":$_bp/bin:"* ]] && export PATH="$_bp/bin:$_bp/sbin:$PATH"
-    BREW_PREFIX="$_bp"
-    break
-  fi
-done
-unset _bp
-
-# add custom, local installations to PATH
-#PATH=/usr/local/bin:/usr/local/sbin:"$PATH"
-
-# add MacPorts to PATH
-#PATH=/opt/local/bin:/opt/local/sbin:"$PATH"
-#export GOPATH=/Users/erictran/codebase/golang
-# export PATH=~/Library/Python/2.7/bin:$PATH
+# Bootstrap Homebrew — .zprofile already runs `brew shellenv` for login shells;
+# fall through to the loop only for non-login subshells (e.g. tmux panes when
+# default-command isn't a login shell).
+if [[ -n "${HOMEBREW_PREFIX:-}" ]]; then
+  BREW_PREFIX="$HOMEBREW_PREFIX"
+else
+  for _bp in /opt/homebrew /home/linuxbrew/.linuxbrew /usr/local; do
+    if [[ -x "$_bp/bin/brew" ]]; then
+      eval "$("$_bp/bin/brew" shellenv)"
+      BREW_PREFIX="$_bp"
+      break
+    fi
+  done
+  unset _bp
+fi
 
 # Determine dotfiles directory for sourcing helper scripts
 if [[ -z "${DOTFILES_DIR:-}" ]]; then
@@ -31,15 +24,6 @@ if [[ -z "${DOTFILES_DIR:-}" ]]; then
     DOTFILES_DIR="${${(%):-%N}:a:h}"
   fi
 fi
-export DOTFILES_DIR
-
-_add_precmd_once() {
-  local fn="$1"
-  local idx="${precmd_functions[(Ie)$fn]:-0}"
-  if (( idx == 0 )); then
-    precmd_functions+=("$fn")
-  fi
-}
 
 # ── Completions ────────────────────────────────────────────────────────────────
 autoload -Uz compinit && compinit
@@ -48,13 +32,9 @@ autoload -Uz compinit && compinit
 autoload -Uz vcs_info
 zstyle ':vcs_info:git:*' formats '%F{cyan}(%b)%f '
 zstyle ':vcs_info:git:*' actionformats '%F{yellow}(%b|%a)%f '
-_add_precmd_once vcs_info
+precmd_functions+=(vcs_info)
 setopt prompt_subst
 PROMPT='%(?:%F{green}%B➜%b%f :%F{red}%B➜%b%f ) %F{cyan}%1~%f ${vcs_info_msg_0_}'
-
-# User configuration
-
-# export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
@@ -75,16 +55,6 @@ setopt HIST_SAVE_NO_DUPS         # Don't write duplicate entries in the history 
 setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording entry.
 setopt HIST_VERIFY               # Don't execute immediately upon history expansion.
 setopt HIST_BEEP                 # Beep when accessing nonexistent history.
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
-
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
-
 
 alias awsume=". awsume"
 
@@ -115,19 +85,10 @@ export PATH="/usr/sbin:$PATH"
 export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 
 BAT_CMD="$(command -v bat 2>/dev/null || printf 'bat')"
-FD_CMD="$(command -v fd 2>/dev/null || printf 'fd')"
 
 ### Quality of Life Aliases
 # ==============================================================================
 alias vim=nvim
-rawvim() {
-  local raw_vimrc="${DOTFILES_DIR:-$HOME/dotfiles}/config/vim/raw.vim"
-  if [[ ! -f "$raw_vimrc" ]]; then
-    raw_vimrc="$HOME/.vimrc.raw"
-  fi
-  command vim -Nu "$raw_vimrc" "$@"
-}
-alias rv=rawvim
 alias cat=bat
 alias mkdir='mkdir -p'  # Create parent directories as needed
 alias c='clear'          # Clear terminal screen
@@ -351,9 +312,9 @@ if [[ -t 1 ]]; then
     [[ -n "${BREW_PREFIX:-}" ]] && eval "$($BREW_PREFIX/bin/fzf --zsh 2>/dev/null)"
   fi
 fi
-export FZF_DEFAULT_COMMAND="${FD_CMD} --hidden --strip-cwd-prefix --exclude .git"
+export FZF_DEFAULT_COMMAND="${BREW_PREFIX:-/opt/homebrew}/bin/fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND="${FD_CMD} --type=d --hidden --strip-cwd-prefix --exclude .git"
+export FZF_ALT_C_COMMAND="${BREW_PREFIX:-/opt/homebrew}/bin/fd --type=d --hidden --strip-cwd-prefix --exclude .git"
 
 # Catppuccin Mocha theme for FZF
 export FZF_DEFAULT_OPTS="--height 50% --layout=default --border \
@@ -377,11 +338,10 @@ export GPG_TTY=$(tty)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 
 # OSC 7 sequence to report current directory to terminal
-_osc7_precmd() {
+precmd () {
   printf "\e]7;file://%s%s\e\\" "$HOSTNAME" "$PWD"
 }
-_add_precmd_once _osc7_precmd
 
 # Hook auto Ruby version detection into directory changes
-_add_precmd_once auto_ruby_version
+precmd_functions+=(auto_ruby_version)
 [[ -n "${BREW_PREFIX:-}" && -d "$BREW_PREFIX/opt/ruby@3.3/bin" ]] && export PATH="$BREW_PREFIX/opt/ruby@3.3/bin:$PATH"

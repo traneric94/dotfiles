@@ -1,7 +1,5 @@
-# Add Visual Studio Code (code)
-export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
-
 # Bootstrap Homebrew — detect install location across macOS ARM, macOS Intel, and Linux.
+# The visual-studio-code cask handles `code` on PATH; no manual export needed.
 for _bp in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
   if [[ -x "$_bp/bin/brew" ]]; then
     eval "$("$_bp/bin/brew" shellenv)"

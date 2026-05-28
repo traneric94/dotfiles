@@ -113,11 +113,6 @@ map("n", "<leader>er", function()
     api.tree.reload()
   end)
 end, "Reload file explorer")
-map("n", "<leader>ef", function()
-  with_nvim_tree(function(api)
-    api.tree.find_file({ open = true, focus = true })
-  end)
-end, "Reveal file in explorer")
 
 -- Telescope / search -----------------------------------------------------------
 -- Project-scoped pickers resolve to the buffer's nearest project root so they

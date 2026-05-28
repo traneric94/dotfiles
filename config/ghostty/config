@@ -1,5 +1,4 @@
-# Ghostty configuration
-# Ported from alacritty.toml — Catppuccin Mocha, Hack Nerd Font, transparent
+# Ghostty configuration — Catppuccin Mocha, Hack Nerd Font, transparent
 
 # Font
 font-family = "Hack Nerd Font Mono"
@@ -23,7 +22,6 @@ shell-integration = zsh
 shell-integration-features = cursor,sudo,title
 
 # macOS Option key — forwards as Alt/Meta to terminal apps (tmux, nvim)
-# Replaces the per-key `chars = "\u001b..."` bindings from alacritty
 macos-option-as-alt = true
 
 # Bell — visual only, no audio

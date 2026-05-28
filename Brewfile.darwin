@@ -7,10 +7,13 @@ brew "koekeishiya/formulae/skhd"
 brew "terminal-notifier"
 brew "reattach-to-user-namespace"
 
+# Rules of thumb:
+#   - apps.json owns GUI apps that get a launcher hotkey (skhd/AutoHotkey)
+#   - Brewfile.darwin owns macOS-only software with no hotkey (CLIs, fonts,
+#     dev tools) plus the launcher infra itself (raycast, etc.)
 cask "1password-cli"
 cask "notion-calendar"
 cask "raycast"
-cask "rectangle"
 cask "visual-studio-code"
 cask "postman"
 cask "font-hack-nerd-font"

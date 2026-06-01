@@ -1,0 +1,36 @@
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+personality = "pragmatic"
+
+[features]
+hooks = true
+
+[projects."/Users/eric"]
+trust_level = "trusted"
+
+[projects."/Users/eric/codebase"]
+trust_level = "trusted"
+
+[projects."/Users/eric/codebase/aoc"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dotfiles"]
+trust_level = "trusted"
+
+[projects."/Users/eric/codebase/python"]
+trust_level = "trusted"
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+
+[hooks.state."/Users/eric/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:b312a0372454814d0a471f9a9269b94cd5b4aaccf7d158f6fd644c09dabd23fd"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_compact:0:0"]
+trusted_hash = "sha256:5a1f61713cb19270a60f0f8de2de94de49a04e93980a7aad33bf25cf598c43f5"
+
+[hooks.state."/Users/eric/.codex/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:cd88ddee01a0ddb0a2668ab391b1648f3650648c1a07fd9bad55a5ada5d6da19"
+
+[hooks.state."/Users/eric/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:e7f86717556bc1f2e070c7678039e12752c8685ae364a1b95e06423659795145"

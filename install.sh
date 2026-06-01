@@ -193,6 +193,9 @@ link_configs() {
     "config/claude/settings.local.json:$HOME/.claude/settings.local.json"
     "config/claude/hooks:$HOME/.claude/hooks"
     "config/claude/skills:$HOME/.claude/skills"
+    "config/codex/config.toml:$HOME/.codex/config.toml"
+    "config/codex/hooks.json:$HOME/.codex/hooks.json"
+    "config/codex/hooks:$HOME/.codex/hooks"
   )
 
   # .skhdrc is macOS-only; hotkeys.ahk is generated and run directly from the repo dir.
@@ -211,7 +214,7 @@ link_configs() {
     while IFS= read -r -d '' entry; do
       local base_name
       base_name="$(basename "$entry")"
-      if [[ "$base_name" == "claude" ]]; then
+      if [[ "$base_name" == "claude" || "$base_name" == "codex" ]]; then
         continue
       fi
       link_item "$entry" "$HOME/.config/$base_name"

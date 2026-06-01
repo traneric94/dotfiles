@@ -10,6 +10,7 @@ A simple, prompt-safe dotfile installer for macOS.
 
 - You will be prompted before replacing any existing files.
 - Files are symlinked from this repo into your home directory.
+- Claude and Codex config are symlinked into `~/.claude` and `~/.codex`.
 - Entries inside `.config` (if present) are linked individually into `~/.config`.
 - Homebrew is installed if missing. The script then uses the included Brewfiles
   with `brew bundle` and installs hotkey-managed GUI apps from `apps.json`.

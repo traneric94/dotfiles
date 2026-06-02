@@ -67,7 +67,11 @@
       "mcp__datadog-mcp__search_datadog_events",
       "mcp__glean__search",
       "mcp__datadog-mcp__search_datadog_monitors",
-      "mcp__glean__read_document"
+      "mcp__glean__read_document",
+      "mcp__datadog-mcp__list_datadog_skills",
+      "mcp__datadog-mcp__load_datadog_skill",
+      "mcp__glean__chat",
+      "mcp__claude_ai_Atlassian__editJiraIssue"
     ],
     "deny": [
       "Bash(rm -rf:*)",

@@ -19,12 +19,17 @@ jq -r '
       .hotkey,
       .darwin_app,
       (.darwin_process // .darwin_app),
-      (.darwin_ensure_window // false)
+      (.darwin_ensure_window // false),
+      (.darwin_new_window // "keystroke")
     ]
   | @tsv
-' "$MANIFEST" | while IFS=$'\t' read -r hotkey app process ensure_window; do
+' "$MANIFEST" | while IFS=$'\t' read -r hotkey app process ensure_window new_window; do
   if [[ "$ensure_window" == "true" ]]; then
-    printf "rshift - %s : osascript -e 'tell application \"%s\" to activate' -e 'tell application \"System Events\" to tell process \"%s\" to if (count of windows) = 0 then keystroke \"n\" using command down'\n" "$hotkey" "$app" "$process"
+    if [[ "$new_window" == "make_new_window" ]]; then
+      printf "rshift - %s : osascript -e 'tell application \"%s\" to activate' -e 'if (count of windows of application \"%s\") = 0 then tell application \"%s\" to make new window'\n" "$hotkey" "$app" "$app" "$app"
+    else
+      printf "rshift - %s : osascript -e 'tell application \"%s\" to activate' -e 'delay 0.2' -e 'tell application \"System Events\" to tell process \"%s\" to if (count of windows) = 0 then keystroke \"n\" using command down'\n" "$hotkey" "$app" "$process"
+    fi
   else
     printf "rshift - %s : if pgrep \"%s\" > /dev/null; then osascript -e 'tell application \"%s\" to activate'; else open -a \"%s\"; fi\n" "$hotkey" "$process" "$app" "$app"
   fi

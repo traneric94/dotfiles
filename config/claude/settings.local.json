@@ -71,7 +71,9 @@
       "mcp__datadog-mcp__list_datadog_skills",
       "mcp__datadog-mcp__load_datadog_skill",
       "mcp__glean__chat",
-      "mcp__claude_ai_Atlassian__editJiraIssue"
+      "mcp__claude_ai_Atlassian__editJiraIssue",
+      "mcp__datadog-mcp__aggregate_spans",
+      "mcp__claude_ai_Atlassian__getJiraIssue"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -125,7 +127,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat 2>/dev/null); TRANSCRIPT=$(echo \"$INPUT\" | jq -r '.transcript_path // empty'); TMUX_WIN=$([ -n \"$TMUX\" ] && tmux display-message -p '#S' 2>/dev/null || echo \"\");LAST_MSG=$(jq -r 'select(.type == \"assistant\") | .message.content[] | select(.type == \"text\") | .text' \"$TRANSCRIPT\" 2>/dev/null | tail -1 | awk '{m=NF<10?NF:10; s=\"\"; for(i=1;i<=m;i++) s=s (i>1?\" \":\"\" ) $i; if(NF>10) s=s \"...\"; print s}'); TITLE=$([ -n \"$TMUX_WIN\" ] && echo \"Terminal:$TMUX_WIN\" || echo \"Terminal\"); terminal-notifier -title \"$TITLE\" -message \"${LAST_MSG:-Task complete}\" -sound Glass 2>/dev/null || afplay /System/Library/Sounds/Glass.aiff"
+            "command": "bash ~/.claude/hooks/notify-stop.sh"
           }
         ]
       }

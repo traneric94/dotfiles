@@ -34,7 +34,8 @@
       "WebFetch(domain:circleci.com)",
       "WebFetch(domain:app.circleci.com)",
       "WebFetch(domain:code.claude.com)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "mcp__claude_ai_Atlassian__getTransitionsForJiraIssue"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -95,20 +96,10 @@
     ],
     "Notification": [
       {
-        "matcher": "permission_prompt",
         "hooks": [
           {
             "type": "command",
-            "command": "TMUX_WIN=$([ -n \"$TMUX\" ] && tmux display-message -p '#S' 2>/dev/null || echo \"\"); TITLE=$([ -n \"$TMUX_WIN\" ] && echo \"Terminal:$TMUX_WIN\" || echo \"Terminal\"); terminal-notifier -title \"$TITLE\" -message \"Approval needed\" -sound Basso 2>/dev/null || afplay /System/Library/Sounds/Basso.aiff"
-          }
-        ]
-      },
-      {
-        "matcher": "elicitation_dialog",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "TMUX_WIN=$([ -n \"$TMUX\" ] && tmux display-message -p '#S' 2>/dev/null || echo \"\"); TITLE=$([ -n \"$TMUX_WIN\" ] && echo \"Terminal:$TMUX_WIN\" || echo \"Terminal\"); terminal-notifier -title \"$TITLE\" -message \"Needs clarification\" -sound Basso 2>/dev/null || afplay /System/Library/Sounds/Basso.aiff"
+            "command": "bash ~/.claude/hooks/notify-event.sh"
           }
         ]
       }

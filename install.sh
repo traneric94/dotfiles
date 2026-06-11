@@ -190,7 +190,6 @@ link_configs() {
     "config/vim/raw.vim:$HOME/.vimrc.raw"
     "tmux.conf:$HOME/.tmux.conf"
     "config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
-    "config/claude/settings.local.json:$HOME/.claude/settings.local.json"
     "config/claude/hooks:$HOME/.claude/hooks"
     "config/claude/skills:$HOME/.claude/skills"
     "config/codex/config.toml:$HOME/.codex/config.toml"
@@ -219,6 +218,44 @@ link_configs() {
       fi
       link_item "$entry" "$HOME/.config/$base_name"
     done < <(find "$SCRIPT_DIR/config" -mindepth 1 -maxdepth 1 -print0)
+  fi
+}
+
+# ── Claude settings merge ─────────────────────────────────────────────────────
+# Claude Code only reads ~/.claude/settings.json at the user level (a user-level
+# settings.local.json is ignored), and it also writes to that file (/model,
+# theme), so it can't be a symlink into this repo. Instead, merge the tracked
+# generic base (hooks, deny rules, defaults) into the machine-local file, which
+# keeps machine/work-specific config (env, providers, extra permissions) out of
+# this public repo. Base wins on conflicting keys; permission arrays are
+# unioned.
+
+merge_claude_settings() {
+  local base="$SCRIPT_DIR/config/claude/settings.base.json"
+  local target="$HOME/.claude/settings.json"
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "jq not found; skipping Claude settings merge"
+    return
+  fi
+
+  mkdir -p "$HOME/.claude"
+  [[ -f "$target" ]] || echo '{}' > "$target"
+
+  local tmp
+  tmp=$(mktemp)
+  if jq -s '
+    .[0] as $m | .[1] as $b |
+    ($m * $b)
+    | .permissions.allow = (($m.permissions.allow // []) + ($b.permissions.allow // []) | unique)
+    | .permissions.deny = (($m.permissions.deny // []) + ($b.permissions.deny // []) | unique)
+    | .permissions.additionalDirectories = (($m.permissions.additionalDirectories // []) + ($b.permissions.additionalDirectories // []) | unique)
+  ' "$target" "$base" > "$tmp" && jq -e . "$tmp" >/dev/null; then
+    mv "$tmp" "$target"
+    echo "Merged Claude settings base into $target"
+  else
+    rm -f "$tmp"
+    echo "Warning: Claude settings merge failed; $target left untouched"
   fi
 }
 
@@ -283,6 +320,7 @@ install_packages
 install_apps
 generate_configs
 link_configs
+merge_claude_settings
 install_tpm
 install_ruby
 

@@ -93,7 +93,7 @@ alias cat=bat
 alias mkdir='mkdir -p'  # Create parent directories as needed
 alias c='clear'          # Clear terminal screen
 alias reload='source ~/.zshrc'  # Reload ZSH Configuration
-alias ssh-target='echo "eric.tran@$(_local_ip)"'
+alias ssh-target='echo "${USER}@$(_local_ip)"'
 alias sb='nvim "$(ls -t /tmp/ghostty-* 2>/dev/null | head -1)"'  # Open most recent ghostty scrollback dump in nvim
 
 # ==============================================================================

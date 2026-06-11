@@ -92,6 +92,8 @@ Periodically prompt-tune entries — use "IMPORTANT" or "YOU MUST" on rules wher
 ## Learned Patterns
 
 _Global corrections and behavioral adjustments accumulated over time. Add via `#` mid-session or manually._
+
+_IMPORTANT: This file is tracked in a PUBLIC dotfiles repo. Examples written here must be generic — never include employer-internal class names, hostnames, repo names, or infrastructure details._
 - if you dont see a branch, git fetch to make sure
 - use constants for strings
 
@@ -108,6 +110,6 @@ _Global corrections and behavioral adjustments accumulated over time. Add via `#
 
 **Metrics need all dimensional tags from day one** — distribution/histogram metrics should include every tag you'll want to slice by (variant, strategy type, banner definition, etc.) from the first commit. Adding tags later requires backfilling dashboards and invalidates historical data.
 
-**Stub every side-effecting dependency in every test that exercises that path** — in Ruby specs, if a code path calls `Chime::Dog.distribution`, every test reaching that path needs `allow(Chime::Dog).to receive(:distribution)`, even tests asserting on something else. Missing stubs cause order-dependent failures.
+**Stub every side-effecting dependency in every test that exercises that path** — in Ruby specs, if a code path calls `Statsd.distribution`, every test reaching that path needs `allow(Statsd).to receive(:distribution)`, even tests asserting on something else. Missing stubs cause order-dependent failures.
 
-**Verify what the test framework actually resets between examples** — don't assume global state resets because docs say so. Read the actual `after` hooks. In this codebase, `Chime::Atlas::Tuner.reset_overrides!` and `Chime::Tuner.reset_overrides!` reset different singletons — only the atlas one was being called, leaving Tuner overrides to leak across tests.
+**Verify what the test framework actually resets between examples** — don't assume global state resets because docs say so. Read the actual `after` hooks. Example: `Gem::Tuner.reset_overrides!` and `Tuner.reset_overrides!` reset different singletons — only one was being called, leaving the other's overrides to leak across tests.

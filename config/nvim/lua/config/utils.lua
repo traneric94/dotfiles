@@ -18,33 +18,6 @@ function M.ensure_mason()
   end
 end
 
-function M.go_format()
-  if vim.bo.filetype ~= "go" then
-    return
-  end
-
-  local file = vim.fn.expand("%:p")
-  local gofmt = vim.fn.exepath("gofmt")
-  if gofmt == "" then
-    local fallback = M.go_bin_path() .. "gofmt"
-    if vim.fn.filereadable(fallback) == 1 then
-      gofmt = fallback
-    else
-      vim.notify("Go format failed: gofmt not found on PATH", vim.log.levels.ERROR)
-      return
-    end
-  end
-
-  local cmd = string.format("%s -w %s 2>&1", vim.fn.shellescape(gofmt), vim.fn.shellescape(file))
-  local result = vim.fn.system(cmd)
-
-  if vim.v.shell_error ~= 0 then
-    vim.notify("Go format failed: " .. result, vim.log.levels.ERROR)
-    return
-  end
-  vim.cmd("edit!")
-end
-
 function M.toggle_test_file()
   local file = vim.fn.expand("%:p")
   local ext = vim.fn.expand("%:e")
@@ -163,10 +136,6 @@ end
 
 vim.api.nvim_create_user_command("FoldImports", function()
   M.fold_imports()
-end, {})
-
-vim.api.nvim_create_user_command("GoFormat", function()
-  M.go_format()
 end, {})
 
 vim.api.nvim_create_user_command("ToggleTestFile", function()

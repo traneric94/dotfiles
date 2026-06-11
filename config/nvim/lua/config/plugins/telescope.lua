@@ -3,7 +3,6 @@ local actions = require("telescope.actions")
 
 telescope.setup({
   defaults = {
-    generic_sorter = project_prioritized_sorter,
     mappings = {
       i = {
         ["<C-j>"] = actions.move_selection_next,

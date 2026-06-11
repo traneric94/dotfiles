@@ -266,6 +266,17 @@ local server_settings = {
 			},
 		}
 	end,
+	bashls = function()
+		-- shellcheck diagnostics come from nvim-lint; disable the server's own
+		-- integration so issues aren't reported twice.
+		return {
+			settings = {
+				bashIde = {
+					shellcheckPath = "",
+				},
+			},
+		}
+	end,
 }
 
 local configured_servers = {}

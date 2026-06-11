@@ -4,6 +4,7 @@ local linters_by_ft = tools.linters_by_ft()
 
 local lint_name_map = {
   ["golangci-lint"] = "golangcilint",
+  ["buf"] = "buf_lint",
 }
 
 local missing_linters_notified = {}

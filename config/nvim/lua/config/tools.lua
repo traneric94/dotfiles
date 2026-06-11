@@ -45,6 +45,20 @@ M.server_specs = {
     filetypes = { "json", "jsonc" },
     formatters = { "prettierd" },
   },
+  terraformls = {
+    filetypes = { "terraform", "terraform-vars" },
+    linters = { "tflint" },
+  },
+  buf_ls = {
+    filetypes = { "proto" },
+    formatters = { "buf" },
+    linters = { "buf" },
+  },
+  bashls = {
+    filetypes = { "sh", "bash" },
+    formatters = { "shfmt" },
+    linters = { "shellcheck" },
+  },
   yamlls = {
     filetypes = { "yaml" },
     formatters = { "yamlfmt" },

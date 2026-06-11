@@ -56,14 +56,6 @@ api.nvim_create_autocmd("BufWritePost", {
   end,
 })
 
--- Go format on save
-local go_format_group = api.nvim_create_augroup("GoFormat", { clear = true })
-api.nvim_create_autocmd("BufWritePost", {
-  group = go_format_group,
-  pattern = "*.go",
-  callback = utils.go_format,
-})
-
 -- Fold imports after read/write
 local fold_group = api.nvim_create_augroup("AutoFoldImports", { clear = true })
 api.nvim_create_autocmd({ "BufReadPost", "BufWritePost" }, {

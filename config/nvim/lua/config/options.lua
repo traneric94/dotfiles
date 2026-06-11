@@ -1,9 +1,6 @@
 local opt = vim.opt
 local g = vim.g
 
-vim.cmd("syntax enable")
-vim.cmd("filetype plugin indent on")
-
 opt.ruler = true
 opt.formatoptions = opt.formatoptions + "o"
 opt.formatoptions = opt.formatoptions - "t"

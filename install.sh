@@ -35,12 +35,15 @@ prompt_yes_no() {
   done
 }
 
+LINK_FAILURES=0
+
 link_item() {
   local source_path="$1"
   local target_path="$2"
 
   if [ ! -e "$source_path" ]; then
-    echo "Source does not exist: $source_path"
+    echo "FAILED (source missing): $target_path -> $source_path" >&2
+    LINK_FAILURES=$((LINK_FAILURES + 1))
     return 0
   fi
 
@@ -49,6 +52,13 @@ link_item() {
       echo "Already linked: $target_path -> $source_path (skipping)"
       return 0
     fi
+  fi
+
+  # Never replace files owned by another user — e.g. ~/.codex/hooks.json may be
+  # a root-owned corporate security hook deployed by endpoint management.
+  if [ -e "$target_path" ] && [ ! -O "$target_path" ]; then
+    echo "SKIPPED (not owned by $(id -un), likely system-managed): $target_path" >&2
+    return 0
   fi
 
   if [ -e "$target_path" ] || [ -L "$target_path" ]; then
@@ -192,7 +202,9 @@ link_configs() {
     "config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
     "config/claude/hooks:$HOME/.claude/hooks"
     "config/claude/skills:$HOME/.claude/skills"
-    "config/codex/config.toml:$HOME/.codex/config.toml"
+    # config/codex/config.toml is intentionally not linked: Codex writes hook
+    # state into it, so the live file stays machine-local (tracked copy is a
+    # reference), same as the Claude settings merge.
     "config/codex/hooks.json:$HOME/.codex/hooks.json"
     "config/codex/hooks:$HOME/.codex/hooks"
   )
@@ -307,6 +319,13 @@ install_ruby() {
   rbenv rehash
 }
 
+# ── Git ───────────────────────────────────────────────────────────────────────
+
+configure_git() {
+  git config --global init.templatedir "$SCRIPT_DIR/git-templates"
+  echo "Set git init.templatedir -> $SCRIPT_DIR/git-templates"
+}
+
 # ── macOS system settings ─────────────────────────────────────────────────────
 
 configure_macos() {
@@ -321,11 +340,18 @@ install_apps
 generate_configs
 link_configs
 merge_claude_settings
+configure_git
 install_tpm
 install_ruby
 
 if [[ "$OS" == "Darwin" ]]; then
   configure_macos
+fi
+
+if [[ "$LINK_FAILURES" -gt 0 ]]; then
+  echo ""
+  echo "Installation finished with $LINK_FAILURES failed link(s) — see FAILED lines above." >&2
+  exit 1
 fi
 
 echo ""

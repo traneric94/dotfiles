@@ -27,6 +27,8 @@ jq -r '
   if [[ "$ensure_window" == "true" ]]; then
     if [[ "$new_window" == "make_new_window" ]]; then
       printf "rshift - %s : osascript -e 'tell application \"%s\" to activate' -e 'if (count of windows of application \"%s\") = 0 then tell application \"%s\" to make new window'\n" "$hotkey" "$app" "$app" "$app"
+    elif [[ "$new_window" == "reopen" ]]; then
+      printf "rshift - %s : osascript -e 'tell application \"%s\" to reopen' -e 'tell application \"%s\" to activate'\n" "$hotkey" "$app" "$app"
     else
       printf "rshift - %s : osascript -e 'tell application \"%s\" to activate' -e 'delay 0.2' -e 'tell application \"System Events\" to tell process \"%s\" to if (count of windows) = 0 then keystroke \"n\" using command down'\n" "$hotkey" "$app" "$process"
     fi

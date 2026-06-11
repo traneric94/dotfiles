@@ -80,7 +80,7 @@
     "hotkey": "f",
     "darwin_app": "Firefox",
     "darwin_ensure_window": true,
-    "darwin_new_window": "make_new_window",
+    "darwin_new_window": "reopen",
     "brew_cask": "firefox",
     "winget_id": "Mozilla.Firefox",
     "win_exe": "firefox.exe",

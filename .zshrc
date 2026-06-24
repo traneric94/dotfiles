@@ -189,6 +189,30 @@ go() {
   fi
 }
 
+# gnhf: scoped wrapper around the autonomous agent loop.
+#   - mutes Claude notification hooks for the run (GNHF_RUN, see notify-*.sh)
+#   - blocks --push (never push un-reshaped WIP; reshape with gt, submit manually)
+#   - refuses to run inside a Chime/1debit repo (org guardrail: no unattended
+#     agent on work repos)
+gnhf() {
+  local arg
+  for arg in "$@"; do
+    if [[ "$arg" == "--push" ]]; then
+      echo "gnhf: --push is blocked. Reshape with 'gt branch create' and submit manually." >&2
+      return 1
+    fi
+  done
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    local remote
+    remote="$(git remote get-url origin 2>/dev/null)"
+    if [[ "$remote" == *1debit* || "$remote" == *chime* ]]; then
+      echo "gnhf: refusing to run inside a Chime/1debit repo ($remote)." >&2
+      return 1
+    fi
+  fi
+  GNHF_RUN=1 command gnhf "$@"
+}
+
 # Ripgrep + fzf interactive search with syntax highlighting
 # Usage: rgf "search_term"
 function rgf() {

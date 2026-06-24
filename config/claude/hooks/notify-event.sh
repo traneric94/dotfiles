@@ -3,6 +3,9 @@
 # Catch-all (no matcher) so unknown notification types still alert; every event
 # is logged to ~/.claude/notification.log for diagnosing missed notifications.
 
+# Silent during unattended gnhf runs (set by the gnhf() shell wrapper in .zshrc).
+[ -n "${GNHF_RUN:-}" ] && exit 0
+
 INPUT=$(cat 2>/dev/null)
 TYPE=$(echo "$INPUT" | jq -r '.notification_type // "unknown"' 2>/dev/null)
 MSG=$(echo "$INPUT" | jq -r '.message // "Claude needs attention"' 2>/dev/null)

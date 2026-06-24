@@ -1,0 +1,6 @@
+# gnhf — autonomous overnight agent loop.
+# Scoped for safety by the gnhf() wrapper in .zshrc, which blocks --push and
+# refuses to run inside Chime/1debit repos. Runtime state lives in ~/.gnhf/runs/.
+agent: claude
+preventSleep: true
+maxConsecutiveFailures: 3

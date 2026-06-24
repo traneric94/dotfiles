@@ -2,6 +2,9 @@
 # Stop hook: send completion notification via terminal-notifier.
 # Activates Ghostty on click.
 
+# Silent during unattended gnhf runs (set by the gnhf() shell wrapper in .zshrc).
+[ -n "${GNHF_RUN:-}" ] && exit 0
+
 INPUT=$(cat 2>/dev/null)
 TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty' 2>/dev/null)

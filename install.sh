@@ -207,6 +207,8 @@ link_configs() {
     # reference), same as the Claude settings merge.
     "config/codex/hooks.json:$HOME/.codex/hooks.json"
     "config/codex/hooks:$HOME/.codex/hooks"
+    # gnhf reads config.yml read-only; runtime state lives elsewhere in ~/.gnhf.
+    "config/gnhf/config.yml:$HOME/.gnhf/config.yml"
   )
 
   # .skhdrc is macOS-only; hotkeys.ahk is generated and run directly from the repo dir.
@@ -331,6 +333,29 @@ configure_git() {
 configure_macos() {
   /usr/bin/defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false || true
   /usr/bin/defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false || true
+
+  # Faster key repeat — high value for modal editing. Needs re-login to apply.
+  /usr/bin/defaults write -g KeyRepeat -int 2 || true
+  /usr/bin/defaults write -g InitialKeyRepeat -int 15 || true
+
+  # Disable autocorrect/substitutions that corrupt code and prose.
+  /usr/bin/defaults write -g NSAutomaticCapitalizationEnabled -bool false || true
+  /usr/bin/defaults write -g NSAutomaticPeriodSubstitutionEnabled -bool false || true
+  /usr/bin/defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false || true
+  /usr/bin/defaults write -g NSAutomaticQuoteSubstitutionEnabled -bool false || true
+  /usr/bin/defaults write -g NSAutomaticDashSubstitutionEnabled -bool false || true
+
+  # Always show file extensions.
+  /usr/bin/defaults write -g AppleShowAllExtensions -bool true || true
+  /usr/bin/defaults write com.apple.finder AppleShowAllExtensions -bool true || true
+
+  # Finder path bar.
+  /usr/bin/defaults write com.apple.finder ShowPathbar -bool true || true
+
+  # Dark mode. Needs re-login to fully apply.
+  /usr/bin/defaults write -g AppleInterfaceStyle -string "Dark" || true
+
+  killall Finder 2>/dev/null || true
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────

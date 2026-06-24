@@ -50,6 +50,7 @@ require("lazy").setup({
   { "windwp/nvim-autopairs" },
   { "stevearc/conform.nvim" },
   { "mfussenegger/nvim-lint" },
+  { "kunchenguid/comment-repl.nvim" },
 
   { "williamboman/mason.nvim" },
   { "williamboman/mason-lspconfig.nvim", dependencies = { "williamboman/mason.nvim" } },
@@ -100,4 +101,5 @@ require("config.plugins.lsp")
 require("config.plugins.copilot")
 require("config.plugins.autopairs")
 require("config.plugins.comment")
+require("config.plugins.comment-repl")
 require("config.plugins.which-key")

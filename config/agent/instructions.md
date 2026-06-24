@@ -72,9 +72,9 @@ git worktree remove /tmp/branch-name
 
 ## Dotfiles & Editor Configuration
 
-- **Dotfiles location**: `~/dotfiles/`
-- **Neovim config**: Symlinked from `dotfiles/config/nvim/` → `~/.config/nvim/`
-- **Other configs**: tmux, ghostty, git, etc. all symlinked from dotfiles directory
+- **Dotfiles location**: `~/codebase/dotfiles/`
+- **Neovim config**: Symlinked from `~/codebase/dotfiles/config/nvim/` → `~/.config/nvim/`
+- **Other configs**: tmux, ghostty, git, etc. all symlinked from the dotfiles directory
 - **Language servers and tooling**: Managed by native Neovim LSP, Mason, conform.nvim, and nvim-lint
 
 ## Learning & Memory

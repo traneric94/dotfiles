@@ -3,7 +3,6 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MANIFEST="$SCRIPT_DIR/apps.json"
 
 # ── OS / environment detection ────────────────────────────────────────────────
 
@@ -106,14 +105,9 @@ install_packages() {
   fi
 }
 
-# ── App installation (from apps.json) ─────────────────────────────────────────
+# ── App installation (from apps.lua) ──────────────────────────────────────────
 
 install_apps() {
-  if ! command -v jq >/dev/null 2>&1; then
-    echo "jq not found; skipping app installation"
-    return
-  fi
-
   if [[ "$OS" == "Darwin" ]]; then
     echo "Installing GUI apps via Homebrew Cask..."
     local -a already_casks=()
@@ -129,7 +123,7 @@ install_apps() {
           echo "Warning: failed to install cask $cask"
         fi
       fi
-    done < <(jq -r '.[] | select(.brew_cask != null) | .brew_cask' "$MANIFEST")
+    done < <(luajit "$SCRIPT_DIR/scripts/gen.lua" casks)
 
     if ((${#already_casks[@]} > 0)); then
       echo "Already installed casks: ${already_casks[*]}"
@@ -146,7 +140,7 @@ install_apps() {
       --silent --accept-package-agreements --accept-source-agreements \
       2>/dev/null || echo "Warning: AutoHotkey install failed or already present"
 
-    jq -r '.[] | select(.winget_id != null) | .winget_id' "$MANIFEST" | while read -r id; do
+    luajit "$SCRIPT_DIR/scripts/gen.lua" winget | while read -r id; do
       winget.exe install --id "$id" \
         --silent --accept-package-agreements --accept-source-agreements \
         2>/dev/null || echo "Warning: winget failed for $id (may already be installed)"
@@ -157,19 +151,14 @@ install_apps() {
 # ── Config generation ─────────────────────────────────────────────────────────
 
 generate_configs() {
-  if ! command -v jq >/dev/null 2>&1; then
-    echo "jq not found; skipping config generation"
-    return
-  fi
-
   if [[ "$OS" == "Darwin" ]]; then
-    echo "Generating .skhdrc from apps.json..."
-    bash "$SCRIPT_DIR/scripts/gen-skhdrc.sh" > "$SCRIPT_DIR/.skhdrc"
+    echo "Generating .skhdrc from apps.lua..."
+    luajit "$SCRIPT_DIR/scripts/gen.lua" skhd > "$SCRIPT_DIR/.skhdrc"
   fi
 
   if [[ "$IS_WSL" == "true" ]]; then
-    echo "Generating hotkeys.ahk from apps.json..."
-    bash "$SCRIPT_DIR/scripts/gen-hotkeys.ahk.sh" > "$SCRIPT_DIR/hotkeys.ahk"
+    echo "Generating hotkeys.ahk from apps.lua..."
+    luajit "$SCRIPT_DIR/scripts/gen.lua" ahk > "$SCRIPT_DIR/hotkeys.ahk"
 
     # Register hotkeys.ahk in the Windows Startup folder so it auto-runs on login.
     local win_user

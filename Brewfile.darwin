@@ -1,5 +1,5 @@
 # macOS-only packages and casks.
-# GUI apps with hotkeys (slack, chrome, etc.) live in apps.json — install.sh handles those.
+# GUI apps with hotkeys (slack, chrome, etc.) live in apps.lua — install.sh handles those.
 
 tap "koekeishiya/formulae"
 
@@ -8,7 +8,7 @@ brew "terminal-notifier"
 brew "reattach-to-user-namespace"
 
 # Rules of thumb:
-#   - apps.json owns GUI apps that get a launcher hotkey (skhd/AutoHotkey)
+#   - apps.lua owns GUI apps that get a launcher hotkey (skhd/AutoHotkey)
 #   - Brewfile.darwin owns macOS-only software with no hotkey (CLIs, fonts,
 #     dev tools) plus the launcher infra itself (raycast, etc.)
 cask "1password-cli"

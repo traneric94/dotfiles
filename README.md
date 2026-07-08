@@ -12,7 +12,7 @@ A simple, prompt-safe dotfile installer for macOS (with partial Linux/WSL suppor
 - Files are symlinked from this repo into your home directory.
 - Entries inside `.config` (if present) are linked individually into `~/.config`.
 - Homebrew is installed if missing. The script then uses the included Brewfiles
-  with `brew bundle` and installs hotkey-managed GUI apps from `apps.json`.
+  with `brew bundle` and installs hotkey-managed GUI apps from `apps.lua`.
 - On WSL, hotkeys are generated as AutoHotkey config and GUI apps install via winget.
 - `git init.templatedir` is pointed at `git-templates/` (pre-commit hook for new clones).
 - Targets not owned by the current user (e.g. configs deployed by corporate
@@ -45,7 +45,8 @@ tracked configs source if present:
 - Strict mode is enabled (`set -euo pipefail`) so the script fails fast on errors, undefined variables, and pipeline failures.
 - Failed links are tallied and reported at the end; the script exits nonzero if any link failed.
 - VS Code press-and-hold is disabled for both Stable and Insiders.
-- `.skhdrc` is generated from `apps.json` on macOS (source of truth: `apps.json`).
+- `.skhdrc` (macOS) and `hotkeys.ahk` (Windows) are generated from `apps.lua`
+  (source of truth) by `scripts/gen.lua`, run during install.
 - Ruby is installed via rbenv; `setup_ruby_versions.sh` can pin `.ruby-version` files per project (manual).
 
 ## Raw Vim Training

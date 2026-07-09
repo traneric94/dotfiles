@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Stop hook: send completion notification via terminal-notifier.
-# Activates Ghostty on click.
+# Activates WezTerm on click.
 
 # Silent during unattended gnhf runs (set by the gnhf() shell wrapper in .zshrc).
 [ -n "${GNHF_RUN:-}" ] && exit 0
@@ -32,7 +32,7 @@ fi
 terminal-notifier \
   -title "$TITLE" \
   -message "${MSG:-Task complete}" \
-  -activate com.mitchellh.ghostty \
+  -activate com.github.wez.wezterm \
   2>/dev/null
 afplay /System/Library/Sounds/Glass.aiff 2>/dev/null || true
 exit 0

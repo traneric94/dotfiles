@@ -28,7 +28,7 @@ TITLE=$([ -n "$TMUX_WIN" ] && echo "Claude:$TMUX_WIN" || echo "Claude")
 terminal-notifier \
   -title "$TITLE" \
   -message "$MSG" \
-  -activate com.mitchellh.ghostty \
+  -activate com.github.wez.wezterm \
   2>/dev/null
 
 # terminal-notifier exits 0 even when macOS suppresses the banner (permission

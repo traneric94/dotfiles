@@ -14,6 +14,7 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
   { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+  { "rebelot/kanagawa.nvim", name = "kanagawa", priority = 1000 },
 
   { "nvim-tree/nvim-tree.lua", dependencies = { "nvim-tree/nvim-web-devicons" } },
   { "nvim-lualine/lualine.nvim", dependencies = { "nvim-tree/nvim-web-devicons" } },
@@ -88,7 +89,7 @@ require("lazy").setup({
   { "zbirenbaum/copilot-cmp", dependencies = { "zbirenbaum/copilot.lua" } },
 }, {
   defaults = { lazy = false },
-  install = { colorscheme = { "catppuccin" } },
+  install = { colorscheme = { "kanagawa", "catppuccin" } },
   rocks = { enabled = false },
   change_detection = { notify = false },
 })
@@ -99,6 +100,9 @@ vim.g["test#strategy"] = "neovim"
 -- rest (previously an error here left every later plugin unconfigured).
 for _, mod in ipairs({
   "config.plugins.catppuccin",
+  -- kanagawa loads right after catppuccin so its colorscheme() call wins.
+  -- To switch back to catppuccin, remove/comment this one line.
+  "config.plugins.kanagawa",
   "config.plugins.nvim-tree",
   "config.plugins.lualine",
   "config.plugins.bufferline",

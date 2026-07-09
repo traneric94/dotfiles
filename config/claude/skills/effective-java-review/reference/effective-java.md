@@ -6,7 +6,7 @@ Synthesized from *Effective Java* 3rd edition (Joshua Bloch), updated for modern
 
 ### EJ1. Static factory methods  [creation] · medium
 - **Rule:** Expose object creation through named static factory methods when a plain constructor would be ambiguous, uncacheable, or locked to a concrete return type.
-- **Why:** A constructor must share the class name, so two constructors with the same parameter types are impossible and the call site never explains intent. A static factory can carry a descriptive name (`from`, `of`, `getInstance`, `newInstance`), can return a cached or shared instance instead of always allocating, and can return any subtype or hidden implementation of its declared return type - which is what makes interface-based APIs like `List.of` and `Optional.of` possible. The subtle cost people miss: a class with only static factories and no public/protected constructor cannot be subclassed, and factories are harder to discover in Javadoc than constructors.
+- **Why:** A constructor must share the class name, so two constructors with the same parameter types are impossible and the call site never explains intent. A static factory can carry a descriptive name (`from`, `of`, `getInstance`, `newInstance`), can return a cached or shared instance instead of always allocating, and can return any subtype or hidden implementation of its declared return type - which is what makes APIs like `List.of` and `EnumSet.of` possible (`EnumSet.of` returns a `RegularEnumSet` or `JumboEnumSet` depending on element count). The subtle cost people miss: a class with only static factories and no public/protected constructor cannot be subclassed, and factories are harder to discover in Javadoc than constructors.
 - **Smell:** Multiple overloaded public constructors distinguished only by argument order/type, or a `new` that always allocates a value that is immutable and could be interned.
 - **Signal:**
 ```java
@@ -348,7 +348,7 @@ public final class Point {
 
 ### EJ17. Minimize mutability  [classes-interfaces] · high
 - **Rule:** Make classes immutable unless there is a concrete reason they must be mutable, and limit mutability when you can't eliminate it.
-- **Why:** Immutable objects are inherently thread-safe, freely shareable and cacheable, make great map keys and set elements, and can never be observed in an inconsistent state. The five rules: no mutators, class is `final` (or all constructors private + static factories), all fields `private final`, and defensively copy any mutable component on the way in and out. The subtle failure: a `final` field holding a `List` or array is not immutable — callers can mutate the referent — so you must copy on construction and never hand out the internal reference.
+- **Why:** Immutable objects are inherently thread-safe, freely shareable and cacheable, make great map keys and set elements, and can never be observed in an inconsistent state. The five rules: (1) no mutators; (2) the class can't be extended (`final`, or all constructors private + static factories); (3) all fields `final`; (4) all fields `private`; (5) defensively copy any mutable component on the way in and out. The subtle failure: a `final` field holding a `List` or array is not immutable — callers can mutate the referent — so you must copy on construction and never hand out the internal reference.
 - **Smell:** A "value" or "DTO" class with setters; a `final List<T>` field returned directly from a getter; `Date`/array fields stored or returned without copying; a class you treat as a key that has mutators.
 - **Signal:**
 ```java
@@ -1355,7 +1355,7 @@ throw new IndexOutOfBoundsException("bad index");
 // good
 throw new IndexOutOfBoundsException(
     "index: " + index + ", lower: " + lower + ", upper: " + upper);
-// JDK 14+ (JEP 358) auto-generates helpful NPE messages naming the null reference
+// Helpful NPE messages (JEP 358): on by default since JDK 15 (JDK 14 needed -XX:+ShowCodeDetailsInExceptionMessages)
 ```
 - **Exceptions:** don't include the description of what an exception means in its detail message - that belongs in Javadoc/source; and redact secrets/PII even at the cost of a less specific message.
 
@@ -1367,9 +1367,9 @@ throw new IndexOutOfBoundsException(
 ```java
 // bad
 public E pop() {
-    E result = elements[--size];   // size mutated before the check
-    if (size < 0) throw new EmptyStackException();
-    return result;
+    size--;                                          // mutate first -> size = -1 on empty
+    if (size < 0) throw new EmptyStackException();   // throws, but object left corrupt (size = -1)
+    return elements[size];
 }
 // good
 public E pop() {
@@ -1633,7 +1633,7 @@ public enum Registry {
 
 ### EJ90. Consider serialization proxies instead of serialized instances  [serialization] · medium
 - **Rule:** For a serializable class with nontrivial invariants, serialize a small private static `SerializationProxy` that captures the logical state, via `writeReplace`, and reconstruct the real object through public constructors in `readResolve`.
-- **Why:** The proxy pattern removes the "extralinguistic constructor" hazard entirely: the real class never appears in the byte stream, so an attacker cannot craft one directly, and reconstruction goes through your ordinary public API (`readResolve`), meaning all normal validation and defensive copying run automatically - no bug-prone hand-written `readObject`. It also enables fields to be `final`, and lets the deserialized object be a *different* class than the serialized one (e.g. `EnumSet.serialize` returns a `RegularEnumSet` or `JumboEnumSet` depending on size). Add a `readObject` on the enclosing class that always throws, so bytes purporting to be the real class (rather than the proxy) are rejected. The proxy cannot serialize classes extendable by clients or with circular object references, since `readResolve` runs before the graph is fully linked.
+- **Why:** The proxy pattern removes the "extralinguistic constructor" hazard entirely: the real class never appears in the byte stream, so an attacker cannot craft one directly, and reconstruction goes through your ordinary public API (`readResolve`), meaning all normal validation and defensive copying run automatically - no bug-prone hand-written `readObject`. It also enables fields to be `final`, and lets the deserialized object be a *different* class than the serialized one (e.g. `EnumSet` uses this pattern, so its proxy's `readResolve` rebuilds a `RegularEnumSet` or `JumboEnumSet` depending on element count). Add a `readObject` on the enclosing class that always throws, so bytes purporting to be the real class (rather than the proxy) are rejected. The proxy cannot serialize classes extendable by clients or with circular object references, since `readResolve` runs before the graph is fully linked.
 - **Smell:** A class with strong invariants doing serialization by hand (`readObject` with copies and validation) instead of a `writeReplace`/proxy pair; `final` fields dropped just to support deserialization.
 - **Signal:**
 ```java

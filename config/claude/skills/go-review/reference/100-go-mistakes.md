@@ -194,7 +194,8 @@ func getKeys(m any) ([]any, error) {
 		return nil, fmt.Errorf("unknown type: %T", t)
 	}
 }
-// good: one type-safe generic version (or use maps.Keys)
+// good: one type-safe generic version
+// (or slices.Collect(maps.Keys(m)) - stdlib maps.Keys returns iter.Seq[K] since 1.23)
 func getKeys[K comparable, V any](m map[K]V) []K {
 	keys := make([]K, 0, len(m))
 	for k := range m {
@@ -650,24 +651,18 @@ s.store(uuid)
 ```
 - **Exceptions:** If the substring's lifetime is <= the source's (transient, same scope), the alias is correct and cloning is pure waste. The identical leak applies to `[]byte` subslices - use `bytes.Clone` there.
 
-### 32. Unicode manipulation  [strings] · high
-- **Rule:** Manipulate text through `[]rune`, `unicode/utf8`, `strings`, and `unicode` - never index raw bytes to reach "the Nth character," and know cutset-trim versus affix-trim.
-- **Why:** A Go string is UTF-8 bytes; `s[i]` is one byte, and a single rune spans 1-4 bytes (`len("汉") == 3`). Indexing bytes to extract characters splits multi-byte runes and yields garbage for any non-ASCII input - which passes ASCII-only tests and breaks in production on the first accented name or emoji. `for i := range s` gives byte offsets (so `s[i]` is a byte), while `for _, r := range s` gives runes. The trim family is a second trap: `TrimLeft`/`TrimRight`/`Trim` strip a *cutset* of runes, whereas `TrimPrefix`/`TrimSuffix` strip one literal affix - `strings.TrimRight("123oxo","xo")` returns `"123"` but `strings.TrimSuffix("123oxo","xo")` returns `"123o"`.
-- **Smell:** `s[i]` used as "a character"; `[]byte(s)[n]` for display logic; `TrimRight`/`TrimLeft` reached for when a suffix/prefix was meant.
+### 32. Unicode manipulation  [strings] · medium
+- **Rule:** Manipulate text through `[]rune`, `unicode/utf8`, `strings`, and `unicode`, and know cutset-trim versus affix-trim. (For rune-vs-byte iteration see item 27; for rune count vs byte length see item 28.)
+- **Why:** Beyond the rune/byte iteration trap (item 27), the `strings` trim family hides a second, subtler footgun: `TrimLeft`/`TrimRight`/`Trim` strip a *cutset* — any of the runes in the argument, in any order — whereas `TrimPrefix`/`TrimSuffix` strip one literal affix. Reaching for `TrimRight` to remove a file extension silently over-strips: `strings.TrimRight("data.js", ".json")` peels every trailing char in the set `{.,j,s,o,n}` and returns `"data"`, not `"data.js"`. It passes on inputs whose last chars happen not to be in the set and corrupts the rest.
+- **Smell:** `TrimRight`/`TrimLeft` used where a suffix/prefix was meant; `Trim(s, someWord)` expecting whole-word removal.
 - **Signal:**
 ```go
-// bad
-for i := range s {
-    fmt.Printf("%c", s[i]) // prints raw bytes; mangles multi-byte runes
-}
-name = strings.TrimRight(name, ".json") // strips any of {., j, s, o, n}
-// good
-for _, r := range s {
-    fmt.Printf("%c", r)    // iterates runes
-}
-name = strings.TrimSuffix(name, ".json") // strips the literal suffix once
+// bad: cutset trim strips ANY of the runes {., j, s, o, n}
+name = strings.TrimRight("data.js", ".json") // -> "data"  (!)
+// good: affix trim removes the literal suffix once
+name = strings.TrimSuffix("data.js", ".json") // -> "data.js" (no suffix match, unchanged)
 ```
-- **Exceptions:** Byte-oriented work (wire protocols, ASCII-only tokens, hashing) should stay on bytes - there, indexing bytes is correct and ranging over runes is the mistake.
+- **Exceptions:** Cutset trimming is exactly right when you genuinely want to strip a *set* of characters (e.g. `strings.Trim(s, " \t\n")` to strip surrounding whitespace) — the mistake is only using it where an affix was meant.
 
 ### 33. `+` in loops  [strings] · medium
 - **Rule:** Build strings from many pieces with `strings.Builder` (and `Grow` when the total size is known), not `+=` in a loop.
@@ -860,7 +855,7 @@ if errors.As(err, &te) { // te is now the matched value, fields readable
 
 ### 44. Wrapping errors  [err-mgmt] · medium
 - **Rule:** Wrap with `fmt.Errorf("context: %w", err)` when a caller may need to inspect the source, and never destroy the chain with string concatenation.
-- **Why:** `%w` records the original error so `errors.Is`/`errors.As` can find it later; `"..." + err.Error()` and a custom type that never exposes `Unwrap() error` flatten it into an opaque string that can never be matched again. The subtlety people miss is the cost side: wrapping with `%w` publishes the wrapped error as part of your package's API, so callers can now couple to a dependency's error type - if you later swap that dependency the coupling breaks. Wrap deliberately where inspection is genuinely needed, not reflexively on every return.
+- **Why:** `%w` records the original error so `errors.Is`/`errors.As` can find it later; `"..." + err.Error()` and a custom type that never exposes `Unwrap() error` flatten it into an opaque string that can never be matched again. The subtlety people miss is that a custom wrapper type must expose `Unwrap() error` (or wrap via `%w`) or the chain is still broken even though you "kept" the error. Wrap with `%w` only where a caller genuinely needs to inspect the source; the `%w`-vs-`%v` API-coupling tradeoff is item 49.
 - **Smell:** `errors.New("prefix: " + err.Error())`, `fmt.Errorf("prefix: %s", err)` when downstream code later calls `errors.Is` on it, a custom error struct holding an inner `err` but with no `Unwrap` method, or `%w` sprayed on every single return regardless of whether anyone unwraps it.
 - **Signal:**
 ```go

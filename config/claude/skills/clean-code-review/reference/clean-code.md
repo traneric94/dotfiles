@@ -60,7 +60,7 @@ Optional<Integer> last(int[] xs) {
 
 ### G4. Overridden Safeties  [correctness] · high
 - **Rule:** Do not disable, suppress, or route around compiler warnings, failing tests, or other safety mechanisms.
-- **Why:** Safeties encode hard-won knowledge; turning off a warning or commenting out a failing test trades a loud, cheap signal now for a silent, expensive failure later. The subtle trap is that the override looks like progress - the build goes green - while the underlying defect remains and the next reader assumes green means correct. Chernobyl is Martin's cautionary example: the operators overrode safeties to hit a deadline. Suppressing the signal never removes the risk; it only removes your ability to see it.
+- **Why:** Safeties encode hard-won knowledge; turning off a warning or commenting out a failing test trades a loud, cheap signal now for a silent, expensive failure later. The subtle trap is that the override looks like progress - the build goes green - while the underlying defect remains and the next reader assumes green means correct. Chernobyl is Martin's cautionary example: the operators overrode each safety mechanism one by one because the safeties were inconvenient for running an experiment. Suppressing the signal never removes the risk; it only removes your ability to see it.
 - **Smell:** `@SuppressWarnings` without justification, `serialVersionUID` warnings ignored wholesale, `@Ignore`/`@Disabled` on tests, `-Xlint:none`, `// NOSONAR`, or commented-out assertions.
 - **Signal:**
 ```java
@@ -168,8 +168,9 @@ public class OrderService {
 - **Signal:**
 ```java
 // bad
-if (featureEnabled) { doNew(); }
-else { doOld(); }        // doOld unreachable: featureEnabled is a compile-time true
+static final boolean FEATURE_ENABLED = true;
+if (FEATURE_ENABLED) { doNew(); }
+else { doOld(); }        // else provably unreachable - condition is a compile-time constant
 
 // good
 doNew();                 // dead branch and its helper deleted; git keeps the history
@@ -297,12 +298,11 @@ double p = overtimePay();   // intent obvious at the call site
 - **Smell:** One-letter names in nontrivial scope, magic literals with no named constant, deeply nested ternaries, packed boolean expressions, and formulas with no explanatory decomposition.
 - **Signal:**
 ```java
-// bad
-return (l[0]<<24)|(l[1]<<16)|(l[2]<<8)|l[3];   // what is being built?
+// bad: cryptic names + magic positions/values hide the intent
+if (t[0] == 4 && t[3] == 'F' && (fl & 0x02) != 0) { ... }
 
-// good
-int b3 = bytes[0], b2 = bytes[1], b1 = bytes[2], b0 = bytes[3];
-return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;   // an int assembled from 4 bytes
+// good: name the concept, not just the mechanics
+if (record.isDeletedFemale()) { ... }   // the predicate says WHAT, the body says how
 ```
 - **Exceptions:** Conventional terseness is fine where the idiom is universally understood - `i`/`j` for loop indices, `x`/`y` for coordinates, standard math notation in a well-commented numeric kernel. In genuinely performance-critical hot paths a less obvious form may be justified, but it must be paid for with a comment explaining what and why.
 
@@ -366,11 +366,11 @@ return Math.sqrt(dx * dx + dy * dy);
 - **Smell:** You read a call and can't tell the return value, the unit, or whether it mutates; a comment next to the call re-explaining what the function "actually" does.
 - **Signal:**
 ```java
-// bad
-Date newDate = date.add(5); // days? mutates date? returns new?
+// bad: name hides the unit and whether it mutates
+LocalDate d2 = addTo(date, 5);        // add what? days? weeks? does it mutate `date`?
 
 // good
-Date fiveDaysLater = date.plusDays(5); // clearly returns a new Date
+LocalDate fiveDaysLater = date.plusDays(5);   // unit explicit; returns a new immutable date
 ```
 - **Exceptions:** Well-established idioms carry their contract by convention (`toString`, `hashCode`, `equals`, Stream `map`/`filter`); ubiquitous terse names in a domain the whole team shares don't need to spell out every detail.
 
@@ -1017,7 +1017,7 @@ public Money total(Cart c) { ... }
 @Test void averageOfThree() { assertEquals(2.0, stats.average(List.of(1,2,3))); }
 @Test void averageOfOne()   { assertEquals(5.0, stats.average(List.of(5))); }
 @Test void emptyThrows()    { assertThrows(NoElements.class, () -> stats.average(List.of())); }
-@Test void handlesOverflow(){ assertEquals(Long.MAX_VALUE, stats.average(List.of(Long.MAX_VALUE))); }
+@Test void handlesOverflow(){ assertEquals(Long.MAX_VALUE, stats.average(List.of(Long.MAX_VALUE, Long.MAX_VALUE))); } // fails if average() sums into a long first
 ```
 - **Exceptions:** None on the principle - always probe the edges. What varies is which boundaries are real for the domain; don't fabricate impossible edges (a "negative length" that the type or a prior validation makes unreachable) just to add a case.
 

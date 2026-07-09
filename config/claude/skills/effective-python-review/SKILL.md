@@ -1,6 +1,8 @@
 ---
 name: effective-python-review
 description: Review Python code against the 124 Effective Python (Brett Slatkin, 2nd+3rd ed) items. Use when reviewing Python diffs/files/PRs, or when the user asks "is this Pythonic", "review this Python", "effective python check", or for idiom/correctness feedback on Python.
+allowed-tools: Bash(git diff*), Bash(git log*), Bash(gh pr diff*), Read, Glob, Grep
+context: fork
 ---
 
 # Effective Python Review

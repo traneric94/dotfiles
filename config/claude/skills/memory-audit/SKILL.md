@@ -1,11 +1,10 @@
 ---
 name: memory-audit
-description: Audit Claude memory files for stale references - file paths, function names, flags, or line numbers that no longer exist in the codebase. Use when the user says "audit my memory", "check memory for stale entries", or wants to keep memory trustworthy. Reports only; never edits memory automatically.
-allowed-tools: Bash(ls*), Bash(grep*), Bash(rg*), Bash(test*), Read, Glob, Grep
-context: fork
+description: Audit Claude memory files for stale references (file paths, symbols, flags, line numbers that no longer match the codebase) and fix them - update or delete each stale entry after you confirm. Use when the user says "audit my memory", "check memory for stale entries", or wants to keep memory trustworthy.
+allowed-tools: Bash(ls*), Bash(grep*), Bash(rg*), Bash(test*), Bash(rm*), Read, Edit, Write, Glob, Grep
 ---
 
-Check that the facts in memory still match the codebase. Recalled memory reflects what was true when written - flag anything that has drifted.
+Check that memory still matches the codebase, then fix what has drifted. Flow: detect -> propose -> confirm -> apply. Do not apply blind - a false "stale" hit could delete a valid fact.
 
 ## Scope
 
@@ -14,23 +13,21 @@ Codebase root: `/Users/eric.tran/codebase/`
 
 ## Procedure
 
-1. List the memory files: !`ls -1 /Users/eric.tran/.claude/projects/-Users-eric-tran-codebase/memory/ 2>/dev/null`
-2. For each `.md` file, read it and extract concrete, checkable references:
-   - repo-relative or absolute **file paths**
-   - **function / symbol / type names** presented as current
-   - **flags, env vars, config keys, table/metric names**
-   - **line numbers** tied to a named file (`foo.go:2264`)
-3. Verify each against the codebase (path exists; symbol/flag still greps; the cited line still matches the described content). Use `rg`/`test -e`.
-4. Do not touch anything - this is report-only.
+1. List memory files: !`ls -1 /Users/eric.tran/.claude/projects/-Users-eric-tran-codebase/memory/ 2>/dev/null`
+2. For each `.md`, read it and extract concrete, checkable references: file paths, symbol/type/function names stated as current, flags/env vars/config keys/table/metric names, and line numbers tied to a named file.
+3. Verify each against the codebase with `rg` / `test -e`. Mark a reference **stale** only if you can confirm it no longer matches. If you cannot tell (ambiguous name, different repo, moved but present), mark it **UNCERTAIN**, not stale.
+4. Classify each stale reference:
+   - **UPDATE**: the fact is still true but the locator moved (path/line/symbol renamed). Propose the corrected value.
+   - **DELETE**: the fact is no longer true (feature removed, decision reversed). Propose removing the entry, and its pointer line in `MEMORY.md`.
+5. **Show the full proposed change set and stop for confirmation.** Editing memory is consequential - get an explicit yes.
+6. On confirmation, apply:
+   - `Edit` the affected memory files in place for UPDATE and entry-level DELETE.
+   - If a whole memory file is being dropped, `rm` it and remove its pointer line from `MEMORY.md`.
+   - Leave UNCERTAIN items untouched and list them for manual review.
 
 ## Output
 
-Group by memory file:
+- Proposed change set grouped by file: **UPDATE** (old -> new) / **DELETE** (entry) / **UNCERTAIN** (needs you).
+- After confirm: exactly what changed (files edited, entries/files removed, MEMORY.md pointers updated), and the UNCERTAIN items left for you.
 
-```
-### <memory-file>.md
-- STALE: <reference> - <why: path gone / symbol not found / line moved>. Suggest: update to <X> | delete entry.
-- OK: <n> references verified.
-```
-
-End with a summary: total stale vs verified, and which files need the most attention. Recommend fixes; let the user decide what to update or delete.
+Never delete or rewrite a memory entry without an explicit yes. Never touch UNCERTAIN items automatically.

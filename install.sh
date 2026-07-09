@@ -196,6 +196,9 @@ link_configs() {
     "config/vim/raw.vim:$HOME/.vimrc.raw"
     "tmux.conf:$HOME/.tmux.conf"
     "config/agent/instructions.md:$HOME/.claude/CLAUDE.md"
+    # Same agent-agnostic policy file, also linked as Codex's global AGENTS.md
+    # so Claude and Codex share one source of truth.
+    "config/agent/instructions.md:$HOME/.codex/AGENTS.md"
     "config/claude/hooks:$HOME/.claude/hooks"
     # config/claude/skills is linked per-item below, not as a whole dir.
     # config/codex/config.toml is intentionally not linked: Codex writes hook
@@ -305,7 +308,13 @@ install_ruby() {
 
   eval "$(rbenv init - bash)"
 
-  local ruby_version="3.3.7"
+  # Single source of truth for the global Ruby: repo-root .tool-versions.
+  local ruby_version
+  ruby_version="$(awk '/^ruby /{print $2; exit}' "$SCRIPT_DIR/.tool-versions" 2>/dev/null || true)"
+  if [[ -z "$ruby_version" ]]; then
+    echo "No 'ruby' entry in .tool-versions; skipping Ruby setup."
+    return
+  fi
   if rbenv versions --bare | grep -Fxq "$ruby_version"; then
     echo "Ruby $ruby_version already installed"
   else
@@ -338,31 +347,89 @@ configure_git() {
 # ── macOS system settings ─────────────────────────────────────────────────────
 
 configure_macos() {
-  /usr/bin/defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false || true
-  /usr/bin/defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false || true
+  # Declarative table of defaults: domain|key|type|value. NSGlobalDomain is the
+  # `-g` global domain. Add a row here rather than another imperative write line.
+  local -a macos_defaults=(
+    # VS Code: allow key-repeat in Vim mode (disable press-and-hold accent popup).
+    "com.microsoft.VSCode|ApplePressAndHoldEnabled|bool|false"
+    "com.microsoft.VSCodeInsiders|ApplePressAndHoldEnabled|bool|false"
+    # Faster key repeat — high value for modal editing. Needs re-login to apply.
+    "NSGlobalDomain|KeyRepeat|int|2"
+    "NSGlobalDomain|InitialKeyRepeat|int|15"
+    # Disable autocorrect/substitutions that corrupt code and prose.
+    "NSGlobalDomain|NSAutomaticCapitalizationEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticPeriodSubstitutionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticSpellingCorrectionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticQuoteSubstitutionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticDashSubstitutionEnabled|bool|false"
+    # Always show file extensions.
+    "NSGlobalDomain|AppleShowAllExtensions|bool|true"
+    "com.apple.finder|AppleShowAllExtensions|bool|true"
+    # Finder: path bar, list view by default, no icons on the desktop.
+    "com.apple.finder|ShowPathbar|bool|true"
+    "com.apple.finder|FXPreferredViewStyle|string|Nlsv"
+    "com.apple.finder|CreateDesktop|bool|false"
+    # Dock and menu bar auto-hide for maximum screen real estate.
+    "com.apple.dock|autohide|bool|true"
+    "NSGlobalDomain|_HIHideMenuBar|bool|true"
+    # Tap-to-click (built-in trackpad, Bluetooth trackpad, and the login-screen
+    # global flag — all three are needed for it to actually stick).
+    "com.apple.AppleMultitouchTrackpad|Clicking|bool|true"
+    "com.apple.driver.AppleBluetoothMultitouch.trackpad|Clicking|bool|true"
+    "NSGlobalDomain|com.apple.mouse.tapBehavior|int|1"
+    # Dark mode. Needs re-login to fully apply.
+    "NSGlobalDomain|AppleInterfaceStyle|string|Dark"
+  )
 
-  # Faster key repeat — high value for modal editing. Needs re-login to apply.
-  /usr/bin/defaults write -g KeyRepeat -int 2 || true
-  /usr/bin/defaults write -g InitialKeyRepeat -int 15 || true
-
-  # Disable autocorrect/substitutions that corrupt code and prose.
-  /usr/bin/defaults write -g NSAutomaticCapitalizationEnabled -bool false || true
-  /usr/bin/defaults write -g NSAutomaticPeriodSubstitutionEnabled -bool false || true
-  /usr/bin/defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false || true
-  /usr/bin/defaults write -g NSAutomaticQuoteSubstitutionEnabled -bool false || true
-  /usr/bin/defaults write -g NSAutomaticDashSubstitutionEnabled -bool false || true
-
-  # Always show file extensions.
-  /usr/bin/defaults write -g AppleShowAllExtensions -bool true || true
-  /usr/bin/defaults write com.apple.finder AppleShowAllExtensions -bool true || true
-
-  # Finder path bar.
-  /usr/bin/defaults write com.apple.finder ShowPathbar -bool true || true
-
-  # Dark mode. Needs re-login to fully apply.
-  /usr/bin/defaults write -g AppleInterfaceStyle -string "Dark" || true
+  local row domain key type value
+  for row in "${macos_defaults[@]}"; do
+    IFS='|' read -r domain key type value <<< "$row"
+    /usr/bin/defaults write "$domain" "$key" "-$type" "$value" || true
+  done
 
   killall Finder 2>/dev/null || true
+  killall Dock 2>/dev/null || true
+}
+
+# ── Homebrew drift removal (opt-in, dry-run first) ────────────────────────────
+# `brew bundle` is additive: it never removes packages you dropped from a
+# Brewfile or installed by hand, so declared and installed sets silently drift.
+# This reports (and only on explicit confirmation removes) packages not declared
+# across ALL our manifests — Brewfile + Brewfile.darwin + the casks generated
+# from apps.lua. Feeding all manifests as one combined file is required: a single
+# --file would flag every package in the others for removal.
+#
+# NOT part of the default flow — the machine legitimately has work/org tooling
+# outside this public repo. Run: BREW_CLEANUP=1 ./install.sh   (dry-run)
+#                        or: BREW_CLEANUP=1 CLEANUP_FORCE=1 ./install.sh
+brew_cleanup() {
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "brew not found; skipping cleanup"
+    return
+  fi
+
+  local union
+  union="$(mktemp)"
+  cat "$SCRIPT_DIR/Brewfile" >> "$union"
+  if [[ "$OS" == "Darwin" ]]; then
+    cat "$SCRIPT_DIR/Brewfile.darwin" >> "$union"
+    # apps.lua casks are installed imperatively (install_apps), not via a
+    # Brewfile — fold them in so cleanup doesn't flag every hotkey app.
+    while IFS= read -r cask; do
+      printf 'cask "%s"\n' "$cask" >> "$union"
+    done < <(luajit "$SCRIPT_DIR/scripts/gen.lua" casks)
+  fi
+
+  echo "Packages installed but not declared in any manifest (candidates for removal):"
+  brew bundle cleanup --file="$union" || true
+
+  if [[ "${CLEANUP_FORCE:-}" == "1" ]] && prompt_yes_no "Uninstall everything listed above?"; then
+    brew bundle cleanup --file="$union" --force
+    echo "Cleanup complete."
+  else
+    echo "Dry-run only. Re-run with CLEANUP_FORCE=1 to actually remove."
+  fi
+  rm -f "$union"
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -378,6 +445,11 @@ install_ruby
 
 if [[ "$OS" == "Darwin" ]]; then
   configure_macos
+fi
+
+# Opt-in only: prune packages not in any manifest (dry-run unless CLEANUP_FORCE=1).
+if [[ "${BREW_CLEANUP:-}" == "1" ]]; then
+  brew_cleanup
 fi
 
 if [[ "$LINK_FAILURES" -gt 0 ]]; then

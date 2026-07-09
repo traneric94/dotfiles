@@ -1,0 +1,10 @@
+# Declared runtime versions (asdf / mise format).
+# ruby is the single source of truth consumed by install.sh (install_ruby).
+# node / golang / python are declared here for reference; Homebrew currently
+# installs them UNPINNED (see Brewfile). To actually enforce these, migrate to
+# mise (`brew install mise` + `eval "$(mise activate zsh)"`) so `mise install`
+# reads this file.
+ruby 3.3.7
+nodejs 25.2.1
+golang 1.25.0
+python 3.13.7

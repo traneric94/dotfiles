@@ -206,6 +206,9 @@ link_configs() {
     # reference), same as the Claude settings merge.
     "config/codex/hooks.json:$HOME/.codex/hooks.json"
     "config/codex/hooks:$HOME/.codex/hooks"
+    # Codex custom slash-command prompts (mirror the top Claude skills, sharing
+    # the same reference checklists).
+    "config/codex/prompts:$HOME/.codex/prompts"
     # gnhf reads config.yml read-only; runtime state lives elsewhere in ~/.gnhf.
     "config/gnhf/config.yml:$HOME/.gnhf/config.yml"
   )

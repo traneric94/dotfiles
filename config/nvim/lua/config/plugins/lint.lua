@@ -56,7 +56,9 @@ end
 
 local augroup = vim.api.nvim_create_augroup("UserLinting", { clear = true })
 
-vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave", "BufEnter" }, {
+-- Lint on write and after leaving insert. Dropped BufEnter: it re-spawned every
+-- linter on each buffer/window switch, which is wasteful for heavy linters.
+vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
   group = augroup,
   callback = function()
     lint_current_file()

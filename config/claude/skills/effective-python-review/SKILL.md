@@ -1,11 +1,13 @@
 ---
 name: effective-python-review
-description: Review Python code against the 127 Effective Python (Brett Slatkin, 2nd+3rd ed) items. Use when reviewing Python diffs/files/PRs, or when the user asks "is this Pythonic", "review this Python", "effective python check", or for idiom/correctness feedback on Python.
+description: Review Python code against the 124 Effective Python (Brett Slatkin, 2nd+3rd ed) items. Use when reviewing Python diffs/files/PRs, or when the user asks "is this Pythonic", "review this Python", "effective python check", or for idiom/correctness feedback on Python.
+allowed-tools: Bash(git diff*), Bash(git log*), Bash(gh pr diff*), Read, Glob, Grep
+context: fork
 ---
 
 # Effective Python Review
 
-Apply the synthesized rules in `reference/effective-python-rules.md` (127 items across 14 chapters, distilled from Effective Python 2nd + 3rd editions and adversarially verified) to Python code under review.
+Apply the synthesized rules in `reference/effective-python-rules.md` (124 items across 14 chapters, distilled from Effective Python 2nd + 3rd editions and adversarially verified) to Python code under review.
 
 ## When to use
 
@@ -60,3 +62,4 @@ If nothing violates the rules, say so plainly — do not invent findings to fill
 - Rules are original synthesis; item **titles** are factual references to the book. Do not paste book prose.
 - The reference is a superset of both editions; `•2`/`•3`/`2nd,3rd` tags indicate provenance. 3rd-ed-only items (walrus, `match`, typing, dataclasses) apply only to code targeting modern Python.
 - Pair with the team's Go-style review values in `memory/` — observability, fail-loud, type-vs-domain correctness — where they transfer to Python.
+- **Lower-yield for this codebase** (Python here is AoC + scripts/tooling; prod is Go/Ruby/TS): descriptors (#61, #66), `memoryview`/buffer protocol (#95), `ctypes`/C-extensions (#98, #99), `pickle`/`copyreg` (#83), threaded→asyncio porting (#77), packaging/bundling (#124). Still correct, just rarely applicable — don't force findings from them.

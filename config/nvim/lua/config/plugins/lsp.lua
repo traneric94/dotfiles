@@ -93,8 +93,10 @@ cmp.setup({
 cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 
 vim.diagnostic.config({
-	float = { border = "rounded" },
 	severity_sort = true,
+	float = { border = "rounded", source = "if_many" },
+	underline = { severity = { min = vim.diagnostic.severity.WARN } },
+	virtual_text = { spacing = 2, source = "if_many" },
 })
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()

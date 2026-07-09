@@ -20,11 +20,12 @@ while IFS= read -r -d '' gemfile; do
   echo "📁 Checking: $project_dir"
 
   # Extract ruby version requirement from Gemfile
-  ruby_requirement=$(grep -E '^ruby\s+["\']~?\s*[0-9]+\.' "$gemfile" 2>/dev/null || echo "")
+  ruby_requirement=$(grep -E "^ruby[[:space:]]+[\"']" "$gemfile" 2>/dev/null || echo "")
 
   if [[ -n "$ruby_requirement" ]]; then
-    # Parse version (e.g., ruby "~> 3.2.6" -> 3.2.6)
-    version=$(echo "$ruby_requirement" | sed -E 's/.*["\']~?\s*([0-9]+\.[0-9]+\.?[0-9]*).*/\1/')
+    # Pull the first semver-ish token — quote- and operator-agnostic, so it
+    # handles ruby "3.2.6", ruby '~> 3.2.6', ruby ">= 3.0", etc.
+    version=$(printf '%s' "$ruby_requirement" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1)
 
     # Check if rbenv has this exact version or find closest match
     available_versions=$(rbenv versions --bare)

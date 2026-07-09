@@ -37,7 +37,11 @@ opt.gdefault = true
 opt.magic = true
 opt.number = true
 opt.relativenumber = true
-opt.clipboard = "unnamed"
+-- Defer clipboard until after startup (skips a provider probe on launch);
+-- unnamedplus so yanks hit the system clipboard (not X11 PRIMARY) on Linux too.
+vim.schedule(function()
+  vim.opt.clipboard = "unnamedplus"
+end)
 opt.colorcolumn = "100"
 opt.mouse = "a"
 opt.list = true
@@ -49,10 +53,14 @@ opt.listchars = {
   nbsp = "⣿",
 }
 opt.previewheight = 12
-opt.completeopt = { "menu", "menuone", "preview", "noselect" }
+opt.completeopt = { "menu", "menuone", "noselect" }
 opt.grepprg = "rg --vimgrep --smart-case"
 opt.grepformat = { "%f:%l:%c:%m" }
 opt.foldenable = false
+opt.undofile = true -- persistent undo across sessions (undodir auto-created under stdpath('state'))
+opt.signcolumn = "yes" -- always show sign column so text doesn't jump when signs/diagnostics appear
+opt.updatetime = 250 -- faster CursorHold: LSP document-highlight + gitsigns feel live
+opt.confirm = true -- prompt to save instead of erroring on :q with unsaved changes
 
 g.python3_host_prog = vim.fn.exepath("python3")
 g.go_bin_path = vim.fn.expand("$HOME/go/bin/")
@@ -61,9 +69,3 @@ g.ruby_indent_block_style = "do"
 g.ruby_space_errors = 1
 g.ruby_operators = 1
 g.typescript_indent_disable = 0
-g.go_highlight_types = 1
-g.go_highlight_functions = 1
-g.go_highlight_function_calls = 1
-g.session_autosave = "yes"
-g.session_autoload = "yes"
-g.session_default_to_last = 1

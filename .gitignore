@@ -11,7 +11,23 @@ config/claude/hooks/route.local.sh
 .idea/
 .vscode/
 *.log
-*.tmp 
+*.tmp
 
 # Generated at install time — machine-specific Windows startup launcher
 hotkeys.vbs
+
+# Secrets / credentials — never commit (this repo is PUBLIC)
+*.pem
+*.key
+*.p12
+*.pfx
+*.gpg
+id_rsa
+id_ed25519
+.env
+.env.*
+.envrc
+.netrc
+credentials
+**/credentials
+.aws/credentials

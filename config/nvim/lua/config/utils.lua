@@ -85,9 +85,9 @@ end
 function M.fold_imports()
   local ft = vim.bo.filetype
   local patterns = {
-    go = "^%s*import%s*%(",
-    ruby = "^%s*require",
-    python = "^%s*(import|from)%s",
+    go = { "^%s*import%s*%(" },
+    ruby = { "^%s*require" },
+    python = { "^%s*import%s", "^%s*from%s" },
   }
   local ts_filetypes = {
     typescriptreact = true,
@@ -98,20 +98,28 @@ function M.fold_imports()
 
   local pattern = patterns[ft]
   if not pattern and ts_filetypes[ft] then
-    pattern = "^%s*import%s+.*from"
+    pattern = { "^%s*import%s+.*from" }
   end
 
   if not pattern then
     return
   end
 
+  local function matches_any(line)
+    for _, p in ipairs(pattern) do
+      if line:match(p) then
+        return true
+      end
+    end
+    return false
+  end
+
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  local saved_fdm = vim.wo.foldmethod
   vim.wo.foldmethod = "manual"
 
   local start_line = nil
   for idx, line in ipairs(lines) do
-    if line:match(pattern) then
+    if matches_any(line) then
       start_line = start_line or idx
     elseif start_line and line:match("^%s*$") then
       -- still part of import block
@@ -127,7 +135,7 @@ function M.fold_imports()
     vim.cmd(string.format("%d,%dfold", start_line, #lines))
   end
 
-  vim.wo.foldmethod = saved_fdm
+  vim.wo.foldenable = true
 end
 
 function M.clear_quickfix()

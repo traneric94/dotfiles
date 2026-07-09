@@ -56,12 +56,16 @@ api.nvim_create_autocmd("BufWritePost", {
   end,
 })
 
--- Fold imports after read/write
+-- Fold the import block when opening a supported file. Deferred to the next
+-- tick: folds created synchronously during BufReadPost don't survive the
+-- window's initial setup, but the same call one tick later does.
 local fold_group = api.nvim_create_augroup("AutoFoldImports", { clear = true })
-api.nvim_create_autocmd({ "BufReadPost", "BufWritePost" }, {
+api.nvim_create_autocmd({ "BufReadPost" }, {
   group = fold_group,
   pattern = { "*.go", "*.ts", "*.tsx", "*.js", "*.jsx", "*.rb", "*.py" },
-  callback = utils.fold_imports,
+  callback = function()
+    vim.schedule(utils.fold_imports)
+  end,
 })
 
 -- Go makeprg / errorformat
@@ -72,5 +76,14 @@ api.nvim_create_autocmd("FileType", {
   callback = function()
     vim.bo.makeprg = "make"
     vim.bo.errorformat = "%E%f:%l:%c: %m,%E%f:%l: %m,%-G%.%#"
+  end,
+})
+
+-- Briefly highlight yanked text (vim.hl in 0.11+, vim.highlight on older).
+api.nvim_create_autocmd("TextYankPost", {
+  group = api.nvim_create_augroup("HighlightYank", { clear = true }),
+  callback = function()
+    local hl = vim.hl or vim.highlight
+    hl.on_yank()
   end,
 })

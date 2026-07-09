@@ -12,11 +12,35 @@ A simple, prompt-safe dotfile installer for macOS (with partial Linux/WSL suppor
 - Files are symlinked from this repo into your home directory.
 - Entries inside `.config` (if present) are linked individually into `~/.config`.
 - Homebrew is installed if missing. The script then uses the included Brewfiles
-  with `brew bundle` and installs hotkey-managed GUI apps from `apps.json`.
+  with `brew bundle` and installs hotkey-managed GUI apps from `apps.lua`.
 - On WSL, hotkeys are generated as AutoHotkey config and GUI apps install via winget.
 - `git init.templatedir` is pointed at `git-templates/` (pre-commit hook for new clones).
 - Targets not owned by the current user (e.g. configs deployed by corporate
   endpoint management) are never replaced.
+
+## Heads-up if you fork this
+
+`install.sh` symlinks my personal agent policy and hooks into your home dir:
+`~/.claude/CLAUDE.md`, `~/.claude/hooks`, `~/.claude/skills`, and `~/.codex/hooks`.
+If you run it, you silently inherit my Claude/Codex behavior. Edit or remove
+`config/agent/instructions.md`, `config/claude/`, and `config/codex/` before
+running, or link only the pieces you want. macOS system defaults
+(`configure_macos` in `install.sh`) are also opinionated — read them first.
+
+## Repo tour
+
+- `install.sh` — the installer: packages, app installs, config linking, Claude
+  settings merge, git template, rbenv, macOS defaults. Idempotent and prompt-safe.
+- `Brewfile` / `Brewfile.darwin` — shared vs macOS-only Homebrew packages/casks.
+- `apps.lua` — single source of truth for hotkey-launched GUI apps; `scripts/gen.lua`
+  compiles it to `.skhdrc` (macOS) and `hotkeys.ahk` (Windows).
+- `.tool-versions` — declared runtime versions (ruby is consumed by `install.sh`).
+- `config/` — everything linked into `~/.config` (nvim, ghostty, tmux, herdr, …)
+  plus `claude/`, `codex/`, and `agent/instructions.md`.
+- `scripts/` — helpers: `snapshot.sh` (Brewfile version snapshot), `fzf-git.sh`,
+  `tmux-session-preview.sh`, `gen.lua`.
+- `git-templates/hooks/pre-commit` — gitleaks secret scan + Go import formatting,
+  wired into new clones via `git init.templatedir`.
 
 ## Claude / Codex config
 
@@ -45,8 +69,12 @@ tracked configs source if present:
 - Strict mode is enabled (`set -euo pipefail`) so the script fails fast on errors, undefined variables, and pipeline failures.
 - Failed links are tallied and reported at the end; the script exits nonzero if any link failed.
 - VS Code press-and-hold is disabled for both Stable and Insiders.
-- `.skhdrc` is generated from `apps.json` on macOS (source of truth: `apps.json`).
-- Ruby is installed via rbenv; `setup_ruby_versions.sh` can pin `.ruby-version` files per project (manual).
+- `.skhdrc` (macOS) and `hotkeys.ahk` (Windows) are generated from `apps.lua`
+  (source of truth) by `scripts/gen.lua`, run during install.
+- Ruby is installed via rbenv; the global version comes from `.tool-versions`,
+  and `setup_ruby_versions.sh` can pin `.ruby-version` files per project (manual).
+- `BREW_CLEANUP=1 ./install.sh` reports Homebrew packages not in any manifest
+  (dry-run); add `CLEANUP_FORCE=1` to actually remove them. Off by default.
 
 ## Raw Vim Training
 
@@ -63,3 +91,7 @@ Use `rawvim` or `rv` to launch Vim with `config/vim/raw.vim`.
 
 - Since links replace targets only after you confirm, you can cancel to keep existing files.
 - To remove a link later, delete it from your home directory and re-run the script if needed.
+
+## License
+
+MIT No Attribution — see [`LICENSE`](LICENSE). Fork and reuse freely.

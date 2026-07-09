@@ -1,5 +1,7 @@
-# Go binaries (for gopls, etc.)
-[[ ":$PATH:" != *":$HOME/go/bin:"* ]] && export PATH="$HOME/go/bin:$PATH"
+# Keep $PATH entries unique for the shell's lifetime (dedups retroactively and on
+# every add), so re-sourcing this file and the pyenv/rbenv init evals never bloat
+# $PATH. All PATH dirs are defined in one block below, after the brew bootstrap.
+typeset -U path PATH
 
 # Bootstrap Homebrew — .zprofile already runs `brew shellenv` for login shells;
 # fall through to the loop only for non-login subshells (e.g. tmux panes when
@@ -19,14 +21,51 @@ fi
 
 # Determine dotfiles directory for sourcing helper scripts
 if [[ -z "${DOTFILES_DIR:-}" ]]; then
-  DOTFILES_DIR="$HOME/dotfiles"
+  DOTFILES_DIR="$HOME/codebase/dotfiles"
   if [[ ! -d "$DOTFILES_DIR" ]]; then
+    # Fall back to resolving this rc's real location (it is symlinked from the repo).
     DOTFILES_DIR="${${(%):-%N}:a:h}"
   fi
 fi
 
+# ── PATH (single source of truth) ────────────────────────────────────────────
+# Every static PATH dir is defined here and nowhere else. `typeset -U path`
+# (top of file) keeps entries unique, so this survives re-sourcing and the
+# pyenv/rbenv init evals later. Front of the list = highest priority.
+path=(
+  "$HOME/go/bin"                          # Go binaries (gopls, etc.)
+  "$PYENV_ROOT/bin"                       # pyenv itself (version shims added by its init eval)
+  "$HOME/.local/share/nvim/mason/bin"     # Mason-managed LSPs / formatters / linters
+  /usr/sbin
+  $path
+  "$HOME/.local/bin"                      # pipx (appended: lowest priority, as before)
+)
+
+# Homebrew opt-keg bins — only when the keg is installed (BREW_PREFIX from the
+# bootstrap above). Absent on this machine; kept for portability to hosts that
+# have them. rbenv/pyenv shims (added later) still win for ruby/python.
+if [[ -n "${BREW_PREFIX:-}" ]]; then
+  [[ -d "$BREW_PREFIX/opt/ruby@3.3/bin" ]] && path=("$BREW_PREFIX/opt/ruby@3.3/bin" $path)
+  [[ -d "$BREW_PREFIX/opt/php@7.4/bin"  ]] && path=("$BREW_PREFIX/opt/php@7.4/bin" "$BREW_PREFIX/opt/php@7.4/sbin" $path)
+fi
+
 # ── Completions ────────────────────────────────────────────────────────────────
-autoload -Uz compinit && compinit
+# Rebuild the completion dump (and run the insecure-dir security scan) at most
+# once per 24h; otherwise load cached with -C. Saves ~100-200ms per shell.
+autoload -Uz compinit
+if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
+
+# Completion behaviour (compinit builds the engine; zstyle drives the UX).
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'   # case-insensitive
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompcache"
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:descriptions' format '%F{green}-- %d --%f'
 
 # ── Prompt (robbyrussell-style, pure zsh) ─────────────────────────────────────
 autoload -Uz vcs_info
@@ -36,8 +75,7 @@ precmd_functions+=(vcs_info)
 setopt prompt_subst
 PROMPT='%(?:%F{green}%B➜%b%f :%F{red}%B➜%b%f ) %F{cyan}%1~%f ${vcs_info_msg_0_}'
 
-# You may need to manually set your language environment
-export LANG=en_US.UTF-8
+# LANG / locale is set in .zshenv (applies to all shells, not just interactive).
 
 HISTFILE="$HOME/.zsh_history"
 HISTSIZE=10000000
@@ -55,6 +93,14 @@ setopt HIST_SAVE_NO_DUPS         # Don't write duplicate entries in the history 
 setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording entry.
 setopt HIST_VERIFY               # Don't execute immediately upon history expansion.
 setopt HIST_BEEP                 # Beep when accessing nonexistent history.
+
+# ── Shell behaviour ──────────────────────────────────────────────────────────
+setopt AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHD_SILENT   # `cd` builds a dir stack (cd -<Tab>)
+DIRSTACKSIZE=20
+setopt COMPLETE_IN_WORD ALWAYS_TO_END AUTO_MENU AUTO_PARAM_SLASH
+setopt INTERACTIVE_COMMENTS      # allow # comments at the interactive prompt
+setopt EXTENDED_GLOB
+WORDCHARS=${WORDCHARS//[\/]/}    # Ctrl-W / word motions stop at path separators
 
 alias awsume=". awsume"
 
@@ -79,12 +125,8 @@ function aoc() {
 # Source external function definitions
 [ -f "$HOME/.config/zsh/functions" ] && source "$HOME/.config/zsh/functions"
 
-[[ -n "${BREW_PREFIX:-}" && -d "$BREW_PREFIX/opt/php@7.4/bin" ]] && export PATH="$BREW_PREFIX/opt/php@7.4/bin:$BREW_PREFIX/opt/php@7.4/sbin:$PATH"
-
-export PATH="/usr/sbin:$PATH"
-export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
-
-BAT_CMD="$(command -v bat 2>/dev/null || printf 'bat')"
+# bat is guaranteed by the Brewfile; no presence check needed.
+BAT_CMD="bat"
 
 ### Quality of Life Aliases
 # ==============================================================================
@@ -121,11 +163,17 @@ alias gco='git checkout'
 alias gd='git diff --color -b'
 alias gdc='git diff --color -b --cached'
 alias gdh='git diff --color -b HEAD~1 HEAD'
-alias gf='git fetch origin'
-alias gp='git push origin HEAD:refs/for/develop'
+alias gf='git fetch --all --prune'
+# NOTE: was 'git push origin HEAD:refs/for/develop' (Gerrit magic-ref). This repo's
+# workflow is GitHub + Graphite (gt submit), so plain push is the sane default.
+alias gp='git push'
 alias gr='git rebase'
 alias grc='git rebase --continue'
-alias ge='git clean -fd'
+# Untracked-file cleaning: ge defaults to a DRY RUN (was 'git clean -fd', which
+# irreversibly deleted with no confirmation). Use gef for the real thing.
+alias ge='git clean -nd'   # dry run: show what WOULD be removed
+alias gei='git clean -id'  # interactive
+alias gef='git clean -fd'  # force (destructive, deliberate)
 alias gm='git mergetool'
 alias gb="git for-each-ref --format='%(color:cyan)%(authordate:format:%m/%d/%Y %I:%M %p)    %(align:25,left)%(color:yellow)%(authorname)%(end) %(color:reset)%(refname:strip=3)' --sort=authordate refs/remotes"
 alias hlog='git log --date-order --all --graph --format="%C(green)%h %Creset%C(yellow)%an%Creset %C(blue bold)%ar%Creset %C(red bold)%d%Creset %s"'
@@ -293,19 +341,21 @@ function search_with_zoxdie_bypass() {
 }
 alias nzo-all='search_with_zoxdie_bypass'
 
-# Created by `pipx` on 2023-05-09 16:45:58
-export PATH="$PATH:$HOME/.local/bin"
-
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-if command -v pyenv >/dev/null 2>&1; then
-  eval "$(pyenv init - zsh)"
-fi
-
-# Ruby version management (rbenv)
-if command -v rbenv >/dev/null 2>&1; then
-  eval "$(rbenv init - zsh)"
-fi
+# pyenv / rbenv are guaranteed by the Brewfile. PATH dirs for these live in the
+# consolidated PATH block near the top; here we just load the version shims.
+_cache_eval() { # $1=cache file, rest=command to memoize
+  local cache="$1"; shift
+  mkdir -p "${cache:h}"
+  if [[ ! -s "$cache" || -n "$cache"(#qN.mh+24) ]]; then "$@" >| "$cache"; fi
+  source "$cache"
+}
+# --no-rehash: skip the per-shell `rehash` these emit by default. In tmux many
+# shells start at once; concurrent/interrupted rehashes leave a stale
+# .pyenv-shim/.rbenv-shim prototype that aborts every later rehash. Shims still
+# rebuild on `pyenv/rbenv install`; run `pyenv rehash` manually after a bare
+# `pip install`/`gem install` that adds a new executable.
+_cache_eval "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/pyenv-init.zsh" pyenv init --no-rehash - zsh
+_cache_eval "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/rbenv-init.zsh" rbenv init --no-rehash - zsh
 
 # Source local, untracked overrides
 [ -f "$HOME/.chime.sh" ] && source "$HOME/.chime.sh"
@@ -318,19 +368,27 @@ if [[ -t 1 ]]; then
   if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh)"
   fi
-  [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  # Load order matters: vi-mode first, then syntax-highlighting, then
+  # autosuggestions LAST (autosuggestions must wrap the highlighter's ZLE widgets).
   [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh" ]] && source "$BREW_PREFIX/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh"
+  [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
   [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-  # zsh-vi-mode hook to load fzf-git after vi-mode initializes
+  # zsh-vi-mode re-applies its keymaps at first prompt, clobbering any bindkey
+  # set during rc sourcing. Do the interactive keybindings HERE so they survive
+  # vi-mode init, then source fzf-git (which binds its own Ctrl-G chords).
   function zvm_after_init() {
+    bindkey -e
+    bindkey '^F' autosuggest-accept   # Ctrl-F accepts the autosuggestion
+    bindkey '^I' expand-or-complete   # keep Tab for real completion
+    bindkey -r '^G'                       # free Ctrl-G prefix for fzf-git chords
     local fzf_git="$DOTFILES_DIR/scripts/fzf-git.sh"
     [[ -f "$fzf_git" ]] && source "$fzf_git"
   }
 
-  # Key bindings for autosuggestions
-  bindkey -e
-  bindkey '^I' autosuggest-accept
+  # Ctrl-S is XOFF (terminal flow control) by default and swallows the fzf-git
+  # Ctrl-G Ctrl-S chord — disable flow control so the key reaches zle.
+  stty -ixon 2>/dev/null
 
   if command -v fzf >/dev/null 2>&1; then
     [[ -n "${BREW_PREFIX:-}" ]] && eval "$($BREW_PREFIX/bin/fzf --zsh 2>/dev/null)"
@@ -353,19 +411,14 @@ export FZF_TMUX_OPTS="-p 90%,70%"
 # Set FZF previews
 export FZF_CTRL_T_OPTS="--preview '${BAT_CMD} --color=always -n --line-range :500 {}'"
 
-# Remove broken list-expand binding to allow fzf-git Ctrl+G prefix to work
-if [[ -t 1 ]]; then
-  bindkey -r "^G"
-fi
-
-export GPG_TTY=$(tty)
+export GPG_TTY=$TTY
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 
-# OSC 7 sequence to report current directory to terminal
-precmd () {
-  printf "\e]7;file://%s%s\e\\" "$HOSTNAME" "$PWD"
+# OSC 7 sequence to report current directory to terminal (zsh sets $HOST, not $HOSTNAME)
+_osc7_cwd() {
+  printf '\e]7;file://%s%s\e\\' "${HOST}" "$PWD"
 }
+precmd_functions+=(_osc7_cwd)
 
-# Hook auto Ruby version detection into directory changes
-precmd_functions+=(auto_ruby_version)
-[[ -n "${BREW_PREFIX:-}" && -d "$BREW_PREFIX/opt/ruby@3.3/bin" ]] && export PATH="$BREW_PREFIX/opt/ruby@3.3/bin:$PATH"
+# Hook auto Ruby version detection into directory changes (fires on cd, not every prompt)
+chpwd_functions+=(auto_ruby_version)

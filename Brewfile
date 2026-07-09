@@ -1,5 +1,5 @@
 # Shared — works on macOS and Linux Homebrew.
-# GUI apps with hotkeys are managed via apps.json + install.sh, not here.
+# GUI apps with hotkeys are managed via apps.lua + install.sh, not here.
 
 brew "git"
 brew "node"
@@ -25,4 +25,6 @@ brew "zsh-vi-mode"
 brew "gnupg"
 brew "gh"
 brew "jq"
+brew "luajit"
 brew "lazygit"
+brew "gitleaks"

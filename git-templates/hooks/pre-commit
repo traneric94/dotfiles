@@ -1,28 +1,51 @@
 #!/bin/bash
 
-# Global pre-commit hook for Go repositories
-# Run goimports on all staged Go files
+# Global pre-commit hook:
+#   1. Scan staged changes for secrets with gitleaks (all repos).
+#   2. Run goimports on staged Go files (Go repos only).
 
-# Check if this is a Go repository
-if [ ! -f "go.mod" ]; then
-    exit 0
+# ── Secret scan (all repos) ───────────────────────────────────────────────────
+# A leaked credential is worse than a blocked commit, so block when gitleaks is
+# present; if it's missing, warn but don't block (same policy as goimports).
+if command -v gitleaks >/dev/null 2>&1; then
+    if ! gitleaks protect --staged --redact --no-banner; then
+        echo "pre-commit: gitleaks flagged potential secrets in staged changes — commit blocked." >&2
+        echo "            Review the findings above; allowlist false positives in .gitleaks.toml." >&2
+        exit 1
+    fi
+else
+    echo "pre-commit: gitleaks not found on PATH — skipping secret scan (install: brew install gitleaks)." >&2
 fi
 
-# Get list of staged Go files
-STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+# ── Go import formatting (Go repos only) ──────────────────────────────────────
+[ -f "go.mod" ] || exit 0
 
-if [ -z "$STAGED_GO_FILES" ]; then
+STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+[ -z "$STAGED_GO_FILES" ] && exit 0
+
+# Missing formatter shouldn't silently commit unformatted code — warn loudly,
+# but don't block the commit over an optional tool.
+if ! command -v goimports >/dev/null 2>&1; then
+    echo "pre-commit: goimports not found on PATH — skipping Go import formatting." >&2
+    echo "            install it: go install golang.org/x/tools/cmd/goimports@latest" >&2
     exit 0
 fi
 
 echo "Running goimports on staged Go files..."
 
-# Run goimports on each staged file
 for FILE in $STAGED_GO_FILES; do
-    if [ -f "$FILE" ]; then
-        goimports -w "$FILE"
-        git add "$FILE"
+    [ -f "$FILE" ] || continue
+
+    # If the file also has UNSTAGED changes, `goimports -w` + `git add` would
+    # sweep those unstaged hunks into the commit. Skip and warn instead.
+    if ! git diff --quiet -- "$FILE"; then
+        echo "pre-commit: '$FILE' has unstaged changes; skipping auto-format to avoid" >&2
+        echo "            committing them. Format and stage it yourself." >&2
+        continue
     fi
+
+    goimports -w "$FILE"
+    git add "$FILE"
 done
 
 echo "✅ Go imports cleaned up"

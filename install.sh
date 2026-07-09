@@ -3,7 +3,6 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MANIFEST="$SCRIPT_DIR/apps.json"
 
 # ── OS / environment detection ────────────────────────────────────────────────
 
@@ -86,10 +85,17 @@ install_homebrew() {
   echo "Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-  # On Linux (WSL2), Homebrew installs to /home/linuxbrew — add to PATH for this session.
-  if [[ "$OS" == "Linux" ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  fi
+  # The installer does not put brew on PATH for the current process, so the
+  # brew bundle calls that follow would fail. Source shellenv from wherever it
+  # landed — /opt/homebrew (macOS ARM), /usr/local (macOS Intel), or
+  # /home/linuxbrew (Linux/WSL2).
+  local _bp
+  for _bp in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
+    if [[ -x "$_bp/bin/brew" ]]; then
+      eval "$("$_bp/bin/brew" shellenv)"
+      break
+    fi
+  done
 }
 
 # ── Package installation ──────────────────────────────────────────────────────
@@ -106,14 +112,9 @@ install_packages() {
   fi
 }
 
-# ── App installation (from apps.json) ─────────────────────────────────────────
+# ── App installation (from apps.lua) ──────────────────────────────────────────
 
 install_apps() {
-  if ! command -v jq >/dev/null 2>&1; then
-    echo "jq not found; skipping app installation"
-    return
-  fi
-
   if [[ "$OS" == "Darwin" ]]; then
     echo "Installing GUI apps via Homebrew Cask..."
     local -a already_casks=()
@@ -129,7 +130,7 @@ install_apps() {
           echo "Warning: failed to install cask $cask"
         fi
       fi
-    done < <(jq -r '.[] | select(.brew_cask != null) | .brew_cask' "$MANIFEST")
+    done < <(luajit "$SCRIPT_DIR/scripts/gen.lua" casks)
 
     if ((${#already_casks[@]} > 0)); then
       echo "Already installed casks: ${already_casks[*]}"
@@ -146,7 +147,7 @@ install_apps() {
       --silent --accept-package-agreements --accept-source-agreements \
       2>/dev/null || echo "Warning: AutoHotkey install failed or already present"
 
-    jq -r '.[] | select(.winget_id != null) | .winget_id' "$MANIFEST" | while read -r id; do
+    luajit "$SCRIPT_DIR/scripts/gen.lua" winget | while read -r id; do
       winget.exe install --id "$id" \
         --silent --accept-package-agreements --accept-source-agreements \
         2>/dev/null || echo "Warning: winget failed for $id (may already be installed)"
@@ -157,19 +158,14 @@ install_apps() {
 # ── Config generation ─────────────────────────────────────────────────────────
 
 generate_configs() {
-  if ! command -v jq >/dev/null 2>&1; then
-    echo "jq not found; skipping config generation"
-    return
-  fi
-
   if [[ "$OS" == "Darwin" ]]; then
-    echo "Generating .skhdrc from apps.json..."
-    bash "$SCRIPT_DIR/scripts/gen-skhdrc.sh" > "$SCRIPT_DIR/.skhdrc"
+    echo "Generating .skhdrc from apps.lua..."
+    luajit "$SCRIPT_DIR/scripts/gen.lua" skhd > "$SCRIPT_DIR/.skhdrc"
   fi
 
   if [[ "$IS_WSL" == "true" ]]; then
-    echo "Generating hotkeys.ahk from apps.json..."
-    bash "$SCRIPT_DIR/scripts/gen-hotkeys.ahk.sh" > "$SCRIPT_DIR/hotkeys.ahk"
+    echo "Generating hotkeys.ahk from apps.lua..."
+    luajit "$SCRIPT_DIR/scripts/gen.lua" ahk > "$SCRIPT_DIR/hotkeys.ahk"
 
     # Register hotkeys.ahk in the Windows Startup folder so it auto-runs on login.
     local win_user
@@ -199,14 +195,20 @@ link_configs() {
     ".bash_profile:$HOME/.bash_profile"
     "config/vim/raw.vim:$HOME/.vimrc.raw"
     "tmux.conf:$HOME/.tmux.conf"
-    "config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
+    "config/agent/instructions.md:$HOME/.claude/CLAUDE.md"
+    # Same agent-agnostic policy file, also linked as Codex's global AGENTS.md
+    # so Claude and Codex share one source of truth.
+    "config/agent/instructions.md:$HOME/.codex/AGENTS.md"
     "config/claude/hooks:$HOME/.claude/hooks"
-    "config/claude/skills:$HOME/.claude/skills"
+    # config/claude/skills is linked per-item below, not as a whole dir.
     # config/codex/config.toml is intentionally not linked: Codex writes hook
     # state into it, so the live file stays machine-local (tracked copy is a
     # reference), same as the Claude settings merge.
     "config/codex/hooks.json:$HOME/.codex/hooks.json"
     "config/codex/hooks:$HOME/.codex/hooks"
+    # Codex custom slash-command prompts (mirror the top Claude skills, sharing
+    # the same reference checklists).
+    "config/codex/prompts:$HOME/.codex/prompts"
     # gnhf reads config.yml read-only; runtime state lives elsewhere in ~/.gnhf.
     "config/gnhf/config.yml:$HOME/.gnhf/config.yml"
   )
@@ -222,12 +224,23 @@ link_configs() {
     link_item "$SCRIPT_DIR/$src_rel" "$dst_abs"
   done
 
+  # Skills: symlink each skill individually into ~/.claude/skills/. A whole-dir
+  # symlink is wrong here — Claude Code manages that directory too, so if it
+  # already exists as a real dir the link is silently skipped (leaving repo
+  # skills undeployed), and if it doesn't, the link would hide managed skills.
+  if [[ -d "$SCRIPT_DIR/config/claude/skills" ]]; then
+    mkdir -p "$HOME/.claude/skills"
+    while IFS= read -r -d '' skill; do
+      link_item "$skill" "$HOME/.claude/skills/$(basename "$skill")"
+    done < <(find "$SCRIPT_DIR/config/claude/skills" -mindepth 1 -maxdepth 1 -print0)
+  fi
+
   # Link remaining config/ subdirectories into ~/.config/.
   if [[ -d "$SCRIPT_DIR/config" ]]; then
     while IFS= read -r -d '' entry; do
       local base_name
       base_name="$(basename "$entry")"
-      if [[ "$base_name" == "claude" || "$base_name" == "codex" ]]; then
+      if [[ "$base_name" == "claude" || "$base_name" == "codex" || "$base_name" == ".gitignore" ]]; then
         continue
       fi
       link_item "$entry" "$HOME/.config/$base_name"
@@ -298,7 +311,13 @@ install_ruby() {
 
   eval "$(rbenv init - bash)"
 
-  local ruby_version="3.3.7"
+  # Single source of truth for the global Ruby: repo-root .tool-versions.
+  local ruby_version
+  ruby_version="$(awk '/^ruby /{print $2; exit}' "$SCRIPT_DIR/.tool-versions" 2>/dev/null || true)"
+  if [[ -z "$ruby_version" ]]; then
+    echo "No 'ruby' entry in .tool-versions; skipping Ruby setup."
+    return
+  fi
   if rbenv versions --bare | grep -Fxq "$ruby_version"; then
     echo "Ruby $ruby_version already installed"
   else
@@ -331,31 +350,89 @@ configure_git() {
 # ── macOS system settings ─────────────────────────────────────────────────────
 
 configure_macos() {
-  /usr/bin/defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false || true
-  /usr/bin/defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false || true
+  # Declarative table of defaults: domain|key|type|value. NSGlobalDomain is the
+  # `-g` global domain. Add a row here rather than another imperative write line.
+  local -a macos_defaults=(
+    # VS Code: allow key-repeat in Vim mode (disable press-and-hold accent popup).
+    "com.microsoft.VSCode|ApplePressAndHoldEnabled|bool|false"
+    "com.microsoft.VSCodeInsiders|ApplePressAndHoldEnabled|bool|false"
+    # Faster key repeat — high value for modal editing. Needs re-login to apply.
+    "NSGlobalDomain|KeyRepeat|int|2"
+    "NSGlobalDomain|InitialKeyRepeat|int|15"
+    # Disable autocorrect/substitutions that corrupt code and prose.
+    "NSGlobalDomain|NSAutomaticCapitalizationEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticPeriodSubstitutionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticSpellingCorrectionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticQuoteSubstitutionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticDashSubstitutionEnabled|bool|false"
+    # Always show file extensions.
+    "NSGlobalDomain|AppleShowAllExtensions|bool|true"
+    "com.apple.finder|AppleShowAllExtensions|bool|true"
+    # Finder: path bar, list view by default, no icons on the desktop.
+    "com.apple.finder|ShowPathbar|bool|true"
+    "com.apple.finder|FXPreferredViewStyle|string|Nlsv"
+    "com.apple.finder|CreateDesktop|bool|false"
+    # Dock and menu bar auto-hide for maximum screen real estate.
+    "com.apple.dock|autohide|bool|true"
+    "NSGlobalDomain|_HIHideMenuBar|bool|true"
+    # Tap-to-click (built-in trackpad, Bluetooth trackpad, and the login-screen
+    # global flag — all three are needed for it to actually stick).
+    "com.apple.AppleMultitouchTrackpad|Clicking|bool|true"
+    "com.apple.driver.AppleBluetoothMultitouch.trackpad|Clicking|bool|true"
+    "NSGlobalDomain|com.apple.mouse.tapBehavior|int|1"
+    # Dark mode. Needs re-login to fully apply.
+    "NSGlobalDomain|AppleInterfaceStyle|string|Dark"
+  )
 
-  # Faster key repeat — high value for modal editing. Needs re-login to apply.
-  /usr/bin/defaults write -g KeyRepeat -int 2 || true
-  /usr/bin/defaults write -g InitialKeyRepeat -int 15 || true
-
-  # Disable autocorrect/substitutions that corrupt code and prose.
-  /usr/bin/defaults write -g NSAutomaticCapitalizationEnabled -bool false || true
-  /usr/bin/defaults write -g NSAutomaticPeriodSubstitutionEnabled -bool false || true
-  /usr/bin/defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false || true
-  /usr/bin/defaults write -g NSAutomaticQuoteSubstitutionEnabled -bool false || true
-  /usr/bin/defaults write -g NSAutomaticDashSubstitutionEnabled -bool false || true
-
-  # Always show file extensions.
-  /usr/bin/defaults write -g AppleShowAllExtensions -bool true || true
-  /usr/bin/defaults write com.apple.finder AppleShowAllExtensions -bool true || true
-
-  # Finder path bar.
-  /usr/bin/defaults write com.apple.finder ShowPathbar -bool true || true
-
-  # Dark mode. Needs re-login to fully apply.
-  /usr/bin/defaults write -g AppleInterfaceStyle -string "Dark" || true
+  local row domain key type value
+  for row in "${macos_defaults[@]}"; do
+    IFS='|' read -r domain key type value <<< "$row"
+    /usr/bin/defaults write "$domain" "$key" "-$type" "$value" || true
+  done
 
   killall Finder 2>/dev/null || true
+  killall Dock 2>/dev/null || true
+}
+
+# ── Homebrew drift removal (opt-in, dry-run first) ────────────────────────────
+# `brew bundle` is additive: it never removes packages you dropped from a
+# Brewfile or installed by hand, so declared and installed sets silently drift.
+# This reports (and only on explicit confirmation removes) packages not declared
+# across ALL our manifests — Brewfile + Brewfile.darwin + the casks generated
+# from apps.lua. Feeding all manifests as one combined file is required: a single
+# --file would flag every package in the others for removal.
+#
+# NOT part of the default flow — the machine legitimately has work/org tooling
+# outside this public repo. Run: BREW_CLEANUP=1 ./install.sh   (dry-run)
+#                        or: BREW_CLEANUP=1 CLEANUP_FORCE=1 ./install.sh
+brew_cleanup() {
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "brew not found; skipping cleanup"
+    return
+  fi
+
+  local union
+  union="$(mktemp)"
+  cat "$SCRIPT_DIR/Brewfile" >> "$union"
+  if [[ "$OS" == "Darwin" ]]; then
+    cat "$SCRIPT_DIR/Brewfile.darwin" >> "$union"
+    # apps.lua casks are installed imperatively (install_apps), not via a
+    # Brewfile — fold them in so cleanup doesn't flag every hotkey app.
+    while IFS= read -r cask; do
+      printf 'cask "%s"\n' "$cask" >> "$union"
+    done < <(luajit "$SCRIPT_DIR/scripts/gen.lua" casks)
+  fi
+
+  echo "Packages installed but not declared in any manifest (candidates for removal):"
+  brew bundle cleanup --file="$union" || true
+
+  if [[ "${CLEANUP_FORCE:-}" == "1" ]] && prompt_yes_no "Uninstall everything listed above?"; then
+    brew bundle cleanup --file="$union" --force
+    echo "Cleanup complete."
+  else
+    echo "Dry-run only. Re-run with CLEANUP_FORCE=1 to actually remove."
+  fi
+  rm -f "$union"
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -371,6 +448,11 @@ install_ruby
 
 if [[ "$OS" == "Darwin" ]]; then
   configure_macos
+fi
+
+# Opt-in only: prune packages not in any manifest (dry-run unless CLEANUP_FORCE=1).
+if [[ "${BREW_CLEANUP:-}" == "1" ]]; then
+  brew_cleanup
 fi
 
 if [[ "$LINK_FAILURES" -gt 0 ]]; then

@@ -2,6 +2,11 @@
 -- Edit here and re-run install.sh; scripts/gen.lua compiles this to
 -- .skhdrc (macOS/skhd) and hotkeys.ahk (Windows/AutoHotkey).
 -- LuaJIT/5.1-compatible so it can be required from the wezterm/nvim configs.
+--
+-- Windows launch: set win_aumid to the app's AppUserModelID for a reliable
+-- launch of per-user/Store installs (a bare win_exe on PATH misses most
+-- Electron apps). Find it on a Windows host with PowerShell `Get-StartApps`.
+-- Left unset for now — Windows behavior is stubbed and untested (see gen.lua).
 
 -- Browsers share one macOS behavior: ensure a window exists on focus.
 -- Declares it once instead of repeating the fields per browser.
@@ -20,14 +25,17 @@ return {
     winget_id = "SlackTechnologies.Slack",
     win_exe = "slack.exe",
     win_title = "Slack",
+    -- win_aumid = "com.squirrel.slack.slack", -- TODO: confirm via `Get-StartApps`
   },
   {
-    id = "ghostty",
+    id = "wezterm",
     hotkey = "1",
-    darwin_app = "Ghostty",
-    darwin_ensure_window = true, -- terminal: cmd-n keystroke if no window
-    brew_cask = "ghostty",
-    optional = true,
+    darwin_app = "WezTerm",
+    darwin_process = "wezterm-gui", -- macOS GUI process name for pgrep
+    brew_cask = "wezterm",
+    winget_id = "wez.wezterm",
+    win_exe = "wezterm-gui.exe",
+    win_title = "wezterm",
   },
   {
     id = "spotify",

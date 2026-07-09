@@ -75,7 +75,7 @@ a, b = b, a
 
 ### 5. Prevent Repetition with Assignment Expressions  [2nd,3rd] · low
 - **Rule:** Use the walrus operator (`:=`) to compute-and-test a value in one place when the same value would otherwise be assigned then immediately re-checked or recomputed.
-- **Why:** The walrus removes a class of repetition where you'd assign before an `if`/`while` or recompute inside a comprehension, and it tightens variable scope to where it's used. The trap: it requires Python 3.8+, often needs surrounding parens in comparisons, and is easy to overuse — if it makes the line harder to parse it defeats the purpose. It's a deduplication tool, not a golf tool.
+- **Why:** The walrus removes a class of repetition where you'd assign before an `if`/`while` or recompute inside a comprehension, and it tightens variable scope to where it's used. The trap: it often needs surrounding parens in comparisons, and is easy to overuse — if it makes the line harder to parse it defeats the purpose. It's a deduplication tool, not a golf tool.
 - **Smell:** A variable assigned on the line directly above an `if`/`while` that only tests that variable; `while True:` with a break that re-reads the same call; a comprehension that calls the same expensive function twice (once in the filter, once in the output).
 - **Signal:**
 ```python
@@ -88,7 +88,7 @@ if (count := fresh_fruit.get('apple', 0)) >= 4:
     make_juice(count)
 # also good: [y for x in data if (y := f(x)) is not None]
 ```
-- **Exceptions:** Skip it on pre-3.8 targets, and don't reach for it when a plain statement is clearer or when the assigned name is needed in a broader scope — readability beats saving a line. Don't nest walruses to be cute.
+- **Exceptions:** Don't reach for it when a plain statement is clearer or when the assigned name is needed in a broader scope — readability beats saving a line. Don't nest walruses to be cute.
 
 ### 6. Never Expect Python to Detect Errors at Compile Time  [3rd] · high
 - **Rule:** Do not rely on Python's bytecode compilation to surface bugs; gate correctness on tests, type checkers, and linters, and treat any code path not covered by these as unverified.
@@ -361,7 +361,7 @@ class Pictures(dict):
 
 ### 21. Compose Classes Instead of Deeply Nesting Dictionaries, Lists, and Tuples  [3rd] · medium
 - **Rule:** Refactor internal state into small classes (namedtuple/dataclass and helper classes) once bookkeeping grows past a single layer of dicts/lists or a two-element tuple.
-- **Why:** Nested containers and long tuples are positionally addressed and untyped, so call sites become brittle: adding one more field shifts every index, and `state[a][b][c]` carries no schema or validation. The threshold people miss is low — when a value is a dict-of-dicts, a list of 3+ tuples, or a tuple you keep extending, stop and introduce a class. namedtuple is the lightweight first step (immutable, positional+keyword), but it can't express default values cleanly and any subclass relationship still leaks tuple semantics; promote to dataclass when fields exceed a handful or need defaults/mutation.
+- **Why:** Nested containers and long tuples are positionally addressed and untyped, so call sites become brittle: adding one more field shifts every index, and `state[a][b][c]` carries no schema or validation. The threshold people miss is low — when a value is a dict-of-dicts, a list of 3+ tuples, or a tuple you keep extending, stop and introduce a class. namedtuple is the lightweight first step (immutable, positional+keyword), but it can't express default values cleanly and any subclass relationship still leaks tuple semantics; promote to dataclass when fields exceed a handful or need defaults/mutation. Default the promotion to `@dataclass(slots=True)` (3.10) — a slotted dataclass narrows namedtuple's memory/lightness edge — and add `kw_only=True` for many-field constructors.
 - **Smell:** self.grades[name][subject].append((score, weight)); access via row[2][0]; or a 'simple' dict that has quietly grown to three nesting levels and value-tuples of length 3+.
 - **Signal:**
 ```python
@@ -376,21 +376,7 @@ class Subject:
 - **Exceptions:** Shallow, short-lived, or pure-serialization data (a parsed JSON blob passed straight through, a two-tuple return) doesn't need a class. Don't over-engineer trivial 1-level mappings; the rule triggers on nesting depth and tuple length, not on using dicts at all.
 
 ### 22. Be Cautious When Relying on dict Insertion Ordering  [2nd,3rd] · medium
-- **Rule:** Only rely on insertion-order iteration of built-in dicts; never assume a dict-like parameter or third-party mapping preserves order, and use OrderedDict when order is semantically load-bearing or you need order-sensitive equality / move_to_end / reverse-popitem.
-- **Why:** Since 3.7 plain dicts preserve insertion order as a language guarantee, which lulls people into treating any object that looks like a dict the same way. A function annotated or duck-typed as a mapping can receive a custom container (or a structurally-similar object built via __getitem__/keys) that iterates in a different order, so code that depends on ordering silently produces wrong results without raising. Also, dict equality ignores order while OrderedDict equality is order-sensitive — they are not interchangeable when comparison matters.
-- **Smell:** Code iterates a function argument typed as a generic Mapping/dict and uses the first key or iteration order as if it were insertion order; or it compares two dicts expecting order to matter; or it builds ranking/priority logic on the assumption that an arbitrary passed-in mapping iterates the way it was constructed.
-- **Signal:**
-```python
-# Bad: assumes any mapping arg iterates in insertion order
-def first_ranked(votes):
-    return next(iter(votes))          # custom Mapping may reorder
-
-# Good: defend the contract or demand an ordered type
-def first_ranked(votes: dict[str, int]) -> str:
-    assert isinstance(votes, dict)    # or accept OrderedDict explicitly
-    return next(iter(votes))
-```
-- **Exceptions:** Iterating a dict you constructed yourself in the same scope is safe and idiomatic — the guarantee holds for built-in dict. The caution applies to externally supplied or duck-typed mappings.
+- Duplicate of **#17** (same EP item). Consolidated there; #17 already carries the OrderedDict order-sensitive-equality / `move_to_end` / reverse-`popitem` notes. Kept as a numbered placeholder to avoid renumbering the ruleset — treat #17 as the single source.
 
 ## Loops and Iterators
 
@@ -527,7 +513,7 @@ if any(validate(row) for row in rows):
 - **Exceptions:** If you also need the materialized results afterward (e.g. to count, reuse, or log them), building the list once and reusing it is reasonable. For tiny, cheap iterables the difference is negligible and clarity wins. Note an iterator is single-use, so don't feed the same one to all() then any().
 
 ### 30. Consider itertools for Working with Iterators and Generators  [2nd,3rd] · medium
-- **Rule:** Reach for the named itertools building blocks (chain, islice, takewhile/dropwhile, groupby, zip_longest, accumulate, product/permutations/combinations, tee, etc.) before hand-rolling index math or nested loops to link, slice, filter, or combine iterables.
+- **Rule:** Reach for the named itertools building blocks (chain, islice, takewhile/dropwhile, groupby, zip_longest, accumulate, product/permutations/combinations, tee, `pairwise` (3.10) for sliding windows, `batched` (3.12; `strict=` in 3.13) for fixed-size chunks, etc.) before hand-rolling index math or nested loops to link, slice, window, chunk, filter, or combine iterables.
 - **Why:** These functions are lazy, C-implemented, and battle-tested, so they're faster and clearer than manual equivalents — but each has a sharp edge people miss: zip() truncates to the shortest input (use zip_longest to keep the rest), groupby only groups *consecutive* equal keys (sort first), and tee buffers consumed items in memory so it's a trap for unbounded streams or when one branch races far ahead.
 - **Smell:** Manual range(len(...)) index juggling to merge or window sequences; building a full intermediate list just to slice it ([:n] on a generator's list()); nested loops generating cartesian products or pairwise combinations by hand; calling groupby on unsorted data and expecting global grouping.
 - **Signal:**
@@ -628,8 +614,8 @@ def sort_priority(values, group):
 # bad: new leading positional silently shifts old calls
 def log(message, *values): ...
 def log(seq, message, *values): ...  # log('hi', a) now seq='hi'
-# good: extend with keyword-only arg
-def log(message, *values, *, seq=None): ...
+# good: params after *values are automatically keyword-only
+def log(message, *values, seq=None): ...
 # also avoid: log(*huge_generator)  # full tuple built in memory
 ```
 - **Exceptions:** *args is the right tool when the argument count is genuinely variable and small/bounded and all values are the same kind (print, logging-style APIs). The generator-materialization caveat only matters for large/unbounded iterables; a known short sequence is fine to splat.
@@ -680,7 +666,7 @@ safe_div(1, 0, False, True)
 def safe_div(numerator, denominator, /, *, ignore_overflow=False, ignore_zero=False): ...
 safe_div(1, 0, ignore_zero=True)
 ```
-- **Exceptions:** Positional-only (/) requires Python 3.8+. Don't over-restrict tiny helpers or hot-path internal functions where the ceremony outweighs the clarity gain; a single obvious operand rarely needs forcing.
+- **Exceptions:** Don't over-restrict tiny helpers or hot-path internal functions where the ceremony outweighs the clarity gain; a single obvious operand rarely needs forcing.
 
 ### 39. Define Function Decorators with functools.wraps  [2nd,3rd] · medium
 - **Rule:** Always apply @functools.wraps(func) to the inner wrapper in any decorator so the wrapped function keeps its identity and metadata.
@@ -944,7 +930,7 @@ def _(x: datetime): return x.isoformat()
 
 ### 53. Prefer dataclasses for Defining Lightweight Classes  [3rd] · medium
 - **Rule:** For a class that mostly holds named fields, default to @dataclass instead of hand-writing __init__/__repr__/__eq__ or reaching for namedtuple/plain tuples/dicts.
-- **Why:** Hand-written boilerplate drifts: someone adds a field to __init__ but forgets __repr__ or __eq__, producing wrong equality or debugging output. dataclasses generate these consistently and add field-level features (defaults, default_factory, frozen=, field(compare=False), __post_init__ validation) that namedtuple can't express. The key footgun dataclasses fix vs namedtuple: namedtuples are tuples, so they compare equal to plain tuples and are unintentionally iterable/indexable, leaking the abstraction.
+- **Why:** Hand-written boilerplate drifts: someone adds a field to __init__ but forgets __repr__ or __eq__, producing wrong equality or debugging output. dataclasses generate these consistently and add field-level features (defaults, default_factory, frozen=, field(compare=False), __post_init__ validation, plus `slots=True` and `kw_only=True` since 3.10) that namedtuple can't express. The key footgun dataclasses fix vs namedtuple: namedtuples are tuples, so they compare equal to plain tuples and are unintentionally iterable/indexable, leaking the abstraction.
 - **Smell:** A class whose body is only __init__ assigning self.x = x plus a manual __repr__/__eq__; using a bare dict or tuple as a record passed across functions; mutable default arguments like def __init__(self, items=[]) instead of field(default_factory=list).
 - **Signal:**
 ```python
@@ -1035,7 +1021,7 @@ class Base:
 
 ### 58. Prefer dataclasses for Creating Immutable Objects  [3rd] · medium
 - **Rule:** For value/immutable objects, use @dataclass(frozen=True) instead of hand-writing __init__, __eq__, __hash__, or freezing via custom __setattr__.
-- **Why:** frozen=True makes dataclasses synthesize __setattr__/__delattr__ that raise FrozenInstanceError, and with eq=True you get value equality plus a usable __hash__, making instances safe as dict keys/set members and effectively thread-safe. The subtlety people miss: frozen is shallow (a mutable list field is still mutable) and __post_init__ must use object.__setattr__ to set derived fields.
+- **Why:** frozen=True makes dataclasses synthesize __setattr__/__delattr__ that raise FrozenInstanceError, and with eq=True you get value equality plus a usable __hash__, making instances safe as dict keys/set members and effectively thread-safe. The subtlety people miss: frozen is shallow (a mutable list field is still mutable) and __post_init__ must use object.__setattr__ to set derived fields. Pair `frozen=True` with `slots=True` (3.10) for compact, attribute-locked value objects.
 - **Smell:** Manual immutability via overridden __setattr__ that raises, or boilerplate classes reimplementing __init__/__eq__/__repr__/__hash__ by hand for what is conceptually a value object; also using a frozen dataclass while exposing a mutable default like a list field.
 - **Signal:**
 ```python
@@ -1372,7 +1358,7 @@ with ThreadPoolExecutor(max_workers=10) as ex:
 - **Exceptions:** When concurrency must scale to thousands of simultaneous I/O operations, the per-thread memory and the `max_workers` ceiling make coroutines/asyncio the better choice; ThreadPoolExecutor is for the moderate, bounded case.
 
 ### 77. Achieve Highly Concurrent I/O with Coroutines  [2nd,3rd] · high
-- **Rule:** For high-fan-out I/O (thousands of concurrent operations), use `async def` coroutines on the asyncio event loop instead of threads.
+- **Rule:** For high-fan-out I/O (thousands of concurrent operations), use `async def` coroutines on the asyncio event loop instead of threads. Prefer `asyncio.TaskGroup` (3.11) over bare `gather` for structured concurrency — it cancels sibling tasks on the first failure and raises an `ExceptionGroup` — and use `asyncio.timeout` (3.11) for deadlines.
 - **Why:** Coroutines run in a single thread with negligible per-coroutine memory (no OS stack) and no thread-context-switch cost, so they scale to tens of thousands of concurrent I/O operations where threads would exhaust memory; the trap is that any synchronous blocking call (`time.sleep`, blocking socket, CPU-bound work) inside a coroutine stalls the entire event loop — coroutines only help when every awaited operation is truly non-blocking.
 - **Smell:** `async def` functions that call blocking APIs directly (`requests.get`, `time.sleep`, blocking DB drivers) without `await`, or forgetting to `await`/`gather` so coroutines run sequentially instead of concurrently.
 - **Signal:**
@@ -1630,6 +1616,7 @@ except Exception as e:
     retry()
 ```
 - **Exceptions:** Catching BaseException is justified only when you must run cleanup on any exit path and then re-raise — e.g. `except BaseException: cleanup(); raise` — never to suppress the signal. A `finally` block is usually the better tool for that.
+- **3.11 groups:** `ExceptionGroup` extends both `BaseExceptionGroup` and `Exception`, so `except Exception` catches it — but a `BaseExceptionGroup` that isn't also an `ExceptionGroup` (e.g. one wrapping a `KeyboardInterrupt`) propagates like a bare signal and won't be caught. Use `except*` to match subgroups; `TaskGroup` raises these.
 
 ### 90. Use traceback for Enhanced Exception Reporting  [3rd] · medium
 - **Rule:** When logging or persisting a caught exception, capture the full traceback via the traceback module instead of stringifying the exception object alone.
@@ -1724,22 +1711,7 @@ HANDLERS[action](payload)
 - **Exceptions:** Justified when the program's purpose is executing user/developer code (interactive shells, notebooks, plugin/macro systems, code generators). Even then, never eval untrusted input — prefer ast.literal_eval for data and sandboxed compilation for code.
 
 ### 95. Make pickle Reliable with copyreg  [2nd] · medium
-- **Rule:** For any class whose instances are pickled and outlive a single run, register a copyreg reduction function with default arguments and an embedded version number rather than relying on default pickling.
-- **Why:** Default pickle stores only __dict__, so when you later add an attribute, old pickles unpickle with that attribute missing and break code that assumes it; when you rename or remove a class, unpickling fails to import. copyreg lets you control the constructor call (so new fields get defaults) and stamp a version so __setstate__ can migrate old payloads. People assume pickle is a stable format — it is not across class evolution, and the breakage is silent until an old payload is loaded.
-- **Smell:** pickle.dumps(obj) of an evolving domain class with no copyreg registration; adding a new __init__ field to a class that has existing pickled instances on disk/in a queue; renaming/moving a pickled class without a stability shim.
-- **Signal:**
-```python
-# Bad: add a field later -> old pickles miss it
-class GameState: ...
-pickle.dumps(GameState())
-# Good: copyreg controls construction + version
-def pickle_game(s): return unpickle_game, (s.__dict__,)
-def unpickle_game(kwargs):
-    kwargs.setdefault('version', 1)
-    return GameState(**kwargs)
-copyreg.pickle(GameState, pickle_game)
-```
-- **Exceptions:** Don't bother for short-lived in-process pickling (e.g., multiprocessing args) where producer and consumer share the exact class definition. And never use pickle at all for untrusted input or cross-language/long-term interchange — prefer JSON/protobuf; copyreg only hardens the trusted-pickle case.
+- Duplicate of **#84** (same EP item; #84 carries the `[2nd,3rd]` tag). Consolidated there. Kept as a numbered placeholder to avoid renumbering the ruleset — treat #84 as the single source.
 
 ## Performance
 
@@ -2153,13 +2125,13 @@ resp.raise_for_status()
 # bad: global install, unpinned, partial
 # sudo pip install flask requests
 
-# good: isolated env + full pinned closure
-python -m venv .venv && source .venv/bin/activate
-pip install flask requests
-pip freeze > requirements.txt   # captures ALL transitive versions
-# rebuild elsewhere: pip install -r requirements.txt
+# good (2026): uv manages env + a cross-tool lockfile
+uv venv && uv add flask requests   # writes pyproject + uv.lock
+uv sync                            # reproduces the exact closure
+# PEP 751 pylock.toml is the emerging standard lockfile; `uv lock` / pip 25.1 `pip lock` emit it
+# fallback (no uv): python -m venv .venv; pip install ...; pip freeze > requirements.txt
 ```
-- **Exceptions:** Throwaway one-off scripts or ephemeral CI containers that are themselves the isolation boundary may skip an explicit venv; pip freeze can over-pin platform-specific wheels, so a lock tool is preferable for cross-platform projects.
+- **Exceptions:** Throwaway one-off scripts or ephemeral CI containers that are themselves the isolation boundary may skip an explicit venv; `pip freeze` can over-pin platform-specific wheels, so a real lock tool (uv/poetry, or a PEP 751 `pylock.toml`) is preferable for cross-platform projects.
 
 ### 120. Write Docstrings for Every Function, Class, and Module  [2nd,3rd] · medium
 - **Rule:** Give every module, public class, and public function a docstring documenting behavior, arguments, return values, and raised exceptions.

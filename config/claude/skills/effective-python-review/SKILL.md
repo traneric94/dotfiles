@@ -60,3 +60,4 @@ If nothing violates the rules, say so plainly — do not invent findings to fill
 - Rules are original synthesis; item **titles** are factual references to the book. Do not paste book prose.
 - The reference is a superset of both editions; `•2`/`•3`/`2nd,3rd` tags indicate provenance. 3rd-ed-only items (walrus, `match`, typing, dataclasses) apply only to code targeting modern Python.
 - Pair with the team's Go-style review values in `memory/` — observability, fail-loud, type-vs-domain correctness — where they transfer to Python.
+- **Lower-yield for this codebase** (Python here is AoC + scripts/tooling; prod is Go/Ruby/TS): descriptors (#62, #67), `memoryview`/buffer protocol (#97), `ctypes`/C-extensions (#100, #101), `pickle`/`copyreg` (#84/#95, #109), threaded→asyncio porting (#78), packaging/bundling (#127). Still correct, just rarely applicable — don't force findings from them.

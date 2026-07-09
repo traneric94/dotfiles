@@ -28,14 +28,12 @@ return {
     -- win_aumid = "com.squirrel.slack.slack", -- TODO: confirm via `Get-StartApps`
   },
   {
-    id = "wezterm",
+    id = "ghostty",
     hotkey = "1",
-    darwin_app = "WezTerm",
-    darwin_process = "wezterm-gui", -- macOS GUI process name for pgrep
-    brew_cask = "wezterm",
-    winget_id = "wez.wezterm",
-    win_exe = "wezterm-gui.exe",
-    win_title = "wezterm",
+    darwin_app = "Ghostty",
+    darwin_ensure_window = true, -- terminal: cmd-n keystroke if no window
+    brew_cask = "ghostty",
+    optional = true,
   },
   {
     id = "spotify",

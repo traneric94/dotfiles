@@ -6,6 +6,7 @@ tap "koekeishiya/formulae"
 brew "koekeishiya/formulae/skhd"
 brew "terminal-notifier"
 brew "reattach-to-user-namespace"
+brew "herdr"                        # agent multiplexer — run alongside tmux (prefix ctrl+b vs tmux C-a)
 
 # Rules of thumb:
 #   - apps.lua owns GUI apps that get a launcher hotkey (skhd/AutoHotkey)

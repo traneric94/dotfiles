@@ -108,6 +108,10 @@ map("n", "<leader>T", "<cmd>terminal<CR>", "Terminal buffer")
 -- Clipboard --------------------------------------------------------------------
 map({ "n", "v" }, "<leader>y", '"+y', "Yank to system clipboard")
 map({ "n", "v" }, "<leader>p", '"+p', "Paste from system clipboard")
+-- Paste over a visual selection without clobbering the yank/clipboard register
+-- (black-hole the deleted text, then paste-before). Lets you paste the same
+-- snippet over multiple selections in a row.
+map("x", "p", [["_dP]], "Paste over selection, keep register")
 
 -- File explorer ----------------------------------------------------------------
 map("n", "<leader>e", function()

@@ -1,10 +1,11 @@
 local kanagawa = require("kanagawa")
 
--- Wave: the dark variant measured easiest on the eyes (muted ukiyo-e palette,
--- low blue-light load, ~11:1 contrast on a soft dark ground).
+-- Lotus: Kanagawa's LIGHT variant (daytime). wave/dragon are the dark ones.
+-- Force a light background so lualine 'auto' and plugins render light-correct.
+vim.o.background = "light"
 kanagawa.setup({
-  theme = "wave",
-  background = { dark = "wave" },
+  theme = "lotus",
+  background = { light = "lotus", dark = "wave" },
   transparent = false,
   terminalColors = true,
   dimInactive = false,

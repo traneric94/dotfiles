@@ -25,6 +25,23 @@ jobs:
           luajit scripts/gen.lua skhd
           luajit scripts/gen.lua ahk
 
+      - name: Resolve package names (catch renamed/removed formulae & casks)
+        run: |
+          # brew bundle is skipped below (too slow), but a rename/removal upstream
+          # would still break a real install. Resolve every name cheaply instead.
+          brew tap koekeishiya/formulae
+          fail=0
+          formulae=$(grep -hE '^brew "' Brewfile Brewfile.darwin | sed -E 's/^brew "([^"]+)".*/\1/')
+          for f in $formulae; do
+            brew info "$f" >/dev/null 2>&1 || { echo "UNRESOLVED formula: $f"; fail=1; }
+          done
+          casks=$( { grep -hE '^cask "' Brewfile.darwin | sed -E 's/^cask "([^"]+)".*/\1/'; luajit scripts/gen.lua casks; } | sort -u )
+          for c in $casks; do
+            brew info --cask "$c" >/dev/null 2>&1 || { echo "UNRESOLVED cask: $c"; fail=1; }
+          done
+          if [ "$fail" -ne 0 ]; then echo "Package resolution failed"; exit 1; fi
+          echo "All package names resolve"
+
       - name: Run install.sh (dry-linkable steps only)
         run: |
           # Skip brew bundle and app installs in CI — too slow and requires auth.
@@ -76,3 +93,16 @@ jobs:
             end
             if bad then os.exit(1) else print("All entries valid") end
           '
+
+  secret-scan:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install gitleaks
+        run: brew install gitleaks
+
+      - name: Scan for secrets
+        run: gitleaks detect --redact --no-banner

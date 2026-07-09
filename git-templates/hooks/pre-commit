@@ -1,8 +1,23 @@
 #!/bin/bash
 
-# Global pre-commit hook for Go repositories: run goimports on staged Go files.
+# Global pre-commit hook:
+#   1. Scan staged changes for secrets with gitleaks (all repos).
+#   2. Run goimports on staged Go files (Go repos only).
 
-# Only act in Go repos.
+# ── Secret scan (all repos) ───────────────────────────────────────────────────
+# A leaked credential is worse than a blocked commit, so block when gitleaks is
+# present; if it's missing, warn but don't block (same policy as goimports).
+if command -v gitleaks >/dev/null 2>&1; then
+    if ! gitleaks protect --staged --redact --no-banner; then
+        echo "pre-commit: gitleaks flagged potential secrets in staged changes — commit blocked." >&2
+        echo "            Review the findings above; allowlist false positives in .gitleaks.toml." >&2
+        exit 1
+    fi
+else
+    echo "pre-commit: gitleaks not found on PATH — skipping secret scan (install: brew install gitleaks)." >&2
+fi
+
+# ── Go import formatting (Go repos only) ──────────────────────────────────────
 [ -f "go.mod" ] || exit 0
 
 STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')

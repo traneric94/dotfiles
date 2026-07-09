@@ -85,10 +85,17 @@ install_homebrew() {
   echo "Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-  # On Linux (WSL2), Homebrew installs to /home/linuxbrew — add to PATH for this session.
-  if [[ "$OS" == "Linux" ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  fi
+  # The installer does not put brew on PATH for the current process, so the
+  # brew bundle calls that follow would fail. Source shellenv from wherever it
+  # landed — /opt/homebrew (macOS ARM), /usr/local (macOS Intel), or
+  # /home/linuxbrew (Linux/WSL2).
+  local _bp
+  for _bp in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
+    if [[ -x "$_bp/bin/brew" ]]; then
+      eval "$("$_bp/bin/brew" shellenv)"
+      break
+    fi
+  done
 }
 
 # ── Package installation ──────────────────────────────────────────────────────
@@ -188,9 +195,9 @@ link_configs() {
     ".bash_profile:$HOME/.bash_profile"
     "config/vim/raw.vim:$HOME/.vimrc.raw"
     "tmux.conf:$HOME/.tmux.conf"
-    "config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
+    "config/agent/instructions.md:$HOME/.claude/CLAUDE.md"
     "config/claude/hooks:$HOME/.claude/hooks"
-    "config/claude/skills:$HOME/.claude/skills"
+    # config/claude/skills is linked per-item below, not as a whole dir.
     # config/codex/config.toml is intentionally not linked: Codex writes hook
     # state into it, so the live file stays machine-local (tracked copy is a
     # reference), same as the Claude settings merge.
@@ -211,12 +218,23 @@ link_configs() {
     link_item "$SCRIPT_DIR/$src_rel" "$dst_abs"
   done
 
+  # Skills: symlink each skill individually into ~/.claude/skills/. A whole-dir
+  # symlink is wrong here — Claude Code manages that directory too, so if it
+  # already exists as a real dir the link is silently skipped (leaving repo
+  # skills undeployed), and if it doesn't, the link would hide managed skills.
+  if [[ -d "$SCRIPT_DIR/config/claude/skills" ]]; then
+    mkdir -p "$HOME/.claude/skills"
+    while IFS= read -r -d '' skill; do
+      link_item "$skill" "$HOME/.claude/skills/$(basename "$skill")"
+    done < <(find "$SCRIPT_DIR/config/claude/skills" -mindepth 1 -maxdepth 1 -print0)
+  fi
+
   # Link remaining config/ subdirectories into ~/.config/.
   if [[ -d "$SCRIPT_DIR/config" ]]; then
     while IFS= read -r -d '' entry; do
       local base_name
       base_name="$(basename "$entry")"
-      if [[ "$base_name" == "claude" || "$base_name" == "codex" ]]; then
+      if [[ "$base_name" == "claude" || "$base_name" == "codex" || "$base_name" == ".gitignore" ]]; then
         continue
       fi
       link_item "$entry" "$HOME/.config/$base_name"

@@ -15,7 +15,6 @@ local function map(mode, lhs, rhs, desc, opts)
   vim.keymap.set(mode, lhs, rhs, opts)
 end
 
-local wk_ok, wk = pcall(require, "which-key")
 
 -- Resolve the current buffer's project root by walking up for known markers.
 -- Falls back to the global cwd when none are found (e.g. /tmp scratch files).
@@ -96,6 +95,14 @@ map("n", "<leader>q", "<cmd>confirm q<CR>", "Quit window")
 map("n", "<leader>Q", "<cmd>confirm qa<CR>", "Quit Neovim")
 map("n", "<leader>sc", "<cmd>nohlsearch<CR>", "Clear search highlight")
 
+-- Option toggles (vim-unimpaired yo* style; the one unimpaired family nvim 0.11 didn't adopt)
+for key, o in pairs({ yow = "wrap", yos = "spell", yol = "list", yon = "number", yor = "relativenumber", yoc = "cursorline" }) do
+  map("n", key, function()
+    vim.opt_local[o] = not vim.opt_local[o]:get()
+  end, "Toggle " .. o)
+end
+map("n", "yoh", "<cmd>set hlsearch!<CR>", "Toggle hlsearch")
+
 map("n", "<leader>T", "<cmd>terminal<CR>", "Terminal buffer")
 
 -- Clipboard --------------------------------------------------------------------
@@ -159,13 +166,14 @@ map("n", "<leader>gl", function()
   end
 end, "Toggle line blame")
 map("n", "<leader>gp", utils.open_pull_request, "Open PR for line")
+map("n", "]h", function() require("gitsigns").nav_hunk("next") end, "Next git hunk")
+map("n", "[h", function() require("gitsigns").nav_hunk("prev") end, "Previous git hunk")
 
 -- Quickfix ---------------------------------------------------------------------
 map("n", "<leader>qo", "<cmd>copen<CR>", "Open quickfix")
 map("n", "<leader>qc", "<cmd>cclose<CR>", "Close quickfix")
 map("n", "<leader>qq", utils.clear_quickfix, "Clear quickfix")
-map("n", "]q", "<cmd>cnext<CR>", "Next quickfix item")
-map("n", "[q", "<cmd>cprev<CR>", "Previous quickfix item")
+-- ]q/[q and count-aware ]Q/[Q are nvim 0.11 built-in defaults — don't shadow them.
 map("n", "<leader>ql", "<cmd>lopen<CR>", "Open location list")
 map("n", "<leader>qL", "<cmd>lclose<CR>", "Close location list")
 
@@ -235,26 +243,11 @@ for i = 1, 4 do
 end
 
 -- Diagnostic navigation --------------------------------------------------------
-map("n", "[d", vim.diagnostic.goto_prev, "Previous diagnostic")
-map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
+map("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, "Previous diagnostic")
+map("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, "Next diagnostic")
 map("n", "<leader>ld", vim.diagnostic.open_float, "Line diagnostics")
 map("n", "<leader>lq", vim.diagnostic.setqflist, "Diagnostics to quickfix")
 
-if wk_ok then
-  wk.register({
-    ["<leader>"] = {
-      b = { name = "+buffers" },
-      d = { name = "+debug" },
-      e = { name = "+explorer" },
-      f = { name = "+find" },
-      g = { name = "+git" },
-      h = { name = "+harpoon" },
-      l = { name = "+lsp" },
-      r = "Reload config",
-      q = { name = "+quickfix" },
-      s = { name = "+search" },
-      t = { name = "+test" },
-      v = { name = "+neovim" },
-    },
-  })
-end
+-- which-key group labels are registered in config/plugins/which-key.lua (which
+-- runs after lazy bootstraps which-key). Registering them here ran during
+-- init, before the plugin existed, so the labels never took effect.

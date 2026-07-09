@@ -112,4 +112,4 @@ _IMPORTANT: This file is tracked in a PUBLIC dotfiles repo. Examples written her
 
 **Stub every side-effecting dependency in every test that exercises that path** — in Ruby specs, if a code path calls `Statsd.distribution`, every test reaching that path needs `allow(Statsd).to receive(:distribution)`, even tests asserting on something else. Missing stubs cause order-dependent failures.
 
-**Verify what the test framework actually resets between examples** — don't assume global state resets because docs say so. Read the actual `after` hooks. Example: `Gem::Tuner.reset_overrides!` and `Tuner.reset_overrides!` reset different singletons — only one was being called, leaving the other's overrides to leak across tests.
+**Verify what the test framework actually resets between examples** — don't assume global state resets because docs say so. Read the actual `after` hooks. Example: a gem's `Config.reset_overrides!` and the app's own `Config.reset_overrides!` can be different singletons — only one was being called, leaving the other's overrides to leak across tests.

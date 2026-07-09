@@ -5,6 +5,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 prompt_yes_no() {
   local prompt_msg="$1"
   local response
+  # This script moves files out of ~/.config; refuse to guess when there is no
+  # TTY to confirm (decline, unlike install.sh which auto-accepts).
+  if [[ ! -t 0 ]] || [[ "${NON_INTERACTIVE:-}" == "1" ]]; then
+    echo "$prompt_msg [y/n] n (non-interactive: declining)"
+    return 1
+  fi
   while true; do
     read -r -p "$prompt_msg [y/n] " response < /dev/tty || true
     case "${response:-}" in

@@ -34,4 +34,5 @@ terminal-notifier \
   -message "${MSG:-Task complete}" \
   -activate com.mitchellh.ghostty \
   2>/dev/null
-afplay /System/Library/Sounds/Glass.aiff 2>/dev/null
+afplay /System/Library/Sounds/Glass.aiff 2>/dev/null || true
+exit 0

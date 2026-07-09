@@ -1,5 +1,5 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
     "git",
     "clone",
@@ -86,20 +86,31 @@ require("lazy").setup({
 
 vim.g["test#strategy"] = "neovim"
 
-require("config.plugins.catppuccin")
-require("config.plugins.nvim-tree")
-require("config.plugins.lualine")
-require("config.plugins.bufferline")
-require("config.plugins.gitsigns")
-require("config.plugins.treesitter")
-require("config.plugins.telescope")
-require("config.plugins.mason-tool-installer")
-require("config.plugins.conform")
-require("config.plugins.lint")
-require("config.plugins.dap")
-require("config.plugins.lsp")
-require("config.plugins.copilot")
-require("config.plugins.autopairs")
-require("config.plugins.comment")
-require("config.plugins.comment-repl")
-require("config.plugins.which-key")
+-- Load each plugin config in isolation: a failure in one shouldn't abort the
+-- rest (previously an error here left every later plugin unconfigured).
+for _, mod in ipairs({
+  "config.plugins.catppuccin",
+  "config.plugins.nvim-tree",
+  "config.plugins.lualine",
+  "config.plugins.bufferline",
+  "config.plugins.gitsigns",
+  "config.plugins.treesitter",
+  "config.plugins.telescope",
+  "config.plugins.mason-tool-installer",
+  "config.plugins.conform",
+  "config.plugins.lint",
+  "config.plugins.dap",
+  "config.plugins.lsp",
+  "config.plugins.copilot",
+  "config.plugins.autopairs",
+  "config.plugins.comment",
+  "config.plugins.comment-repl",
+  "config.plugins.which-key",
+}) do
+  local ok, err = pcall(require, mod)
+  if not ok then
+    vim.schedule(function()
+      vim.notify(string.format("plugin config '%s' failed: %s", mod, err), vim.log.levels.ERROR)
+    end)
+  end
+end

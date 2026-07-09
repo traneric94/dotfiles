@@ -349,8 +349,13 @@ _cache_eval() { # $1=cache file, rest=command to memoize
   if [[ ! -s "$cache" || -n "$cache"(#qN.mh+24) ]]; then "$@" >| "$cache"; fi
   source "$cache"
 }
-_cache_eval "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/pyenv-init.zsh" pyenv init - zsh
-_cache_eval "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/rbenv-init.zsh" rbenv init - zsh
+# --no-rehash: skip the per-shell `rehash` these emit by default. In tmux many
+# shells start at once; concurrent/interrupted rehashes leave a stale
+# .pyenv-shim/.rbenv-shim prototype that aborts every later rehash. Shims still
+# rebuild on `pyenv/rbenv install`; run `pyenv rehash` manually after a bare
+# `pip install`/`gem install` that adds a new executable.
+_cache_eval "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/pyenv-init.zsh" pyenv init --no-rehash - zsh
+_cache_eval "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/rbenv-init.zsh" rbenv init --no-rehash - zsh
 
 # Source local, untracked overrides
 [ -f "$HOME/.chime.sh" ] && source "$HOME/.chime.sh"

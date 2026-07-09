@@ -17,11 +17,11 @@ If empty, working changes: !`git diff HEAD 2>/dev/null || echo "no changes"`
 ## Procedure
 
 1. Scope to changed Go files and the code they directly touch.
-2. Read `reference/checklist.md` and apply every section.
-3. If present, cross-check against the deeper local sources (they may not exist on every machine - skip silently if absent):
-   - `/Users/eric.tran/codebase/100-go-mistakes/`
-   - the team `memory/ranking_service_checklist.md` and `memory/engineering-principles.md`
-4. Report by severity, citing the principle or mistake number.
+2. Read `reference/checklist.md` (the team's 12 code-review principles) and apply every section.
+3. Read `reference/100-go-mistakes.md` (100 items across 11 chapters, each: rule · why · smell · signal · exceptions · severity). Scan changed regions for the `Smell` patterns; highest-yield first: nil-interface trap (#39), goroutine leaks (#51), context propagation (#56), mutex copy (#50), slice append aliasing (#17), map iteration order (#23), `defer` in loops (#25), integer overflow before widening (#12), missing HTTP client/server timeouts (#69-70), ignored/double-handled errors (#47-48). Cite the item number.
+4. Respect each item's `Exceptions` - note the tradeoff instead of flagging code that legitimately falls under one.
+5. If present, cross-check the team `memory/ranking_service_checklist.md` and `memory/engineering-principles.md` (skip silently if absent).
+6. Report by severity, citing the principle or mistake number.
 
 ## Output
 

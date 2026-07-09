@@ -46,11 +46,11 @@
 
 **For repository exploration** - use local filesystem tools (Read, Bash with rg/ls). Never use GitHub API tools for repos that exist locally.
 
-**GitHub comments and PR replies** - always prefix with `Claude:` on the first line.
+**GitHub comments and PR replies** - always prefix the first line with the agent's name (e.g. `Claude:` or `Codex:`).
 
 ## Workflow Patterns
 
-**Explore → Plan → Code → Commit**: For non-trivial tasks, read relevant files first and plan before writing any code. Use the word "think" to trigger extended thinking when tradeoffs need deeper analysis.
+**Explore → Plan → Code → Commit**: For non-trivial tasks, read relevant files first and plan before writing any code.
 
 **TDD when applicable**: Write tests first, commit them, then write code to make them pass without modifying the tests.
 
@@ -58,9 +58,7 @@
 
 **Checklists for complex tasks**: For large migrations, lint sweeps, or multi-step tasks - write all errors/steps to a markdown scratchpad first, then work through them one by one checking each off.
 
-**Course-correct early**: Don't let Claude go far down the wrong path. Interrupt with Escape, adjust, and redirect. Better results come from active collaboration than letting it run.
-
-**Use `/clear` between unrelated tasks** to keep context focused and prevent earlier work from polluting new tasks.
+**Course-correct early**: Don't let the agent go far down the wrong path. Interrupt, adjust, and redirect. Better results come from active collaboration than letting it run.
 
 **Always run lint and typecheck** before considering a task complete. If the command isn't known, ask and suggest writing it to the project's CLAUDE.md.
 
@@ -81,7 +79,7 @@ git worktree remove /tmp/branch-name
 # or: rm -rf /tmp/branch-name && git worktree prune
 ```
 
-- Each Claude Code session operates in its own worktree to avoid conflicts
+- Each session operates in its own worktree to avoid conflicts
 - Worktrees share refs with the main repo - no separate clone needed
 
 ## Dotfiles & Editor Configuration
@@ -91,7 +89,14 @@ git worktree remove /tmp/branch-name
 - **Other configs**: tmux, ghostty, git, etc. all symlinked from the dotfiles directory
 - **Language servers and tooling**: Managed by native Neovim LSP, Mason, conform.nvim, and nvim-lint
 
-## Learning & Memory
+## Claude Code specifics
+
+_These use Claude Code features that other agents can ignore._
+
+- **Extended thinking**: use the word "think" to trigger deeper analysis when tradeoffs need it.
+- **`/clear` between unrelated tasks** to keep context focused and prevent earlier work from polluting new tasks.
+
+### Learning & Memory
 
 Claude has no persistent memory between sessions. To persist corrections:
 

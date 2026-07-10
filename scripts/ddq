@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# ddq - token-lean Datadog query CLI (curl + jq).
+# Prefer this over the Datadog MCP for straightforward log/metric/monitor/event
+# reads: it returns only the fields you ask for, so it burns a fraction of the
+# tokens the MCP's verbose JSON does.
+#
+# Auth (never hardcode - read from env; put these in a gitignored local file):
+#   DD_API_KEY   Datadog API key
+#   DD_APP_KEY   Datadog application key (needed for reads)
+#   DD_SITE      Datadog site (default datadoghq.com; e.g. us5.datadoghq.com)
+#
+# Usage:
+#   ddq logs   '<query>' [from] [to] [limit]   # from/to accept now-15m style (default now-15m..now, 50)
+#   ddq metric '<query>' [from] [to]           # from/to epoch or -1h shorthand (default -1h..now)
+#   ddq monitors '<search>'                    # monitor search -> id/state/name
+#   ddq monitor  <id>                          # one monitor's state + query
+#   ddq events '<query>' [from] [to]           # event stream (default now-1h..now)
+# Flags: --raw (full JSON, no jq shaping).
+set -euo pipefail
+
+require_keys() {
+  : "${DD_API_KEY:?ddq: DD_API_KEY unset - set it (and DD_APP_KEY) in your gitignored shell override}"
+  : "${DD_APP_KEY:?ddq: DD_APP_KEY unset - reads need an application key too}"
+}
+BASE="https://api.${DD_SITE:-datadoghq.com}"
+RAW=0
+args=()
+for a in "$@"; do [ "$a" = "--raw" ] && RAW=1 || args+=("$a"); done
+# bash 3.2 (macOS) errors on "${args[@]}" for an empty array under `set -u`.
+if [ "${#args[@]}" -gt 0 ]; then set -- "${args[@]}"; else set --; fi
+
+_api() { # method path [json-body]
+  local method="$1" path="$2" body="${3:-}"
+  local -a curlargs=(-fsS -X "$method" "$BASE$path"
+    -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY"
+    -H "Content-Type: application/json")
+  [ -n "$body" ] && curlargs+=(-d "$body")
+  curl "${curlargs[@]}"
+}
+_epoch() { # -1h / now-15m / epoch -> unix seconds
+  case "$1" in
+    ''|now) date +%s ;;
+    -*|now-*) date -v"${1#now}" +%s 2>/dev/null || date -d "${1/now/}" +%s ;;
+    *) echo "$1" ;;
+  esac
+}
+_shape() { [ "$RAW" = 1 ] && jq . || jq -r "$1"; }
+
+cmd="${1:-help}"; shift || true
+case "$cmd" in
+  logs)
+    require_keys
+    q="${1:-*}"; from="${2:-now-15m}"; to="${3:-now}"; limit="${4:-50}"
+    body=$(jq -nc --arg q "$q" --arg f "$from" --arg t "$to" --argjson l "$limit" \
+      '{filter:{query:$q,from:$f,to:$t},sort:"-timestamp",page:{limit:$l}}')
+    _api POST /api/v2/logs/events/search "$body" \
+      | _shape '.data[] | .attributes | "\(.timestamp)  \(.service // "-")  [\(.status // "-")]  \((.message // "") | gsub("\n";" ") | .[0:200])"'
+    ;;
+  metric)
+    require_keys
+    q="${1:?ddq metric: need a query}"; from=$(_epoch "${2:--1h}"); to=$(_epoch "${3:-now}")
+    _api GET "/api/v1/query?from=$from&to=$to&query=$(jq -rn --arg q "$q" '$q|@uri')" \
+      | _shape '.series[]? | "\(.expression // .metric)  {\(.scope)}  pts=\(.pointlist|length)  last=\(.pointlist[-1][1] // "n/a")"'
+    ;;
+  monitors)
+    require_keys
+    q="${1:-}"
+    _api GET "/api/v1/monitor/search?query=$(jq -rn --arg q "$q" '$q|@uri')" \
+      | _shape '.monitors[]? | "\(.id)\t\(.status // "-")\t\(.name)"'
+    ;;
+  monitor)
+    require_keys
+    id="${1:?ddq monitor: need a monitor id}"
+    _api GET "/api/v1/monitor/$id" \
+      | _shape '{id,name,overall_state,type,query,message}'
+    ;;
+  events)
+    require_keys
+    q="${1:-}"; from="${2:-now-1h}"; to="${3:-now}"
+    body=$(jq -nc --arg q "$q" --arg f "$from" --arg t "$to" \
+      '{filter:{query:$q,from:$f,to:$t},sort:"-timestamp",page:{limit:50}}')
+    _api POST /api/v2/events/search "$body" \
+      | _shape '.data[]? | .attributes | "\(.timestamp)  \(.attributes.status // "-")  \(.attributes.title // .message // "")"'
+    ;;
+  help|--help|-h|"")
+    awk 'NR==1{next} /^#/{sub(/^# ?/,"");print;next} {exit}' "$0"
+    ;;
+  *) echo "ddq: unknown command '$cmd' (try: logs metric monitors monitor events help)" >&2; exit 2 ;;
+esac

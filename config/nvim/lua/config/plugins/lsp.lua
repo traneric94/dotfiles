@@ -78,6 +78,7 @@ cmp.setup({
 		end,
 	},
 	sources = cmp.config.sources({
+		{ name = "lazydev", group_index = 0 },
 		{ name = "copilot" },
 		{ name = "nvim_lsp" },
 		{ name = "luasnip" },
@@ -231,12 +232,10 @@ mason_lspconfig.setup({
 
 local server_settings = {
 	lua_ls = function()
-		require("neodev").setup({})
 		return {
 			settings = {
 				Lua = {
 					workspace = { checkThirdParty = false },
-					diagnostics = { globals = { "vim" } },
 				},
 			},
 		}

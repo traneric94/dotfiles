@@ -23,13 +23,13 @@ M.server_specs = {
     filetypes = { "python" },
     formatters = { "black" },
     linters = { "ruff" },
-    daps = { "debugpy" },
+    daps = { "python" },
   },
   ts_ls = {
     filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
     formatters = { "prettierd" },
     linters = { "eslint_d" },
-    daps = { "js-debug-adapter" },
+    daps = { "js" },
   },
   rust_analyzer = {
     filetypes = { "rust" },
@@ -81,7 +81,7 @@ M.server_specs = {
     filetypes = { "php" },
     formatters = { "php-cs-fixer" },
     linters = { "phpcs" },
-    daps = { "php-debug-adapter" },
+    daps = { "php" },
   },
 }
 

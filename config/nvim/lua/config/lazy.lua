@@ -1,4 +1,5 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+local NVIM_DAP_URL = "https://codeberg.org/mfussenegger/nvim-dap"
 if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
     "git",
@@ -49,19 +50,27 @@ require("lazy").setup({
   { "folke/which-key.nvim" },
   { "windwp/nvim-autopairs" },
   { "stevearc/conform.nvim" },
-  { "mfussenegger/nvim-lint" },
+  { "https://codeberg.org/mfussenegger/nvim-lint" },
   { "kunchenguid/comment-repl.nvim" },
 
   { "williamboman/mason.nvim" },
   { "williamboman/mason-lspconfig.nvim", dependencies = { "williamboman/mason.nvim" } },
   { "WhoIsSethDaniel/mason-tool-installer.nvim", dependencies = { "williamboman/mason.nvim" } },
   { "neovim/nvim-lspconfig" },
-  { "folke/neodev.nvim" },
+  {
+    "folke/lazydev.nvim",
+    ft = "lua",
+    opts = {
+      library = {
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+      },
+    },
+  },
 
-  { "mfussenegger/nvim-dap" },
-  { "jay-babu/mason-nvim-dap.nvim", dependencies = { "williamboman/mason.nvim", "mfussenegger/nvim-dap" } },
-  { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" } },
-  { "theHamsta/nvim-dap-virtual-text", dependencies = { "mfussenegger/nvim-dap" } },
+  { NVIM_DAP_URL },
+  { "jay-babu/mason-nvim-dap.nvim", dependencies = { "williamboman/mason.nvim", NVIM_DAP_URL } },
+  { "rcarriga/nvim-dap-ui", dependencies = { NVIM_DAP_URL, "nvim-neotest/nvim-nio" } },
+  { "theHamsta/nvim-dap-virtual-text", dependencies = { NVIM_DAP_URL } },
 
   {
     "hrsh7th/nvim-cmp",

@@ -70,17 +70,18 @@
 
 Default isolation strategy for working on multiple branches simultaneously. Never stash or context-switch mid-task; create a worktree instead.
 
-Standard path convention: `/tmp/<branch-name>`
+Standard path convention: `<repository>/tmp/<branch-name>`, inside the repository's primary checkout. Use this instead of `/tmp` or `/private/tmp`. Run the following commands from the primary checkout:
 
 ```bash
-git worktree add /tmp/branch-name branch-name
+git worktree add tmp/branch-name branch-name
 git worktree list
-git worktree remove /tmp/branch-name
-# or: rm -rf /tmp/branch-name && git worktree prune
+git worktree remove tmp/branch-name
 ```
 
 - Each session operates in its own worktree to avoid conflicts
 - Worktrees share refs with the main repo - no separate clone needed
+- Keep all worktrees under the primary checkout's `tmp/`, not inside another worktree
+- `tmp/` directories are globally ignored by Git; tracked files remain tracked
 
 ## Dotfiles & Editor Configuration
 

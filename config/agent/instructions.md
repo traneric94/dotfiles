@@ -82,6 +82,9 @@ git worktree remove tmp/branch-name
 - Worktrees share refs with the main repo - no separate clone needed
 - Keep all worktrees under the primary checkout's `tmp/`, not inside another worktree
 - `tmp/` directories are globally ignored by Git; tracked files remain tracked
+- IMPORTANT: Before creating or resuming a worktree, resolve its real filesystem path and confirm it is inside the active writable `codebase` workspace. Never use `/tmp`, `/private/tmp`, or a symlink into either for a worktree.
+- If the primary checkout is outside `codebase`, place the worktree under `<codebase>/tmp/<repository>-<branch-name>` instead. Do not move the primary checkout or weaken sandbox permissions merely to create a worktree.
+- Relocate existing worktrees with `git worktree move`, preserving dirty and untracked files, then verify the branch, HEAD and working-tree changes. Update active checkpoints and worker directories; leave historical experiment provenance unchanged.
 
 ## Dotfiles & Editor Configuration
 

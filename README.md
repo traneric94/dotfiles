@@ -44,6 +44,14 @@ running, or link only the pieces you want. macOS system defaults
 
 ## Claude / Codex config
 
+Agent worktrees belong in the writable `codebase` workspace: normally
+`<primary-repository>/tmp/<branch-name>`, or
+`<codebase>/tmp/<repository>-<branch-name>` when the primary checkout is elsewhere.
+The shared `config/agent/instructions.md` applies this rule to both Claude and
+Codex. `config/git/ignore` keeps `tmp/` untracked; it does not select worktree
+locations or grant filesystem permissions. Use `git worktree move` to relocate
+existing worktrees without discarding their changes.
+
 Tools that write to their own config files can't have those files symlinked
 into a repo, so two patterns are used:
 

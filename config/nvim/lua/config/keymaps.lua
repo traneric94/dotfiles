@@ -268,6 +268,24 @@ for i = 1, 4 do
   end, string.format("Harpoon: file %d", i))
 end
 
+-- HTTP / kulala ---------------------------------------------------------------
+local function kulala_action(fn)
+  return function()
+    local ok, k = pcall(require, "kulala")
+    if not ok then return end
+    k[fn]()
+  end
+end
+
+map("n", "<leader>kr", kulala_action("run"), "HTTP: run request")
+map("n", "<leader>ka", kulala_action("run_all"), "HTTP: run all requests")
+map("n", "<leader>ke", kulala_action("set_selected_env"), "HTTP: switch environment")
+map("n", "<leader>ki", kulala_action("inspect"), "HTTP: inspect request")
+map("n", "<leader>kc", kulala_action("copy"), "HTTP: copy as curl")
+map("n", "<leader>kn", kulala_action("jump_next"), "HTTP: next request")
+map("n", "<leader>kp", kulala_action("jump_prev"), "HTTP: prev request")
+map("n", "<leader>ks", kulala_action("scratchpad"), "HTTP: open scratchpad")
+
 -- Diagnostic navigation --------------------------------------------------------
 map("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, "Previous diagnostic")
 map("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, "Next diagnostic")

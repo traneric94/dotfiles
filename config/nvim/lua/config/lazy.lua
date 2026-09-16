@@ -76,6 +76,8 @@ require("lazy").setup({
 
   { "zbirenbaum/copilot.lua" },
   { "zbirenbaum/copilot-cmp", dependencies = { "zbirenbaum/copilot.lua" } },
+
+  { "mistweaverco/kulala.nvim", ft = { "http", "rest" } },
 }, {
   defaults = { lazy = false },
   install = { colorscheme = { "kanagawa", "catppuccin" } },
@@ -109,6 +111,7 @@ for _, mod in ipairs({
   "config.plugins.which-key",
   "config.plugins.toggleterm",
   "config.plugins.mini-surround",
+  "config.plugins.kulala",
 }) do
   local ok, err = pcall(require, mod)
   if not ok then

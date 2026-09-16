@@ -32,12 +32,12 @@ Rule of thumb: **reads → `ddq`; authoring, guided workflows, and aggregations 
 | `DD_APP_KEY` | your application key (reads need this) | Datadog → Personal Settings → Application Keys |
 | `DD_SITE` | site host (default `datadoghq.com`) | your Datadog URL, e.g. `us5.datadoghq.com`, `datadoghq.eu` |
 
-Put them in a **gitignored** local shell file that `.zshrc` already sources - `~/.chime.sh` or `~/.zshrc.chime` (both are in `.gitignore`). Never commit keys:
+Put them in a **gitignored** local shell file that `.zshrc` already sources - e.g. `~/.zshrc.local` (in `.gitignore`). Never commit keys:
 
 ```sh
 export DD_API_KEY=…            # from a secrets manager / 1Password, not pasted into git
 export DD_APP_KEY=…
-export DD_SITE=us5.datadoghq.com   # set to Chime's actual site
+export DD_SITE=datadoghq.com   # your org's Datadog site, e.g. us5.datadoghq.com, datadoghq.eu
 alias ddq='bash "$HOME/codebase/dotfiles/scripts/ddq"'
 ```
 
@@ -46,12 +46,12 @@ alias ddq='bash "$HOME/codebase/dotfiles/scripts/ddq"'
 ## Recipes
 
 ```sh
-ddq logs 'service:member-experience-service status:error' now-1h now 100
-ddq logs 'service:per-kinesis-consumer-lambda "Task timed out"' now-6h
-ddq metric 'sum:aws.lambda.errors{functionname:per-kinesis-consumer-lambda}.as_count()' -6h
-ddq monitors 'notify targeting'          # id / state / name
+ddq logs 'service:my-service status:error' now-1h now 100
+ddq logs 'service:my-lambda "Task timed out"' now-6h
+ddq metric 'sum:aws.lambda.errors{functionname:my-function}.as_count()' -6h
+ddq monitors 'notify my-team'            # id / state / name
 ddq monitor 1234567                      # one monitor's state + query
-ddq events 'tags:deploy service:personalization-platform' now-1d
+ddq events 'tags:deploy service:my-service' now-1d
 ddq logs 'service:foo status:error' --raw | jq '.data[0]'   # full JSON when you need a field ddq didn't surface
 ```
 

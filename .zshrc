@@ -240,8 +240,7 @@ go() {
 # gnhf: scoped wrapper around the autonomous agent loop.
 #   - mutes Claude notification hooks for the run (GNHF_RUN, see notify-*.sh)
 #   - blocks --push (never push un-reshaped WIP; reshape with gt, submit manually)
-#   - refuses to run inside a Chime/1debit repo (org guardrail: no unattended
-#     agent on work repos)
+#   - refuses to run inside blocked repos (list in ~/.gnhf_blocked_remotes)
 gnhf() {
   local arg
   for arg in "$@"; do
@@ -253,8 +252,8 @@ gnhf() {
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     local remote
     remote="$(git remote get-url origin 2>/dev/null)"
-    if [[ "$remote" == *1debit* || "$remote" == *chime* ]]; then
-      echo "gnhf: refusing to run inside a Chime/1debit repo ($remote)." >&2
+    if [[ -f "$HOME/.gnhf_blocked_remotes" ]] && grep -qF "$remote" "$HOME/.gnhf_blocked_remotes" 2>/dev/null; then
+      echo "gnhf: refusing to run inside a blocked repo ($remote)." >&2
       return 1
     fi
   fi

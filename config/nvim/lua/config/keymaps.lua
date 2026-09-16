@@ -89,7 +89,6 @@ for key, o in pairs({ yow = "wrap", yos = "spell", yol = "list", yon = "number",
 end
 map("n", "yoh", "<cmd>set hlsearch!<CR>", "Toggle hlsearch")
 
-map("n", "<leader>T", "<cmd>terminal<CR>", "Terminal buffer")
 
 -- Clipboard --------------------------------------------------------------------
 map({ "n", "v" }, "<leader>y", '"+y', "Yank to system clipboard")

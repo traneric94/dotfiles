@@ -32,6 +32,7 @@ require("lazy").setup({
   { "ThePrimeagen/harpoon" },
 
   { "vim-test/vim-test" },
+  { "akinsho/toggleterm.nvim", version = "*" },
   { "tpope/vim-fugitive", dependencies = { "tpope/vim-rhubarb" } },
   { "mg979/vim-visual-multi", branch = "master" },
   { "numToStr/Comment.nvim" },
@@ -82,7 +83,6 @@ require("lazy").setup({
   change_detection = { notify = false },
 })
 
-vim.g["test#strategy"] = "neovim"
 
 -- Load each plugin config in isolation: a failure in one shouldn't abort the
 -- rest (previously an error here left every later plugin unconfigured).
@@ -107,6 +107,7 @@ for _, mod in ipairs({
   "config.plugins.comment",
   "config.plugins.comment-repl",
   "config.plugins.which-key",
+  "config.plugins.toggleterm",
   "config.plugins.mini-surround",
 }) do
   local ok, err = pcall(require, mod)

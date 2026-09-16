@@ -118,9 +118,22 @@ map("n", "<leader>er", function()
 end, "Reload file explorer")
 
 -- fzf-lua / search ------------------------------------------------------------
+-- <C-p>: primary file finder — git_files reads the git index (instant on large
+-- repos); falls back to fd traversal when outside a git repo.
+map("n", "<C-p>", function()
+  local ok, fzf_lua = pcall(require, "fzf-lua")
+  if not ok then return end
+  local in_git = vim.fn.systemlist("git rev-parse --is-inside-work-tree 2>/dev/null")[1] == "true"
+  if in_git then
+    fzf_lua.git_files({ cwd = project_root() })
+  else
+    fzf_lua.files({ cwd = project_root() })
+  end
+end, "Find files (git index, instant)")
+
 -- Project-scoped pickers resolve to the buffer's nearest project root so they
 -- always search the right repo, regardless of nvim's global cwd.
-map("n", "<leader>ff", fzf_project("files"), "Find files (project root)")
+map("n", "<leader>ff", fzf_project("files"), "Find files (fd, all files including untracked)")
 map("n", "<leader>fF", fzf("files"), "Find files (cwd, escape hatch)")
 map("n", "<leader>fg", fzf_project("live_grep"), "Live grep (project root)")
 map("n", "<leader>fr", fzf_project("oldfiles", { cwd_only = true }), "Recent files (project root)")
@@ -137,6 +150,7 @@ map("n", "<leader>/", fzf("blines"), "Search in buffer")
 map("n", "<leader>sr", fzf("resume"), "Resume last picker")
 
 -- Buffers ----------------------------------------------------------------------
+map("n", "<C-^>", "<cmd>b#<CR>", "Alternate buffer (last)")
 map("n", "<leader>bb", "<cmd>b#<CR>", "Alternate buffer")
 map("n", "<leader>bd", "<cmd>bp | bd #<CR>", "Delete buffer")
 map("n", "<leader>bl", "<cmd>ls<CR>", "List buffers", { silent = false })

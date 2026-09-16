@@ -99,6 +99,13 @@ map({ "n", "v" }, "<leader>p", '"+p', "Paste from system clipboard")
 -- snippet over multiple selections in a row.
 map("x", "p", [["_dP]], "Paste over selection, keep register")
 
+-- Splits ----------------------------------------------------------------------
+map("n", "<leader>sv", "<cmd>vsplit<CR>", "Split vertical")
+map("n", "<leader>sh", "<cmd>split<CR>", "Split horizontal")
+map("n", "<leader>se", "<C-w>=", "Equalize splits")
+map("n", "<leader>sx", "<cmd>close<CR>", "Close split")
+map("n", "<leader>sz", "<C-w>|<C-w>_", "Zoom split (maximize)")
+
 -- File explorer ----------------------------------------------------------------
 map("n", "<leader>e", function()
   with_nvim_tree(function(api)
@@ -125,13 +132,13 @@ map("n", "<leader>fs", fzf("git_status"), "Git status")
 map("n", "<leader>fc", fzf("git_commits"), "Git commits")
 map("n", "<leader>fw", fzf_project("grep_cword"), "Search word under cursor (project root)")
 map("n", "<leader>fd", fzf("diagnostics_document"), "Diagnostics picker")
+map("n", "<leader>ls", fzf("lsp_document_symbols"), "Document symbols")
+map("n", "<leader>lS", fzf("lsp_live_workspace_symbols"), "Workspace symbols")
 map("n", "<leader>/", fzf("blines"), "Search in buffer")
 map("n", "<leader>sr", fzf("resume"), "Resume last picker")
 
 -- Buffers ----------------------------------------------------------------------
 map("n", "<leader>bb", "<cmd>b#<CR>", "Alternate buffer")
-map("n", "<leader>bn", "<cmd>bnext<CR>", "Next buffer")
-map("n", "<leader>bp", "<cmd>bprevious<CR>", "Previous buffer")
 map("n", "<leader>bd", "<cmd>bp | bd #<CR>", "Delete buffer")
 map("n", "<leader>bl", "<cmd>ls<CR>", "List buffers", { silent = false })
 map("n", "<leader>bx", "<cmd>%bd|e#|bd#<CR>", "Delete all but current")
@@ -143,9 +150,18 @@ for i = 1, 9 do
 end
 map("n", "<leader>0", "<cmd>BufferLineGoToBuffer -1<CR>", "Go to last buffer")
 
+-- Git hunks (gitsigns) --------------------------------------------------------
+map("n", "<leader>hs", function() require("gitsigns").stage_hunk() end, "Stage hunk")
+map("v", "<leader>hs", function() require("gitsigns").stage_hunk({ vim.fn.line("."), vim.fn.line("v") }) end, "Stage hunk (selection)")
+map("n", "<leader>hu", function() require("gitsigns").undo_stage_hunk() end, "Unstage hunk")
+map("n", "<leader>hr", function() require("gitsigns").reset_hunk() end, "Reset hunk")
+map("v", "<leader>hr", function() require("gitsigns").reset_hunk({ vim.fn.line("."), vim.fn.line("v") }) end, "Reset hunk (selection)")
+map("n", "<leader>hR", function() require("gitsigns").reset_buffer() end, "Reset buffer")
+map("n", "<leader>hp", function() require("gitsigns").preview_hunk() end, "Preview hunk")
+
 -- Git --------------------------------------------------------------------------
 map("n", "<leader>gs", "<cmd>Git<CR>", "Git status")
-map("n", "<leader>gd", "<cmd>Gdiffsplit<CR>", "Diff current file")
+map("n", "<leader>gD", "<cmd>Gdiffsplit<CR>", "Diff current file")
 map("n", "<leader>gc", "<cmd>Git commit<CR>", "Commit", { silent = false })
 map("n", "<leader>gb", "<cmd>GBrowse<CR>", "Open in browser", { silent = false })
 map("v", "<leader>gb", "<cmd>GBrowse<CR>", "Open selection in browser", { silent = false })
@@ -167,7 +183,12 @@ map("n", "<leader>qq", utils.clear_quickfix, "Clear quickfix")
 map("n", "<leader>ql", "<cmd>lopen<CR>", "Open location list")
 map("n", "<leader>qL", "<cmd>lclose<CR>", "Close location list")
 
--- Toggle ----------------------------------------------------------------------
+-- Toggles ---------------------------------------------------------------------
+map("n", "<leader>uf", function()
+  vim.g.disable_autoformat = not vim.g.disable_autoformat
+  vim.notify(string.format("Autoformat %s", vim.g.disable_autoformat and "disabled" or "enabled"))
+end, "Toggle autoformat")
+
 map("n", "<leader>tc", function()
   vim.g.cmp_enabled = not vim.g.cmp_enabled
   vim.notify(string.format("Completion %s", vim.g.cmp_enabled and "enabled" or "disabled"))

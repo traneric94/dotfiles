@@ -35,6 +35,7 @@ require("lazy").setup({
   { "tpope/vim-fugitive", dependencies = { "tpope/vim-rhubarb" } },
   { "mg979/vim-visual-multi", branch = "master" },
   { "numToStr/Comment.nvim" },
+  { "echasnovski/mini.surround", version = "*" },
   { "folke/which-key.nvim" },
   { "windwp/nvim-autopairs" },
   { "stevearc/conform.nvim" },
@@ -106,6 +107,7 @@ for _, mod in ipairs({
   "config.plugins.comment",
   "config.plugins.comment-repl",
   "config.plugins.which-key",
+  "config.plugins.mini-surround",
 }) do
   local ok, err = pcall(require, mod)
   if not ok then

@@ -1,7 +1,9 @@
 # Deep Go review checklist
 
-Distilled from the team's 12 code-review principles + 100 Go Mistakes. This is
-the self-contained source for `go-review`; it deliberately goes deeper than
+Tier-1 dense index for `go-review`: the team's 12 code-review principles applied
+to Go + one-line traps from 100 Go Mistakes. Language-neutral principle definitions
+and cross-language prioritization live in the spine, `memory/engineering-principles.md`
+(P1-P14); this file is the Go-concrete application. Deliberately deeper than
 `pr-review/reference/go.md`.
 
 ## Observability (correctness, not decoration)

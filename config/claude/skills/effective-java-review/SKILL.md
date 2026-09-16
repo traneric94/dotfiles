@@ -18,7 +18,7 @@ Not for: non-JVM code; pure formatting (defer to the formatter). For general cra
 ## Procedure
 
 1. **Scope the diff.** Changed Java files/hunks and the code they directly touch — not the whole module.
-2. **Load the rules.** Read `reference/effective-java.md`. Each item: EJn · rule · why · smell · signal (bad/good) · exceptions · severity.
+2. **Load the rules.** Prioritize with `memory/engineering-principles.md` (the cross-language spine, P1-P14), then scan the diff against `reference/checklist.md` (Tier-1 dense index, EJn · rule). Open a full item in `reference/effective-java.md` (EJn · rule · why · smell · signal · exceptions · severity) **only** for a candidate match - do not read the full reference end-to-end.
 3. **Match against smells.** Highest-yield first:
    - **equals/hashCode** overridden inconsistently (EJ10-11), missing on value types
    - **Mutable escape** — no defensive copies of params/returns (EJ50); public mutable fields (EJ16)

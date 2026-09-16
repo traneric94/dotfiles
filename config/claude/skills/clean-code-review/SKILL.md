@@ -18,7 +18,7 @@ Pair with the language skill: run the language idiom check for correctness, this
 ## Procedure
 
 1. **Scope the diff.** Changed regions and the functions/classes they live in.
-2. **Load the heuristics.** Read `reference/clean-code.md`. Each item: code · rule · why · smell · signal (bad/good) · exceptions · severity.
+2. **Load the heuristics.** Prioritize with `memory/engineering-principles.md` (the cross-language spine, P1-P14), then scan the diff against `reference/checklist.md` (Tier-1 dense index, CODE · title · rule). Open a full item in `reference/clean-code.md` (code · rule · why · smell · signal · exceptions · severity) **only** for a candidate match - do not read the full reference end-to-end.
 3. **Match against smells.** Highest-yield first:
    - **Duplication** (G5) — the top smell; extract the repeated logic
    - **Functions doing >1 thing** (G30) / descending >1 abstraction level (G34); long param lists, flag/selector args (G15)

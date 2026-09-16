@@ -1325,6 +1325,27 @@ t.Reset(d)
 ```
 - **Exceptions:** Code that must build on toolchains older than Go 1.23 still needs the guard, but use a *non-blocking* drain (`if !t.Stop() { select { case <-t.C: default: } }`), never a bare `<-t.C`. Setting `GODEBUG=asynctimerchan=1` restores the old buffered behavior for legacy code, but that knob is slated for removal around Go 1.27.
 
+### Global rand is a data race  [concurrency, team-added] · high
+- **Rule:** Never call the package-level `math/rand` (or `golang.org/x/exp/rand`) global functions from multiple goroutines; give each goroutine (or each call site) its own source built with `rand.New(rand.NewPCG(seed1, seed2))` from `math/rand/v2`.
+- **Why:** The three global sources behave differently and none is the right default under concurrency. The deprecated `math/rand` global source is mutex-guarded, so it is memory-safe but a contention point and non-deterministic across goroutines. `golang.org/x/exp/rand`'s global functions have *no* mutex, so a concurrent `Seed` + `Float64`/`Intn` is a genuine data race that `-race` will flag - and can corrupt the generator's internal state. `math/rand/v2`'s top-level functions are goroutine-safe but still draw from one shared, auto-seeded, non-deterministic global source, so you cannot reproduce a run or reason about isolation. For contention-free *and* deterministic randomness, hand each goroutine its own `*rand.Rand` seeded from `rand.NewPCG`; a `*rand.Rand` is not safe for concurrent use, so never share one either.
+- **Smell:** `rand.Seed(...)` anywhere (removed in v2, deprecated before it); package-level `rand.Float64()` / `rand.Intn()` called inside goroutines or hot loops; `import "golang.org/x/exp/rand"` with its globals invoked concurrently; one `*rand.Rand` stored in a struct and read from multiple goroutines.
+- **Signal:**
+```go
+// bad: x/exp/rand globals under goroutines - Seed+Float64 is a data race
+rand.Seed(time.Now().UnixNano())
+for i := 0; i < n; i++ {
+	go func() { _ = rand.Float64() }() // concurrent access to unsynchronized global
+}
+// good: per-goroutine source, contention-free and deterministic
+for i := 0; i < n; i++ {
+	go func(seed uint64) {
+		r := rand.New(rand.NewPCG(seed, 0)) // math/rand/v2, owned by this goroutine
+		_ = r.Float64()
+	}(uint64(i))
+}
+```
+- **Exceptions:** A strictly single-goroutine program, or seeding once at startup for non-security, non-concurrent use, may use the global source. Cryptographic or otherwise unpredictable randomness (tokens, keys, nonces) must use `crypto/rand` regardless - never any `math/rand` source.
+
 ## Standard Library
 
 ### 69. http.Client no timeout  [stdlib] · high

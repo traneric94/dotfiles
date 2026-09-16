@@ -368,23 +368,15 @@ if [[ -t 1 ]]; then
   if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh)"
   fi
-  # Load order matters: vi-mode first, then syntax-highlighting, then
-  # autosuggestions LAST (autosuggestions must wrap the highlighter's ZLE widgets).
-  [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh" ]] && source "$BREW_PREFIX/opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh"
   [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
   [[ -n "${BREW_PREFIX:-}" && -f "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-  # zsh-vi-mode re-applies its keymaps at first prompt, clobbering any bindkey
-  # set during rc sourcing. Do the interactive keybindings HERE so they survive
-  # vi-mode init, then source fzf-git (which binds its own Ctrl-G chords).
-  function zvm_after_init() {
-    bindkey -e
-    bindkey '^F' autosuggest-accept   # Ctrl-F accepts the autosuggestion
-    bindkey '^I' expand-or-complete   # keep Tab for real completion
-    bindkey -r '^G'                       # free Ctrl-G prefix for fzf-git chords
-    local fzf_git="$DOTFILES_DIR/scripts/fzf-git.sh"
-    [[ -f "$fzf_git" ]] && source "$fzf_git"
-  }
+  bindkey -e
+  bindkey '^F' autosuggest-accept
+  bindkey '^I' expand-or-complete
+  bindkey -r '^G'
+  local fzf_git="$DOTFILES_DIR/scripts/fzf-git.sh"
+  [[ -f "$fzf_git" ]] && source "$fzf_git"
 
   # Ctrl-S is XOFF (terminal flow control) by default and swallows the fzf-git
   # Ctrl-G Ctrl-S chord — disable flow control so the key reaches zle.

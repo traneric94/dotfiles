@@ -10,8 +10,4 @@ brew "terminal-notifier"
 #   - Brewfile.darwin owns macOS-only software with no hotkey (CLIs, fonts,
 #     dev tools) plus the launcher infra itself (raycast, etc.)
 cask "1password-cli"
-cask "notion-calendar"
-cask "raycast"
-cask "visual-studio-code"
-cask "postman"
 cask "font-hack-nerd-font"

@@ -31,35 +31,21 @@ local function project_root()
   return vim.fs.root(0, PROJECT_MARKERS) or vim.fn.getcwd()
 end
 
-local function telescope(builtin, opts)
+local function fzf(fn, opts)
   return function()
-    local ok, builtin_module = pcall(require, "telescope.builtin")
-    if not ok or not builtin_module[builtin] then
-      return
-    end
-    builtin_module[builtin](opts or {})
+    local ok, fzf_lua = pcall(require, "fzf-lua")
+    if not ok then return end
+    fzf_lua[fn](opts or {})
   end
 end
 
--- Like telescope() but resolves cwd to the project root at call time so each
--- invocation scopes to whichever repo the current buffer lives in.
-local function telescope_project(builtin, extra_opts)
+local function fzf_project(fn, extra_opts)
   return function()
-    local ok, builtin_module = pcall(require, "telescope.builtin")
-    if not ok or not builtin_module[builtin] then
-      return
-    end
+    local ok, fzf_lua = pcall(require, "fzf-lua")
+    if not ok then return end
     local opts = vim.tbl_extend("force", extra_opts or {}, { cwd = project_root() })
-    builtin_module[builtin](opts)
+    fzf_lua[fn](opts)
   end
-end
-
-local function telescope_frecency()
-  local ok, t = pcall(require, "telescope")
-  if not ok or not t.extensions.frecency then
-    return
-  end
-  t.extensions.frecency.frecency({ cwd = project_root() })
 end
 
 -- Lazy DAP action: resolves at call time so `dap` plugin failure doesn't
@@ -125,22 +111,22 @@ map("n", "<leader>er", function()
   end)
 end, "Reload file explorer")
 
--- Telescope / search -----------------------------------------------------------
+-- fzf-lua / search ------------------------------------------------------------
 -- Project-scoped pickers resolve to the buffer's nearest project root so they
 -- always search the right repo, regardless of nvim's global cwd.
-map("n", "<leader>ff", telescope_project("find_files"), "Find files (project root)")
-map("n", "<leader>fF", telescope("find_files"), "Find files (cwd, escape hatch)")
-map("n", "<leader>fg", telescope_project("live_grep"), "Live grep (project root)")
-map("n", "<leader>fr", telescope_frecency, "Frecency (opened files, project root)")
-map("n", "<leader>fb", telescope("buffers"), "Find buffers")
-map("n", "<leader>fh", telescope("help_tags"), "Help tags")
-map("n", "<leader>fo", telescope("oldfiles"), "Recent files (oldfiles)")
-map("n", "<leader>fs", telescope("git_status"), "Git status")
-map("n", "<leader>fc", telescope("git_commits"), "Git commits")
-map("n", "<leader>fw", telescope_project("grep_string"), "Search word under cursor (project root)")
-map("n", "<leader>fd", telescope("diagnostics"), "Diagnostics picker")
-map("n", "<leader>/", telescope("current_buffer_fuzzy_find"), "Search in buffer")
-map("n", "<leader>sr", telescope("resume"), "Resume last picker")
+map("n", "<leader>ff", fzf_project("files"), "Find files (project root)")
+map("n", "<leader>fF", fzf("files"), "Find files (cwd, escape hatch)")
+map("n", "<leader>fg", fzf_project("live_grep"), "Live grep (project root)")
+map("n", "<leader>fr", fzf_project("oldfiles", { cwd_only = true }), "Recent files (project root)")
+map("n", "<leader>fb", fzf("buffers"), "Find buffers")
+map("n", "<leader>fh", fzf("help_tags"), "Help tags")
+map("n", "<leader>fo", fzf("oldfiles"), "Recent files (global)")
+map("n", "<leader>fs", fzf("git_status"), "Git status")
+map("n", "<leader>fc", fzf("git_commits"), "Git commits")
+map("n", "<leader>fw", fzf_project("grep_cword"), "Search word under cursor (project root)")
+map("n", "<leader>fd", fzf("diagnostics_document"), "Diagnostics picker")
+map("n", "<leader>/", fzf("blines"), "Search in buffer")
+map("n", "<leader>sr", fzf("resume"), "Resume last picker")
 
 -- Buffers ----------------------------------------------------------------------
 map("n", "<leader>bb", "<cmd>b#<CR>", "Alternate buffer")

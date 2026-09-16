@@ -28,21 +28,8 @@ require("lazy").setup({
     dependencies = { "nvim-treesitter/nvim-treesitter" },
   },
 
-  {
-    "nvim-telescope/telescope.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      {
-        "nvim-telescope/telescope-fzf-native.nvim",
-        build = "make",
-        cond = function()
-          return vim.fn.executable("make") == 1
-        end,
-      },
-      "nvim-telescope/telescope-frecency.nvim",
-      "ThePrimeagen/harpoon",
-    },
-  },
+  { "ibhagwan/fzf-lua", dependencies = { "nvim-tree/nvim-web-devicons" } },
+  { "ThePrimeagen/harpoon" },
 
   { "vim-test/vim-test" },
   { "tpope/vim-fugitive", dependencies = { "tpope/vim-rhubarb" } },
@@ -108,7 +95,7 @@ for _, mod in ipairs({
   "config.plugins.bufferline",
   "config.plugins.gitsigns",
   "config.plugins.treesitter",
-  "config.plugins.telescope",
+  "config.plugins.fzf-lua",
   "config.plugins.mason-tool-installer",
   "config.plugins.conform",
   "config.plugins.lint",

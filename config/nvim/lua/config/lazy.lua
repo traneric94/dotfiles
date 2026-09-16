@@ -29,7 +29,7 @@ require("lazy").setup({
   },
 
   { "ibhagwan/fzf-lua", dependencies = { "nvim-tree/nvim-web-devicons" } },
-  { "ThePrimeagen/harpoon" },
+  { "ThePrimeagen/harpoon", branch = "harpoon2", dependencies = { "nvim-lua/plenary.nvim" } },
 
   { "vim-test/vim-test" },
   { "akinsho/toggleterm.nvim", version = "*" },

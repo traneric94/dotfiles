@@ -244,26 +244,28 @@ map("n", "<leader>r", function()
   vim.notify("Config reloaded!", vim.log.levels.INFO)
 end, "Reload Neovim config")
 
--- Harpoon ----------------------------------------------------------------------
+-- Harpoon v2 ------------------------------------------------------------------
+local function with_harpoon(fn)
+  local ok, harpoon = pcall(require, "harpoon")
+  if ok then fn(harpoon) end
+end
+
 map("n", "<leader>ha", function()
-  local ok, harpoon = pcall(require, "harpoon.mark")
-  if ok then
-    harpoon.add_file()
-  end
-end, "Add file to Harpoon")
+  with_harpoon(function(h) h:list():add() end)
+end, "Harpoon: add file")
 map("n", "<leader>hh", function()
-  local ok, ui = pcall(require, "harpoon.ui")
-  if ok then
-    ui.toggle_quick_menu()
-  end
-end, "Harpoon menu")
+  with_harpoon(function(h) h.ui:toggle_quick_menu(h:list()) end)
+end, "Harpoon: menu")
+map("n", "<leader>h]", function()
+  with_harpoon(function(h) h:list():next() end)
+end, "Harpoon: next")
+map("n", "<leader>h[", function()
+  with_harpoon(function(h) h:list():prev() end)
+end, "Harpoon: prev")
 for i = 1, 4 do
   map("n", string.format("<leader>h%d", i), function()
-    local ok, ui = pcall(require, "harpoon.ui")
-    if ok then
-      ui.nav_file(i)
-    end
-  end, string.format("Harpoon file %d", i))
+    with_harpoon(function(h) h:list():select(i) end)
+  end, string.format("Harpoon: file %d", i))
 end
 
 -- Diagnostic navigation --------------------------------------------------------

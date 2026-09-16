@@ -211,20 +211,15 @@ fman() {
   [[ -n "$selection" ]] && man "$selection"
 }
 
-# Auto-create .ruby-version from Gemfile when entering Ruby projects
-auto_ruby_version() {
-  if [[ -f "Gemfile" && ! -f ".ruby-version" ]]; then
-    local ruby_req=$(grep '^ruby ' Gemfile 2>/dev/null)
-    if [[ -n "$ruby_req" ]]; then
-      local version=$(echo "$ruby_req" | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
-      if [[ -n "$version" ]]; then
-        local available=$(rbenv versions --bare | grep "^${version}" | head -1 2>/dev/null)
-        if [[ -n "$available" ]]; then
-          echo "$available" > .ruby-version
-          echo "📝 Created .ruby-version with Ruby $available"
-        fi
-      fi
-    fi
+# Use bundle exec rubocop when inside a Bundler project, else fall through to shim.
+# This ensures the project's pinned rubocop version is always used.
+rubocop() {
+  local gemfile
+  gemfile="$(git rev-parse --show-toplevel 2>/dev/null)/Gemfile"
+  if [[ -f "${gemfile:-}" ]] && grep -q 'rubocop' "$gemfile" 2>/dev/null; then
+    bundle exec rubocop "$@"
+  else
+    command rubocop "$@"
   fi
 }
 

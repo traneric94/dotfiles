@@ -36,6 +36,7 @@ require("lazy").setup({
   { "tpope/vim-fugitive", dependencies = { "tpope/vim-rhubarb" } },
   { "mg979/vim-visual-multi", branch = "master" },
   { "numToStr/Comment.nvim" },
+  { "JoosepAlviste/nvim-ts-context-commentstring", lazy = true },
   { "echasnovski/mini.surround", version = "*" },
   { "folke/which-key.nvim" },
   { "windwp/nvim-autopairs" },

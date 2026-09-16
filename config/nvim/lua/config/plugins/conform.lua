@@ -1,6 +1,36 @@
 local conform = require("conform")
 local tools = require("config.tools")
 
+-- Use `bundle exec rubocop` when the buffer's project has a Gemfile that
+-- references rubocop. Falls back to the shim otherwise (e.g. standalone scripts).
+local function rubocop_uses_bundle(ctx)
+  local gemfile = vim.fn.findfile("Gemfile", ctx.dirname .. ";")
+  if gemfile == "" then return false end
+  local contents = vim.fn.readfile(gemfile)
+  for _, line in ipairs(contents) do
+    if line:match("rubocop") then return true end
+  end
+  return false
+end
+
+conform.formatters.rubocop = {
+  command = function(self, ctx)
+    return rubocop_uses_bundle(ctx) and "bundle" or "rubocop"
+  end,
+  args = function(self, ctx)
+    local base = { "--server", "-a", "-f", "quiet", "--stderr", "--stdin", "$FILENAME" }
+    if rubocop_uses_bundle(ctx) then
+      return vim.list_extend({ "exec", "rubocop" }, base)
+    end
+    return base
+  end,
+  cwd = function(self, ctx)
+    local gemfile = vim.fn.findfile("Gemfile", ctx.dirname .. ";")
+    return gemfile ~= "" and vim.fn.fnamemodify(gemfile, ":h") or ctx.dirname
+  end,
+  stdin = true,
+}
+
 conform.setup({
   formatters_by_ft = tools.formatters_by_ft(),
   format_on_save = function(bufnr)

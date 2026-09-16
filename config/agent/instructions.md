@@ -118,20 +118,12 @@ _Global corrections and behavioral adjustments accumulated over time. Add via `#
 
 _IMPORTANT: This file is tracked in a PUBLIC dotfiles repo. Examples written here must be generic - never include employer-internal class names, hostnames, repo names, or infrastructure details._
 - if you dont see a branch, git fetch to make sure
-- use constants for strings
-
-**Use constants for metric/tag name strings** - declare `const` blocks for metric names and tag key templates rather than inline string literals. This prevents typos and makes names grep-able.
+- use constants for strings (metric/tag names, magic domain values) - `const` blocks over inline literals; prevents typos, keeps names grep-able
 - with three or more parameters, opts for new lines
-
-**Graceful degradation needs a warn log AND a dedicated metric** - when handling an expected failure (not-found, model unavailable, etc.) that degrades gracefully, always emit both: a warn log with context fields (strategy ID, type, etc.) AND a dedicated metric (e.g., `*_not_found`). Never reuse the generic error metric for expected degradation paths - it inflates error counts and triggers false alerts.
 
 **PR description behavioral contracts must match the code** - if the PR description says "items without predictions get score 0", the code must do that, not silently drop them. Before finalizing, re-read the stated behavior and verify the implementation matches it literally.
 
-**Every new domain field must be wired through the full convert layer** - when adding a field to the domain model, immediately add it to both directions of the proto ↔ domain (or DB ↔ domain) converter. Missing one direction silently drops config with no error.
-
-**Type check is not value validation - also check the zero value** - after a type assertion, proto getter, or nil check, also validate domain bounds: `GetStringValue() != ""`, multipliers `> 0`, collections non-empty. The type proving the shape doesn't mean the value is valid.
-
-**Metrics need all dimensional tags from day one** - distribution/histogram metrics should include every tag you'll want to slice by (variant, strategy type, banner definition, etc.) from the first commit. Adding tags later requires backfilling dashboards and invalidates historical data.
+_Chime-specific review rules (graceful-degradation warn+metric, convert-layer both directions, type-vs-domain bounds, dimensional metric tags) live in the project spine `engineering-principles.md` (P7/P11/P13) + the `go-review` skill - kept out of this public file._
 
 **Stub every side-effecting dependency in every test that exercises that path** - in Ruby specs, if a code path calls `Statsd.distribution`, every test reaching that path needs `allow(Statsd).to receive(:distribution)`, even tests asserting on something else. Missing stubs cause order-dependent failures.
 

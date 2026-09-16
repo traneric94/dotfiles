@@ -15,6 +15,7 @@ fi
 
 TMUX_WIN=$([ -n "$TMUX" ] && tmux display-message -p '#S' 2>/dev/null)
 TITLE=$([ -n "$TMUX_WIN" ] && echo "Claude:$TMUX_WIN" || echo "Claude")
+GROUP="${SESSION_ID:-$TITLE}"
 
 MSG=""
 if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then

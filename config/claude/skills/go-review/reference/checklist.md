@@ -1,7 +1,9 @@
 # Deep Go review checklist
 
-Distilled from the team's 12 code-review principles + 100 Go Mistakes. This is
-the self-contained source for `go-review`; it deliberately goes deeper than
+Tier-1 dense index for `go-review`: the team's 12 code-review principles applied
+to Go + one-line traps from 100 Go Mistakes. Language-neutral principle definitions
+and cross-language prioritization live in the spine, `memory/engineering-principles.md`
+(P1-P14); this file is the Go-concrete application. Deliberately deeper than
 `pr-review/reference/go.md`.
 
 ## Observability (correctness, not decoration)
@@ -22,7 +24,7 @@ the self-contained source for `go-review`; it deliberately goes deeper than
 - Unrecognized input at any boundary is an error, never a silent pass.
 
 ## Interfaces and naming
-- Interface defined at the consumer, not the producer (`ports.ModelClient` in `ports`, not `merlin`).
+- Interface defined at the consumer, not the producer (`ports.ModelClient` in `ports`, not in the adapter package).
 - No `util`/`common`/`helper` packages.
 - Names encode intent: `Ranker` vs `Strategy`, `Provider` vs `Registry`.
 - Overuse of `any`/empty interface is a smell.

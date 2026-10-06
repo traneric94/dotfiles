@@ -16,6 +16,9 @@ nvim_tree.setup({
     side = "left",
     preserve_window_proportions = true,
   },
+  filters = {
+    dotfiles = false,
+  },
   renderer = {
     highlight_git = true,
     highlight_opened_files = "all",

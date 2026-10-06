@@ -16,7 +16,7 @@ Read and apply the full checklist (the same source the Claude `go-review` skill 
 
 If present, also cross-check the deeper local sources (skip silently if absent):
 - `~/codebase/100-go-mistakes/`
-- the team `memory/ranking_service_checklist.md` and `memory/engineering-principles.md`
+- any team `memory/*_checklist.md` and `memory/engineering-principles.md`
 
 ## Output
 

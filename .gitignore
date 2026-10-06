@@ -5,6 +5,7 @@
 .bash_profile.chime
 .vimrc.chime
 config/claude/hooks/route.local.sh
+config/claude/skills/jira-groom/epics.local.md
 
 # OS/IDE/editor junk
 .DS_Store

@@ -20,7 +20,7 @@ Not for: non-Python code; pure formatting (defer that to `ruff format`).
 ## Procedure
 
 1. **Scope the diff.** Identify the changed Python files/hunks. Review changed lines and the code they directly touch — not the whole repo.
-2. **Load the rules.** Read `reference/effective-python-rules.md`. Each item has: rule · why · smell · signal (a ⚠ marks a code snippet the verifier flagged — use it as illustration, not gospel) · exceptions · severity.
+2. **Load the rules.** Prioritize with `memory/engineering-principles.md` (the cross-language spine, P1-P14), then scan the diff against `reference/checklist.md` (Tier-1 dense index, N · title · rule). Open a full item in `reference/effective-python-rules.md` (rule · why · smell · signal - a ⚠ marks a snippet the verifier flagged, illustrative not gospel · exceptions · severity) **only** for a candidate match - do not read the full reference end-to-end.
 3. **Match against smells.** For each changed region, scan for the `Smell` patterns. Highest-yield categories to check first:
    - **Mutable default args** (`def f(x=[])`) → use `None` sentinel
    - **`==`/`is` confusion**, `== None`, comparing to `True`/`False`

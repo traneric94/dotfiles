@@ -7,17 +7,12 @@
 
 ## Communication Style
 
-- No emojis, filler, hype, soft asks, conversational transitions, call to action, appendixes
-- Blunt, directive phrasing aimed at cognitive rebuilding, not tone matching
-- Terminate reply immediately after delivering info
-- No closures, satisfaction scores, emotional softening, continuation bias
-- Never mirror user diction/mood/affect
-- Restore independent high fidelity thinking - outcome is user self-sufficiency
+- No emojis, filler, hype, soft asks, conversational transitions, calls to action, closures, satisfaction scores, or continuation bias; no preamble or appendixes - deliver the info and stop
+- Blunt, directive; never mirror user diction/mood/affect; outcome is user self-sufficiency, not tone-matching
 - Never use the em dash character; always use a plain hyphen "-" instead (em dashes read as AI-generated writing)
 
 ## Response Format
 
-- Direct answers without preamble
 - Command examples with brief explanation
 - Code references using `file:line` format
 - Tradeoff analysis when multiple approaches exist
@@ -25,9 +20,8 @@
 ## Code Quality
 
 - NEVER add comments unless explicitly asked
-- No hardcoded secrets or API keys
 - Follow existing code patterns, libraries, and conventions - never assume a library is available
-- Security best practices always; never expose or log secrets
+- Never hardcode, expose, or log secrets or API keys; security best practices always
 - Weigh tradeoffs toward long-term maintainability, simplicity, and robustness over development cost - but don't gold-plate
 - Never hand-edit auto-generated files (codegen output, CHANGELOG, lockfiles) - regenerate via the tool
 
@@ -102,15 +96,11 @@ _These use Claude Code features that other agents can ignore._
 
 ### Learning & Memory
 
-Claude has no persistent memory between sessions. To persist corrections:
+Claude has no cross-session memory - a correction lasts only the session unless persisted. To persist:
 
-- **Mid-session**: Press `#` to give an instruction Claude will incorporate into the relevant CLAUDE.md automatically
-- **Manual**: Add rules directly to `~/.claude/CLAUDE.md` (global) or the project's `CLAUDE.md` (project-scoped)
-- **Routing**: Generic behaviors → `~/.claude/CLAUDE.md`. Project-specific patterns → project's `CLAUDE.md`
-
-When correcting Claude during a session, that correction only lasts the session. If it should persist, update CLAUDE.md immediately.
-
-Periodically prompt-tune entries - use "IMPORTANT" or "YOU MUST" on rules where adherence is weak. Keep entries concise; bloated CLAUDE.md degrades instruction following.
+- **Mid-session**: press `#` to have Claude write the rule to the relevant CLAUDE.md
+- **Routing**: generic behaviors → `~/.claude/CLAUDE.md`; project-specific patterns → the project's `CLAUDE.md`
+- Prompt-tune weak rules with "IMPORTANT"/"YOU MUST"; keep entries concise - a bloated CLAUDE.md degrades instruction following
 
 ## Learned Patterns
 
@@ -118,20 +108,12 @@ _Global corrections and behavioral adjustments accumulated over time. Add via `#
 
 _IMPORTANT: This file is tracked in a PUBLIC dotfiles repo. Examples written here must be generic - never include employer-internal class names, hostnames, repo names, or infrastructure details._
 - if you dont see a branch, git fetch to make sure
-- use constants for strings
-
-**Use constants for metric/tag name strings** - declare `const` blocks for metric names and tag key templates rather than inline string literals. This prevents typos and makes names grep-able.
+- use constants for strings (metric/tag names, magic domain values) - `const` blocks over inline literals; prevents typos, keeps names grep-able
 - with three or more parameters, opts for new lines
-
-**Graceful degradation needs a warn log AND a dedicated metric** - when handling an expected failure (not-found, model unavailable, etc.) that degrades gracefully, always emit both: a warn log with context fields (strategy ID, type, etc.) AND a dedicated metric (e.g., `*_not_found`). Never reuse the generic error metric for expected degradation paths - it inflates error counts and triggers false alerts.
 
 **PR description behavioral contracts must match the code** - if the PR description says "items without predictions get score 0", the code must do that, not silently drop them. Before finalizing, re-read the stated behavior and verify the implementation matches it literally.
 
-**Every new domain field must be wired through the full convert layer** - when adding a field to the domain model, immediately add it to both directions of the proto ↔ domain (or DB ↔ domain) converter. Missing one direction silently drops config with no error.
-
-**Type check is not value validation - also check the zero value** - after a type assertion, proto getter, or nil check, also validate domain bounds: `GetStringValue() != ""`, multipliers `> 0`, collections non-empty. The type proving the shape doesn't mean the value is valid.
-
-**Metrics need all dimensional tags from day one** - distribution/histogram metrics should include every tag you'll want to slice by (variant, strategy type, banner definition, etc.) from the first commit. Adding tags later requires backfilling dashboards and invalidates historical data.
+_Team-specific review rules live in the private memory spine `engineering-principles.md` + the `go-review` skill - kept out of this public file._
 
 **Stub every side-effecting dependency in every test that exercises that path** - in Ruby specs, if a code path calls `Statsd.distribution`, every test reaching that path needs `allow(Statsd).to receive(:distribution)`, even tests asserting on something else. Missing stubs cause order-dependent failures.
 

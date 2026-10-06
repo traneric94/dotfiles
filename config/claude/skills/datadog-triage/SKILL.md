@@ -1,6 +1,6 @@
 ---
 name: datadog-triage
-description: Triage a single Datadog alert or monitor - pull monitor state, linked dashboards/notebooks, and recent logs/metrics, then summarize likely cause and next steps. Use when the user pastes an alert, names a monitor, or says "triage this alert", "why is X firing", "datadog triage". For a weekly oncall summary use the chime-targeting oncall-report skill instead.
+description: Triage a single Datadog alert or monitor - pull monitor state, linked dashboards/notebooks, and recent logs/metrics, then summarize likely cause and next steps. Use when the user pastes an alert, names a monitor, or says "triage this alert", "why is X firing", "datadog triage". For a weekly oncall summary use the team's oncall-report skill instead.
 allowed-tools: mcp__datadog-mcp, Read, Grep
 context: fork
 ---

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Stop hook: send completion notification via terminal-notifier.
-# Activates WezTerm on click.
+# Activates Ghostty on click.
 
 # Silent during unattended gnhf runs (set by the gnhf() shell wrapper in .zshrc).
 [ -n "${GNHF_RUN:-}" ] && exit 0
@@ -15,6 +15,7 @@ fi
 
 TMUX_WIN=$([ -n "$TMUX" ] && tmux display-message -p '#S' 2>/dev/null)
 TITLE=$([ -n "$TMUX_WIN" ] && echo "Claude:$TMUX_WIN" || echo "Claude")
+GROUP="${SESSION_ID:-$TITLE}"
 
 MSG=""
 if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
@@ -32,7 +33,7 @@ fi
 terminal-notifier \
   -title "$TITLE" \
   -message "${MSG:-Task complete}" \
-  -activate com.github.wez.wezterm \
+  -activate com.mitchellh.ghostty \
   2>/dev/null
 afplay /System/Library/Sounds/Glass.aiff 2>/dev/null || true
 exit 0

@@ -11,4 +11,5 @@ rshift - 2 : osascript -e 'tell application "Google Chrome" to activate' -e 'if 
 rshift - f : osascript -e 'tell application "Firefox" to reopen' -e 'tell application "Firefox" to activate'
 rshift - r : if pgrep "Rectangle" > /dev/null; then osascript -e 'tell application "Rectangle" to reopen' -e 'tell application "Rectangle" to activate'; else open -a "Rectangle"; fi
 rshift - m : if pgrep "SDM" > /dev/null; then osascript -e 'tell application "SDM" to reopen' -e 'tell application "SDM" to activate'; else open -a "SDM"; fi
+rshift - j : bash "${DOTFILES_DIR:-$HOME/codebase/dotfiles}/scripts/notes-popup.sh"
 rshift - a : if pgrep "Activity Monitor" > /dev/null; then osascript -e 'tell application "Activity Monitor" to reopen' -e 'tell application "Activity Monitor" to activate'; else open -a "Activity Monitor"; fi

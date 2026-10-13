@@ -12,6 +12,7 @@ local groups = {
   g = "git",
   h = "harpoon",
   l = "lsp",
+  n = "notes",
   q = "quickfix",
   s = "search",
   t = "test",

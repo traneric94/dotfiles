@@ -1,3 +1,4 @@
+-- Keys documented in HOTKEYS.md (repo root); update it when changing a binding.
 local utils = require("config.utils")
 
 local function map(mode, lhs, rhs, desc, opts)
@@ -141,6 +142,18 @@ map("n", "<leader>fw", telescope_project("grep_string"), "Search word under curs
 map("n", "<leader>fd", telescope("diagnostics"), "Diagnostics picker")
 map("n", "<leader>/", telescope("current_buffer_fuzzy_find"), "Search in buffer")
 map("n", "<leader>sr", telescope("resume"), "Resume last picker")
+
+-- Notes ------------------------------------------------------------------------
+local NOTES_DIR = vim.fn.expand("~/notes")
+local NOTES_SEARCH_DIRS = {
+  NOTES_DIR,
+  vim.fn.expand("~/codebase/docs"),
+  vim.fn.expand("~/.claude/projects/-Users-eric-tran-codebase/memory"),
+}
+
+map("n", "<leader>nn", "<cmd>edit " .. NOTES_DIR .. "/inbox.md<cr>", "Notes inbox")
+map("n", "<leader>nf", telescope("find_files", { cwd = NOTES_DIR }), "Find note")
+map("n", "<leader>ng", telescope("live_grep", { search_dirs = NOTES_SEARCH_DIRS }), "Grep notes + docs + memory")
 
 -- Buffers ----------------------------------------------------------------------
 map("n", "<leader>bb", "<cmd>b#<CR>", "Alternate buffer")

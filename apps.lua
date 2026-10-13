@@ -1,3 +1,4 @@
+-- Keys documented in HOTKEYS.md (repo root); update it when changing a binding.
 -- apps.lua — single source of truth for global app-launcher hotkeys.
 -- Edit here and re-run install.sh; scripts/gen.lua compiles this to
 -- .skhdrc (macOS/skhd) and hotkeys.ahk (Windows/AutoHotkey).
@@ -111,6 +112,11 @@ return {
     darwin_app = "SDM",
     win_title = "SDM",
     optional = true,
+  },
+  {
+    id = "notes",
+    hotkey = "j",
+    darwin_cmd = [[bash "${DOTFILES_DIR:-$HOME/codebase/dotfiles}/scripts/notes-popup.sh"]],
   },
   {
     id = "activity_monitor",

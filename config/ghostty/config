@@ -1,3 +1,4 @@
+# Keys documented in HOTKEYS.md (repo root); update it when changing a binding.
 # Ghostty configuration — Catppuccin Mocha, Hack Nerd Font, transparent
 
 # Font
@@ -11,12 +12,14 @@ theme = "Catppuccin Mocha"
 background-opacity = 0.80
 background-blur-radius = 20
 macos-titlebar-style = hidden
-macos-reopen-window-on-activate = true
 window-save-state = always
 window-inherit-working-directory = true
 
 # Scrollback
 scrollback-limit = 10000000
+
+# tmux owns sessions, windows, and splits; every Ghostty window attaches to "main"
+command = /opt/homebrew/bin/tmux new-session -A -s main
 
 # Shell — auto-injected for zsh
 shell-integration = zsh
@@ -40,3 +43,19 @@ cursor-style-blink = false
 keybind = cmd+shift+j=write_scrollback_file:paste
 keybind = cmd+shift+s=write_screen_file:paste
 keybind = cmd+shift+u=write_selection_file:paste
+
+# Native-feeling tmux: Cmd shortcuts send the tmux prefix (C-a = \x01) + key
+keybind = cmd+t=text:\x01c
+keybind = cmd+d=text:\x01v
+keybind = cmd+shift+d=text:\x01h
+keybind = cmd+shift+left_bracket=text:\x01p
+keybind = cmd+shift+right_bracket=text:\x01n
+keybind = cmd+one=text:\x011
+keybind = cmd+two=text:\x012
+keybind = cmd+three=text:\x013
+keybind = cmd+four=text:\x014
+keybind = cmd+five=text:\x015
+keybind = cmd+six=text:\x016
+keybind = cmd+seven=text:\x017
+keybind = cmd+eight=text:\x018
+keybind = cmd+nine=text:\x019

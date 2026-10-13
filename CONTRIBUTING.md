@@ -20,5 +20,6 @@ opening one:
 - `bash -n install.sh` passes and `install.sh` sources cleanly.
 - `luajit scripts/gen.lua skhd` and `luajit scripts/gen.lua ahk` generate without error.
 - Every `apps.lua` entry has `id`, `hotkey`, and `darwin_app`.
+- Changing a key binding? Update `HOTKEYS.md` in the same commit.
 - No secrets in the diff — this repo is PUBLIC. `.gitignore` covers common
   secret-bearing paths, and `gitleaks` runs in CI and in the pre-commit hook.

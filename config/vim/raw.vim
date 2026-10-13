@@ -1,3 +1,4 @@
+" Keys documented in HOTKEYS.md (repo root); update it when changing a binding.
 " Raw Vim training profile.
 " Start with: rawvim
 

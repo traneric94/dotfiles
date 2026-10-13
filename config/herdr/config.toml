@@ -1,3 +1,4 @@
+# Keys documented in HOTKEYS.md (repo root); update it when changing a binding.
 [keys]
 prefix = "ctrl+b"
 focus_pane_left  = "prefix+h"

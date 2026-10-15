@@ -13,6 +13,8 @@ brew "herdr"                        # agent multiplexer — run alongside tmux (
 #   - Brewfile.darwin owns macOS-only software with no hotkey (CLIs, fonts,
 #     dev tools) plus the launcher infra itself (raycast, etc.)
 cask "1password-cli"
+cask "chatgpt"
+cask "claude"
 cask "notion-calendar"
 cask "raycast"
 cask "visual-studio-code"

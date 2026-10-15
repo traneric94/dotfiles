@@ -62,7 +62,6 @@ Vim-aware: sends the key through when the pane runs vim or nvim.
 |---|---|
 | C-h / C-j / C-k / C-l | Select pane left / down / up / right |
 | Alt+arrows | Select pane (backup navigation) |
-| Shift+Left / Shift+Right | Previous / next window |
 
 ### Splits, windows, config (prefix)
 
@@ -72,6 +71,7 @@ Vim-aware: sends the key through when the pane runs vim or nvim.
 | prefix h | Split stacked (current path) |
 | prefix % / prefix " | Split side by side / stacked (current path) |
 | prefix c | New window (current path) |
+| prefix Shift+Left / prefix Shift+Right | Previous / next window |
 | prefix r | Reload `~/.tmux.conf` |
 | prefix C-h/j/k/l (repeatable) | Resize pane left / down / up / right |
 

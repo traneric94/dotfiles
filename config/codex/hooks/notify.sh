@@ -35,7 +35,12 @@ notify() {
   local sound="$3"
   local sound_file="/System/Library/Sounds/${sound}.aiff"
 
-  if command -v osascript >/dev/null 2>&1; then
+  if command -v terminal-notifier >/dev/null 2>&1; then
+    terminal-notifier \
+      -title "$title" \
+      -message "$message" \
+      -activate com.mitchellh.ghostty >/dev/null 2>&1 || true
+  elif command -v osascript >/dev/null 2>&1; then
     osascript \
       -e 'on run argv' \
       -e 'display notification (item 2 of argv) with title (item 1 of argv) sound name (item 3 of argv)' \
@@ -57,9 +62,9 @@ if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
   tmux_name="$(tmux display-message -p '#S' 2>/dev/null || true)"
 fi
 
-title="Terminal"
+title="Codex"
 if [[ -n "$tmux_name" ]]; then
-  title="Terminal:${tmux_name}"
+  title="Codex:${tmux_name}"
 fi
 
 case "$event" in

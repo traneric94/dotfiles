@@ -18,8 +18,9 @@ window-inherit-working-directory = true
 # Scrollback
 scrollback-limit = 10000000
 
-# tmux owns sessions, windows, and splits; every Ghostty window attaches to "main"
-command = /opt/homebrew/bin/tmux new-session -A -s main
+# tmux owns sessions, windows, and splits; every Ghostty window starts its own session in ~/codebase.
+# First window creates session "main"; later windows get a fresh auto-named session.
+command = if /opt/homebrew/bin/tmux has-session -t "=main" 2>/dev/null; then exec /opt/homebrew/bin/tmux new-session -c "$HOME/codebase"; else exec /opt/homebrew/bin/tmux new-session -s main -c "$HOME/codebase"; fi
 
 # Shell — auto-injected for zsh
 shell-integration = zsh

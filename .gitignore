@@ -16,6 +16,8 @@ config/claude/skills/jira-groom/epics.local.md
 
 # Generated at install time — machine-specific Windows startup launcher
 hotkeys.vbs
+# Written by `herdr integration install claude` into the linked hooks dir
+config/claude/hooks/herdr-agent-state.sh
 
 # Secrets / credentials — never commit (this repo is PUBLIC)
 *.pem

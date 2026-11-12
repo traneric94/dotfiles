@@ -1,14 +1,36 @@
 # Keys documented in HOTKEYS.md (repo root); update it when changing a binding.
+# herdr is the primary multiplexer; Ghostty launches it and its Cmd chords send this prefix.
+onboarding = false
+
+[theme]
+name = "catppuccin"
+auto_switch = false
+
+[ui]
+agent_panel_sort = "priority"
+
 [keys]
 prefix = "ctrl+b"
-focus_pane_left  = "prefix+h"
-focus_pane_down  = "prefix+j"
-focus_pane_up    = "prefix+k"
-focus_pane_right = "prefix+l"
-split_horizontal = "prefix+double_quote"
-split_vertical    = "prefix+percent"
-new_tab   = "prefix+c"
-close_tab = "prefix+ampersand"
-workspace_picker = "prefix+w"
-goto             = "prefix+g"
-copy_mode  = "prefix+y"  # herdr's copy-mode entry key; copy-mode's own internal keys (v/space select, y/Enter copy, q/Esc cancel) aren't configurable
+split_horizontal = "prefix+minus"
+split_vertical   = "prefix+v"
+close_tab        = "prefix+ampersand"
+workspace_picker = "prefix+s"
+settings         = "prefix+shift+s"
+goto             = "prefix+f"
+edit_scrollback  = "prefix+shift+e"
+
+[[keys.command]]
+key = "prefix+g"
+type = "popup"
+command = "cd \"${HERDR_ACTIVE_PANE_CWD:-$HOME}\" && lazygit"
+description = "lazygit in current path"
+width = "80%"
+height = "80%"
+
+[[keys.command]]
+key = "prefix+e"
+type = "popup"
+command = "cd \"$HOME/notes\" && nvim inbox.md"
+description = "Notes inbox"
+width = "80%"
+height = "80%"

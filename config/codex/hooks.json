@@ -1,12 +1,36 @@
 {
   "hooks": {
-    "UserPromptSubmit": [
+    "PermissionRequest": [
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "bash ~/.codex/hooks/notify.sh prompt",
-            "timeout": 5
+            "command": "bash ~/.codex/hooks/notify.sh permission",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.codex/hooks/notify.sh compact",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/Users/eric.tran/.codex/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
           }
         ]
       }
@@ -15,33 +39,20 @@
       {
         "hooks": [
           {
-            "type": "command",
             "command": "bash ~/.codex/hooks/notify.sh stop",
-            "timeout": 5
+            "timeout": 5,
+            "type": "command"
           }
         ]
       }
     ],
-    "PermissionRequest": [
+    "UserPromptSubmit": [
       {
-        "matcher": "*",
         "hooks": [
           {
-            "type": "command",
-            "command": "bash ~/.codex/hooks/notify.sh permission",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.codex/hooks/notify.sh compact",
-            "timeout": 5
+            "command": "bash ~/.codex/hooks/notify.sh prompt",
+            "timeout": 5,
+            "type": "command"
           }
         ]
       }

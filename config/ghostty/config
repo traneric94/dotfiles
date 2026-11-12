@@ -18,15 +18,15 @@ window-inherit-working-directory = true
 # Scrollback
 scrollback-limit = 10000000
 
-# tmux owns sessions, windows, and splits; every Ghostty window starts its own session in ~/codebase.
-# First window creates session "main"; later windows get a fresh auto-named session.
-command = /bin/bash --noprofile --norc -c 'if /opt/homebrew/bin/tmux has-session -t "=main" 2>/dev/null; then exec /opt/homebrew/bin/tmux new-session -c "$HOME/codebase"; else exec /opt/homebrew/bin/tmux new-session -s main -c "$HOME/codebase"; fi'
+# herdr owns workspaces, tabs, and splits; every Ghostty window attaches to the persistent herdr server.
+# The server starts in ~/codebase on first launch and survives Ghostty quitting.
+command = /bin/bash --noprofile --norc -c 'cd "$HOME/codebase" && exec /opt/homebrew/bin/herdr'
 
 # Shell — auto-injected for zsh
 shell-integration = zsh
 shell-integration-features = cursor,sudo,title
 
-# macOS Option key — forwards as Alt/Meta to terminal apps (tmux, nvim)
+# macOS Option key — forwards as Alt/Meta to terminal apps (herdr, nvim)
 macos-option-as-alt = true
 
 # Bell — visual only, no audio
@@ -45,18 +45,18 @@ keybind = cmd+shift+j=write_scrollback_file:paste
 keybind = cmd+shift+s=write_screen_file:paste
 keybind = cmd+shift+u=write_selection_file:paste
 
-# Native-feeling tmux: Cmd shortcuts send the tmux prefix (C-a = \x01) + key
-keybind = cmd+t=text:\x01c
-keybind = cmd+d=text:\x01v
-keybind = cmd+shift+d=text:\x01h
-keybind = cmd+shift+left_bracket=text:\x01p
-keybind = cmd+shift+right_bracket=text:\x01n
-keybind = cmd+one=text:\x011
-keybind = cmd+two=text:\x012
-keybind = cmd+three=text:\x013
-keybind = cmd+four=text:\x014
-keybind = cmd+five=text:\x015
-keybind = cmd+six=text:\x016
-keybind = cmd+seven=text:\x017
-keybind = cmd+eight=text:\x018
-keybind = cmd+nine=text:\x019
+# Native-feeling herdr: Cmd shortcuts send the herdr prefix (C-b = \x02) + key
+keybind = cmd+t=text:\x02c
+keybind = cmd+d=text:\x02v
+keybind = cmd+shift+d=text:\x02-
+keybind = cmd+shift+left_bracket=text:\x02p
+keybind = cmd+shift+right_bracket=text:\x02n
+keybind = cmd+one=text:\x021
+keybind = cmd+two=text:\x022
+keybind = cmd+three=text:\x023
+keybind = cmd+four=text:\x024
+keybind = cmd+five=text:\x025
+keybind = cmd+six=text:\x026
+keybind = cmd+seven=text:\x027
+keybind = cmd+eight=text:\x028
+keybind = cmd+nine=text:\x029

@@ -211,6 +211,9 @@ link_configs() {
     "config/codex/prompts:$HOME/.codex/prompts"
     # gnhf reads config.yml read-only; runtime state lives elsewhere in ~/.gnhf.
     "config/gnhf/config.yml:$HOME/.gnhf/config.yml"
+    # herdr keeps its socket, logs, and session state in ~/.config/herdr, so
+    # only the config file is linked, not the whole dir.
+    "config/herdr/config.toml:$HOME/.config/herdr/config.toml"
   )
 
   # .skhdrc is macOS-only; hotkeys.ahk is generated and run directly from the repo dir.
@@ -240,7 +243,7 @@ link_configs() {
     while IFS= read -r -d '' entry; do
       local base_name
       base_name="$(basename "$entry")"
-      if [[ "$base_name" == "claude" || "$base_name" == "codex" || "$base_name" == ".gitignore" ]]; then
+      if [[ "$base_name" == "claude" || "$base_name" == "codex" || "$base_name" == "herdr" || "$base_name" == ".gitignore" ]]; then
         continue
       fi
       link_item "$entry" "$HOME/.config/$base_name"
@@ -284,6 +287,20 @@ merge_claude_settings() {
     rm -f "$tmp"
     echo "Warning: Claude settings merge failed; $target left untouched"
   fi
+}
+
+# ── herdr agent integrations ──────────────────────────────────────────────────
+# Runs after the Claude settings merge: herdr adds its own SessionStart hook to
+# ~/.claude/settings.json and ~/.codex/hooks.json and writes the hook scripts.
+
+install_herdr_integrations() {
+  if ! command -v herdr >/dev/null 2>&1; then
+    echo "herdr not found; skipping agent integrations"
+    return
+  fi
+
+  herdr integration install claude
+  herdr integration install codex
 }
 
 # ── TPM (Tmux Plugin Manager) ─────────────────────────────────────────────────
@@ -442,6 +459,7 @@ install_apps
 generate_configs
 link_configs
 merge_claude_settings
+install_herdr_integrations
 configure_git
 install_tpm
 install_ruby

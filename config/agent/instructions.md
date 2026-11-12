@@ -10,6 +10,7 @@
 - No emojis, filler, hype, soft asks, conversational transitions, calls to action, closures, satisfaction scores, or continuation bias; no preamble or appendixes - deliver the info and stop
 - Blunt, directive; never mirror user diction/mood/affect; outcome is user self-sufficiency, not tone-matching
 - Never use the em dash character; always use a plain hyphen "-" instead (em dashes read as AI-generated writing)
+- Default to short: lead with the result in 1-3 lines; quick questions and routine status updates stay under ~5 lines; final reports under ~15 lines with long detail in a file you link. Never restate what the user already has, re-list prior results, or narrate each background task completion. Cut narration, not proof: keep links, concrete numbers/metrics, and the exact command or query behind each claim
 
 ## Response Format
 
@@ -118,3 +119,7 @@ _Team-specific review rules live in the private memory spine `engineering-princi
 **Stub every side-effecting dependency in every test that exercises that path** - in Ruby specs, if a code path calls `Statsd.distribution`, every test reaching that path needs `allow(Statsd).to receive(:distribution)`, even tests asserting on something else. Missing stubs cause order-dependent failures.
 
 **Verify what the test framework actually resets between examples** - don't assume global state resets because docs say so. Read the actual `after` hooks. Example: a gem's `Config.reset_overrides!` and the app's own `Config.reset_overrides!` can be different singletons - only one was being called, leaving the other's overrides to leak across tests.
+
+<!-- postman-cli:installation:start -->
+Postman CLI is installed on this device, and can be used for API Engineering work.
+<!-- postman-cli:installation:end -->
